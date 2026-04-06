@@ -21,7 +21,7 @@ class WatercolorBleedEffect implements WritingEffect {
   @override
   final String description =
       'Softens stroke edges with gentle watercolor-style feathering and '
-      'colour bleeding.';
+      'color bleeding.';
 
   @override
   bool isEnabled = true;

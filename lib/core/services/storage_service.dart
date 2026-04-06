@@ -3,10 +3,10 @@
 /// This is a placeholder that outlines the interface. A full Isar
 /// implementation will be added in a future PR.
 abstract class StorageService {
-  /// Initialise the storage backend.
+  /// Initialize the storage backend.
   Future<void> init();
 
-  /// Persist raw JSON-serialisable data by [key].
+  /// Persist raw JSON-serializable data by [key].
   Future<void> save(String key, Map<String, dynamic> data);
 
   /// Load previously persisted data by [key].

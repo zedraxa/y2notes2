@@ -14,7 +14,7 @@ class PointData extends Equatable {
   final double x;
   final double y;
 
-  /// Normalised pressure value in range [0.0, 1.0].
+  /// Normalized pressure value in range [0.0, 1.0].
   final double pressure;
 
   /// Stylus tilt angle in radians.

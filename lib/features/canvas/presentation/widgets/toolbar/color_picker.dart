@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:y2notes2/app/theme/colors.dart';
 import 'package:y2notes2/core/constants/app_constants.dart';
 
-/// Row of 8 preset colour swatches + a tap-for-custom-colour button.
+/// Row of 8 preset color swatches + a tap-for-custom-color button.
 class ColorPicker extends StatelessWidget {
   const ColorPicker({
     super.key,
@@ -29,7 +29,7 @@ class ColorPicker extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 4),
-            // Custom colour picker
+            // Custom color picker
             _CustomColorButton(
               current: activeColor,
               onColorSelected: onColorSelected,
@@ -167,7 +167,7 @@ class _ColorDialogState extends State<_ColorDialog> {
 
   @override
   Widget build(BuildContext context) => AlertDialog(
-        title: const Text('Choose Colour'),
+        title: const Text('Choose Color'),
         content: SizedBox(
           width: 280,
           child: Wrap(

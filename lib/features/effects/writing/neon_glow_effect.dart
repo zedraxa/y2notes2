@@ -133,7 +133,7 @@ class NeonGlowEffect implements WritingEffect {
     canvas.drawPath(path, paint);
   }
 
-  /// Choose a vivid glow colour complementary to the stroke colour.
+  /// Choose a vivid glow color complementary to the stroke color.
   Color _glowColorFor(Color base) {
     final hsv = HSVColor.fromColor(base);
     // Boost saturation and shift slightly warmer

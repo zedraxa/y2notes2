@@ -36,7 +36,7 @@ class SettingsService {
     'chalk',
   ];
 
-  /// Initialise shared preferences and load persisted values.
+  /// Initialize shared preferences and load persisted values.
   Future<void> init() async {
     _prefs = await SharedPreferences.getInstance();
 
