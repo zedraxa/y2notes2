@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:y2notes2/features/canvas/domain/entities/point_data.dart';
 import 'package:y2notes2/features/canvas/domain/entities/stroke.dart';
 import 'package:y2notes2/features/canvas/domain/entities/tool.dart';
+import 'package:y2notes2/features/canvas/domain/entities/tools/tool_settings.dart';
 import 'package:y2notes2/features/canvas/domain/models/canvas_config.dart';
 
 /// Base class for all canvas events.
@@ -95,4 +96,20 @@ class ViewportChanged extends CanvasEvent {
   final Offset panOffset;
   @override
   List<Object?> get props => [zoom, panOffset];
+}
+
+/// Change the active plugin-based drawing tool by ID.
+class DrawingToolChanged extends CanvasEvent {
+  const DrawingToolChanged(this.toolId);
+  final String toolId;
+  @override
+  List<Object?> get props => [toolId];
+}
+
+/// Update the active tool's settings.
+class ToolSettingsChanged extends CanvasEvent {
+  const ToolSettingsChanged(this.settings);
+  final ToolSettings settings;
+  @override
+  List<Object?> get props => [settings];
 }

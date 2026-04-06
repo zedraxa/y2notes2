@@ -27,6 +27,8 @@ class CanvasBloc extends Bloc<CanvasEvent, CanvasState> {
     on<CanvasConfigUpdated>(_onConfigUpdated);
     on<CanvasCleared>(_onCanvasCleared);
     on<ViewportChanged>(_onViewportChanged);
+    on<DrawingToolChanged>(_onDrawingToolChanged);
+    on<ToolSettingsChanged>(_onToolSettingsChanged);
   }
 
   final SettingsService _settings;
@@ -113,4 +115,10 @@ class CanvasBloc extends Bloc<CanvasEvent, CanvasState> {
       emit(state.copyWith(
         viewport: Viewport(zoom: event.zoom, panOffset: event.panOffset),
       ));
+
+  void _onDrawingToolChanged(DrawingToolChanged event, Emitter<CanvasState> emit) =>
+      emit(state.copyWith(activeToolId: event.toolId));
+
+  void _onToolSettingsChanged(ToolSettingsChanged event, Emitter<CanvasState> emit) =>
+      emit(state.copyWith(activeToolSettings: event.settings));
 }

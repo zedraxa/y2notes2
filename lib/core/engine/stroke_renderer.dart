@@ -3,6 +3,8 @@ import 'package:perfect_freehand/perfect_freehand.dart';
 import 'package:y2notes2/features/canvas/domain/entities/stroke.dart';
 import 'package:y2notes2/features/canvas/domain/entities/tool.dart';
 import 'package:y2notes2/features/canvas/domain/entities/point_data.dart';
+import 'package:y2notes2/features/canvas/domain/entities/tools/drawing_tool.dart';
+import 'package:y2notes2/features/canvas/domain/entities/tools/tool_settings.dart';
 
 /// Renders strokes using the `perfect_freehand` algorithm.
 class StrokeRenderer {
@@ -103,7 +105,7 @@ class StrokeRenderer {
 
     switch (tool) {
       case StrokeTool.highlighter:
-        paint.color = color.withOpacity(0.45);
+        paint.color = Color.fromARGB(115, color.red, color.green, color.blue);
         paint.blendMode = BlendMode.multiply;
       case StrokeTool.eraser:
         paint.color = Colors.white;
@@ -124,5 +126,16 @@ class StrokeRenderer {
     }
     path.close();
     return path;
+  }
+
+  /// Render a stroke using a plugin-based [DrawingTool] if provided.
+  void renderStrokeWithTool(
+    Canvas canvas,
+    List<PointData> points,
+    DrawingTool tool,
+    ToolSettings settings,
+  ) {
+    tool.renderStroke(canvas, points, settings);
+    tool.postProcess(canvas, points, settings);
   }
 }
