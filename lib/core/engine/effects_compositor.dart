@@ -7,6 +7,8 @@ import 'package:y2notes2/features/canvas/domain/models/canvas_config.dart';
 import 'package:y2notes2/features/effects/interaction/interaction_effects_engine.dart';
 import 'package:y2notes2/features/effects/writing/writing_effects_engine.dart';
 import 'package:y2notes2/features/handwriting/domain/entities/text_block.dart';
+import 'package:y2notes2/features/rich_text/domain/entities/rich_text_element.dart';
+import 'package:y2notes2/features/rich_text/engine/rich_text_renderer.dart';
 import 'package:y2notes2/features/shapes/domain/entities/shape_element.dart';
 import 'package:y2notes2/features/shapes/engine/shape_renderer.dart';
 import 'package:y2notes2/features/stickers/domain/entities/sticker_element.dart';
@@ -22,13 +24,14 @@ import 'package:y2notes2/features/stickers/engine/sticker_renderer.dart';
 ///  5. Active stroke (live vector, drawn on top of shapes)
 ///  6. Stickers & stamps
 ///  7. Text blocks (converted handwriting)
-///  8. Interaction effects (touch ripple, snap glow, selection pulse, etc.)
+///  8. Rich text elements (formatted text with headings, tables, code)
+///  9. Interaction effects (touch ripple, snap glow, selection pulse, etc.)
 ///
 /// Note: Remote cursors (collaboration layer) are rendered as Flutter widgets
 /// above the canvas, not through this compositor.
 ///
 /// Future layers:
-///  9. UI overlay (selection handles — rendered as Flutter widgets above)
+/// 10. UI overlay (selection handles — rendered as Flutter widgets above)
 class EffectsCompositor {
   EffectsCompositor({
     required this.strokeRenderer,
@@ -36,7 +39,8 @@ class EffectsCompositor {
     this.interactionEngine,
     StickerRenderer? stickerRenderer,
   })  : _shapeRenderer = ShapeRenderer(),
-        _stickerRenderer = stickerRenderer ?? StickerRenderer();
+        _stickerRenderer = stickerRenderer ?? StickerRenderer(),
+        _richTextRenderer = const RichTextRenderer();
 
   final StrokeRenderer strokeRenderer;
   final WritingEffectsEngine effectsEngine;
@@ -46,6 +50,7 @@ class EffectsCompositor {
 
   final ShapeRenderer _shapeRenderer;
   final StickerRenderer _stickerRenderer;
+  final RichTextRenderer _richTextRenderer;
 
   void compose({
     required Canvas canvas,
@@ -59,6 +64,7 @@ class EffectsCompositor {
     List<StickerElement> stickers = const [],
     String? selectedStickerId,
     List<TextBlock> textBlocks = const [],
+    List<RichTextElement> richTexts = const [],
   }) {
     // ── Layer 1: Background ─────────────────────────────────────────────────
     _drawBackground(canvas, size, config);
@@ -98,7 +104,12 @@ class EffectsCompositor {
     // ── Layer 7: Text blocks (recognized handwriting) ────────────────────────
     _drawTextBlocks(canvas, textBlocks);
 
-    // ── Layer 8: Interaction effects (above all content) ─────────────────────
+    // ── Layer 8: Rich text elements ──────────────────────────────────────────
+    for (final rt in richTexts) {
+      _richTextRenderer.render(canvas, rt);
+    }
+
+    // ── Layer 9: Interaction effects (above all content) ─────────────────────
     interactionEngine?.render(canvas, size);
   }
 
