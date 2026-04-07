@@ -95,6 +95,11 @@ class _CanvasViewState extends State<CanvasView>
     if (state.effectsEnabled && state.activeStroke != null) {
       _effectsEngine.onStrokePoint(point, prev, state.activeStroke!);
     }
+
+    // Forward cursor position to collaboration presence manager.
+    context
+        .read<CollaborationBloc>()
+        .updateCursorPosition(Offset(point.x, point.y));
   }
 
   void _onPointerUp(PointerUpEvent event) {
@@ -107,10 +112,12 @@ class _CanvasViewState extends State<CanvasView>
       _effectsEngine.onStrokeEnd(activeStroke);
     }
     _lastPoint = null;
+    context.read<CollaborationBloc>().clearCursorPosition();
   }
 
   void _onPointerCancel(PointerCancelEvent event) {
     context.read<CanvasBloc>().add(const StrokeEnded());
+    context.read<CollaborationBloc>().clearCursorPosition();
     _lastPoint = null;
   }
 

@@ -93,8 +93,12 @@ class PresenceManager {
     _emit();
   }
 
-  /// Release all resources.
+  bool _disposed = false;
+
+  /// Release all resources. Safe to call multiple times.
   void dispose() {
+    if (_disposed) return;
+    _disposed = true;
     _presenceSub?.cancel();
     for (final t in _idleTimers.values) {
       t.cancel();

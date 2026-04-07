@@ -5,7 +5,10 @@ import 'package:y2notes2/features/collaboration/presentation/bloc/collaboration_
 import 'package:y2notes2/features/collaboration/presentation/widgets/remote_cursors.dart';
 import 'package:y2notes2/features/collaboration/presentation/widgets/permission_badge.dart';
 
-/// Side panel showing all current session participants with their status.
+/// Panel showing all current session participants with their status.
+///
+/// Can be embedded as a fixed-width side panel (wrap in a constrained
+/// [SizedBox] with [width]) or inside a scrollable bottom sheet.
 class ParticipantsPanel extends StatelessWidget {
   const ParticipantsPanel({super.key});
 
@@ -15,43 +18,37 @@ class ParticipantsPanel extends StatelessWidget {
       builder: (context, state) {
         final participants = state.participants.values.toList();
 
-        return Container(
-          width: 220,
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surface,
-            border: Border(
-              left: BorderSide(
-                color: Theme.of(context).dividerColor,
-                width: 0.5,
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+              child: Row(
+                children: [
+                  const Icon(Icons.people, size: 16),
+                  const SizedBox(width: 6),
+                  Text(
+                    'Participants (${participants.length})',
+                    style: Theme.of(context).textTheme.titleSmall,
+                  ),
+                ],
               ),
             ),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
-                child: Row(
-                  children: [
-                    const Icon(Icons.people, size: 16),
-                    const SizedBox(width: 6),
-                    Text(
-                      'Participants (${participants.length})',
-                      style: Theme.of(context).textTheme.titleSmall,
-                    ),
-                  ],
+            const Divider(height: 1),
+            if (participants.isEmpty)
+              const Padding(
+                padding: EdgeInsets.all(16),
+                child: Text(
+                  'No other participants yet.',
+                  style: TextStyle(fontSize: 13),
                 ),
-              ),
-              const Divider(height: 1),
-              Expanded(
-                child: ListView.builder(
-                  itemCount: participants.length,
-                  itemBuilder: (ctx, i) =>
-                      _ParticipantTile(participant: participants[i]),
-                ),
-              ),
-            ],
-          ),
+              )
+            else
+              ...participants.map((p) => _ParticipantTile(participant: p)),
+            // Bottom safe-area padding for bottom sheet use.
+            SizedBox(height: MediaQuery.of(context).padding.bottom + 8),
+          ],
         );
       },
     );
@@ -68,11 +65,12 @@ class _ParticipantTile extends StatelessWidget {
     return ListTile(
       dense: true,
       leading: Stack(
+        clipBehavior: Clip.none,
         children: [
           ParticipantAvatar(participant: participant, radius: 14),
           Positioned(
-            right: 0,
-            bottom: 0,
+            right: -2,
+            bottom: -2,
             child: _StatusDot(status: participant.status),
           ),
         ],

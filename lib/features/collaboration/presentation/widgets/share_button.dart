@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:y2notes2/features/collaboration/presentation/bloc/collaboration_bloc.dart';
 import 'package:y2notes2/features/collaboration/presentation/widgets/join_dialog.dart';
+import 'package:y2notes2/features/collaboration/presentation/widgets/participants_panel.dart';
 
 /// Toolbar button that opens the share / collaboration menu.
 ///
@@ -105,6 +106,15 @@ class _ActiveSessionButton extends StatelessWidget {
                 duration: const Duration(seconds: 2),
               ),
             );
+          case _SessionAction.participants:
+            showModalBottomSheet<void>(
+              context: context,
+              isScrollControlled: true,
+              builder: (_) => BlocProvider.value(
+                value: context.read<CollaborationBloc>(),
+                child: const _ParticipantsSheet(),
+              ),
+            );
           case _SessionAction.leave:
             context.read<CollaborationBloc>().add(const LeaveSession());
         }
@@ -128,6 +138,14 @@ class _ActiveSessionButton extends StatelessWidget {
           ),
         ),
         const PopupMenuItem(
+          value: _SessionAction.participants,
+          child: ListTile(
+            leading: Icon(Icons.people_outline),
+            title: Text('Participants'),
+            dense: true,
+          ),
+        ),
+        const PopupMenuItem(
           value: _SessionAction.leave,
           child: ListTile(
             leading: Icon(Icons.logout_rounded),
@@ -140,5 +158,43 @@ class _ActiveSessionButton extends StatelessWidget {
   }
 }
 
+/// Bottom sheet wrapper around [ParticipantsPanel].
+class _ParticipantsSheet extends StatelessWidget {
+  const _ParticipantsSheet();
+
+  @override
+  Widget build(BuildContext context) {
+    return DraggableScrollableSheet(
+      expand: false,
+      initialChildSize: 0.5,
+      minChildSize: 0.3,
+      maxChildSize: 0.85,
+      builder: (_, scrollController) => Column(
+        children: [
+          // Handle bar
+          Center(
+            child: Container(
+              margin: const EdgeInsets.symmetric(vertical: 8),
+              width: 36,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Theme.of(context).dividerColor,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
+          Expanded(
+            child: ListView(
+              controller: scrollController,
+              padding: EdgeInsets.zero,
+              children: const [ParticipantsPanel()],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 enum _ShareAction { start, join }
-enum _SessionAction { copyLink, leave }
+enum _SessionAction { copyLink, participants, leave }

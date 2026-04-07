@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:y2notes2/features/collaboration/domain/entities/participant.dart';
 import 'package:y2notes2/features/collaboration/domain/entities/permission.dart';
@@ -207,6 +208,20 @@ class CollaborationBloc
   }
 
   // ─── Presence forwarding ──────────────────────────────────────────────────
+
+  /// Notify the presence system of the local cursor position.
+  ///
+  /// Call this from pointer-move events in the canvas. No-op when not in a session.
+  void updateCursorPosition(Offset position) {
+    if (!state.isInSession) return;
+    _presenceManager.updateCursorPosition(position);
+  }
+
+  /// Notify the presence system that the cursor left the canvas.
+  void clearCursorPosition() {
+    if (!state.isInSession) return;
+    _presenceManager.clearCursorPosition();
+  }
 
   /// Returns the [PresenceManager] for widgets that need cursor data.
   PresenceManager get presenceManager => _presenceManager;
