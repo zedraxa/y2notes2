@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:y2notes2/core/services/settings_service.dart';
 import 'package:y2notes2/features/handwriting/data/language_models_repository.dart';
 import 'package:y2notes2/features/handwriting/domain/models/language_model.dart';
 import 'package:y2notes2/features/handwriting/engine/recognition_engine.dart';
@@ -7,6 +8,7 @@ import 'package:y2notes2/features/handwriting/presentation/bloc/handwriting_bloc
 import 'package:y2notes2/features/handwriting/presentation/bloc/handwriting_event.dart';
 import 'package:y2notes2/features/handwriting/presentation/bloc/handwriting_state.dart';
 import 'package:y2notes2/features/handwriting/presentation/widgets/writing_analysis_panel.dart';
+import 'package:y2notes2/shared/widgets/service_provider.dart';
 
 /// Settings page for recognition: language, mode, thresholds, backend.
 class RecognitionSettingsPage extends StatelessWidget {
@@ -44,6 +46,9 @@ class RecognitionSettingsPage extends StatelessWidget {
               // ── Recognition Settings ───────────────────────────────────────
               _SectionHeader('Recognition Engine'),
               const _BackendInfoTile(),
+              _ConfidenceThresholdSlider(
+                settings: ServiceProvider.of<SettingsService>(context),
+              ),
 
               const Divider(),
 
@@ -218,4 +223,31 @@ class _BackendInfoTile extends StatelessWidget {
       ),
     );
   }
+}
+
+class _ConfidenceThresholdSlider extends StatelessWidget {
+  const _ConfidenceThresholdSlider({required this.settings});
+
+  final SettingsService settings;
+
+  @override
+  Widget build(BuildContext context) => ValueListenableBuilder<double>(
+        valueListenable: settings.recognitionConfidenceNotifier,
+        builder: (context, value, _) => ListTile(
+          leading: const Icon(Icons.tune, size: 20),
+          title: const Text('Confidence Threshold'),
+          subtitle: Slider(
+            value: value,
+            min: 0.0,
+            max: 1.0,
+            divisions: 20,
+            label: '${(value * 100).round()}%',
+            onChanged: settings.setRecognitionConfidence,
+          ),
+          trailing: Text(
+            '${(value * 100).round()}%',
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+        ),
+      );
 }

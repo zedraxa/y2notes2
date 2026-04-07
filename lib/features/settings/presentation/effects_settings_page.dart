@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:y2notes2/core/services/settings_service.dart';
-import 'package:y2notes2/features/canvas/domain/models/canvas_config.dart';
 import 'package:y2notes2/features/canvas/presentation/bloc/canvas_bloc.dart';
 import 'package:y2notes2/features/canvas/presentation/bloc/canvas_event.dart';
 import 'package:y2notes2/features/canvas/presentation/bloc/canvas_state.dart';
 import 'package:y2notes2/features/effects/engine/effect_registry.dart';
 import 'package:y2notes2/shared/widgets/service_provider.dart';
 
-/// Settings page: toggle effects, adjust intensity, theme, background.
+/// Settings page: toggle effects, adjust intensity.
 class EffectsSettingsPage extends StatelessWidget {
   const EffectsSettingsPage({super.key, this.showEffectsOnly = false});
 
@@ -22,21 +21,14 @@ class EffectsSettingsPage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(showEffectsOnly ? 'Writing Effects' : 'Settings'),
+        title: const Text('Effects'),
       ),
       body: ListView(
         padding: const EdgeInsets.symmetric(vertical: 8),
         children: [
-          if (!showEffectsOnly) ...[
-            _SectionHeader('Appearance'),
-            _ThemeToggle(settings: settings),
-            _PageTemplateSelector(bloc: bloc, settings: settings),
-            const Divider(height: 24),
-            _SectionHeader('Performance'),
-            _MasterEffectsSwitch(bloc: bloc),
-            _HapticsToggle(settings: settings),
-            const Divider(height: 24),
-          ],
+          _SectionHeader('Performance'),
+          _MasterEffectsSwitch(bloc: bloc),
+          const Divider(height: 24),
           _SectionHeader('Writing Effects'),
           _EffectsList(settings: settings, bloc: bloc),
           const Divider(height: 24),
@@ -69,42 +61,6 @@ class _SectionHeader extends StatelessWidget {
       );
 }
 
-class _ThemeToggle extends StatelessWidget {
-  const _ThemeToggle({required this.settings});
-
-  final SettingsService settings;
-
-  @override
-  Widget build(BuildContext context) =>
-      ValueListenableBuilder<bool>(
-        valueListenable: settings.darkModeNotifier,
-        builder: (context, isDark, _) => SwitchListTile(
-          title: const Text('Dark Mode'),
-          subtitle: const Text('Switch between light and dark theme'),
-          value: isDark,
-          onChanged: settings.setDarkMode,
-        ),
-      );
-}
-
-class _HapticsToggle extends StatelessWidget {
-  const _HapticsToggle({required this.settings});
-
-  final SettingsService settings;
-
-  @override
-  Widget build(BuildContext context) =>
-      ValueListenableBuilder<bool>(
-        valueListenable: settings.hapticsEnabledNotifier,
-        builder: (context, enabled, _) => SwitchListTile(
-          title: const Text('Haptic Feedback'),
-          subtitle: const Text('Vibration feedback for tool interactions'),
-          value: enabled,
-          onChanged: settings.setHapticsEnabled,
-        ),
-      );
-}
-
 class _MasterEffectsSwitch extends StatelessWidget {
   const _MasterEffectsSwitch({required this.bloc});
 
@@ -123,69 +79,6 @@ class _MasterEffectsSwitch extends StatelessWidget {
           onChanged: (v) => bloc.add(EffectsToggled(enabled: v)),
         ),
       );
-}
-
-class _PageTemplateSelector extends StatelessWidget {
-  const _PageTemplateSelector({
-    required this.bloc,
-    required this.settings,
-  });
-
-  final CanvasBloc bloc;
-  final SettingsService settings;
-
-  static const _templates = [
-    (PageTemplate.blank, 'Blank'),
-    (PageTemplate.lined, 'Lined'),
-    (PageTemplate.grid, 'Grid'),
-    (PageTemplate.dotted, 'Dotted'),
-    (PageTemplate.chalkboard, 'Chalkboard'),
-  ];
-
-  @override
-  Widget build(BuildContext context) =>
-      BlocBuilder<CanvasBloc, CanvasState>(
-        bloc: bloc,
-        builder: (context, state) => ListTile(
-          title: const Text('Page Template'),
-          subtitle: Text(_labelFor(state.config.template)),
-          trailing: const Icon(Icons.chevron_right),
-          onTap: () => _showPicker(context, state, bloc),
-        ),
-      );
-
-  String _labelFor(PageTemplate t) =>
-      _templates.firstWhere((e) => e.$1 == t).$2;
-
-  void _showPicker(
-    BuildContext context,
-    CanvasState state,
-    CanvasBloc bloc,
-  ) {
-    showModalBottomSheet<void>(
-      context: context,
-      builder: (_) => Column(
-        mainAxisSize: MainAxisSize.min,
-        children: _templates
-            .map(
-              (entry) => ListTile(
-                title: Text(entry.$2),
-                leading: state.config.template == entry.$1
-                    ? const Icon(Icons.check, color: Color(0xFF4A90D9))
-                    : const SizedBox(width: 24),
-                onTap: () {
-                  bloc.add(CanvasConfigUpdated(
-                    state.config.copyWith(template: entry.$1),
-                  ));
-                  settings.setPageTemplate(entry.$1.name);
-                  Navigator.pop(context);
-                },
-              ),
-            )
-            .toList(),
-      ),
-    );
-  }
 }
 
 class _EffectsList extends StatelessWidget {

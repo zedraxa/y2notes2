@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:y2notes2/app/theme/colors.dart';
 
-/// Compact slider for stroke thickness with a live preview dot.
+/// Compact slider for stroke thickness with a smoothly animated preview dot.
 class ThicknessSlider extends StatelessWidget {
   const ThicknessSlider({
     super.key,
@@ -19,34 +19,51 @@ class ThicknessSlider extends StatelessWidget {
   final double max;
 
   @override
-  Widget build(BuildContext context) => SizedBox(
-        width: 130,
-        child: Row(
-          children: [
-            // Preview dot
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 6),
-              child: Container(
-                width: value.clamp(3.0, 20.0),
-                height: value.clamp(3.0, 20.0),
-                decoration: BoxDecoration(
-                  color: color,
-                  shape: BoxShape.circle,
+  Widget build(BuildContext context) {
+    final dotSize = value.clamp(3.0, 20.0);
+    return SizedBox(
+      width: 150,
+      child: Row(
+        children: [
+          // Animated preview dot – smoothly transitions size and shadow.
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 6),
+            child: SizedBox(
+              width: 22,
+              height: 22,
+              child: Center(
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 120),
+                  curve: Curves.easeOutCubic,
+                  width: dotSize,
+                  height: dotSize,
+                  decoration: BoxDecoration(
+                    color: color,
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: color.withOpacity(0.35),
+                        blurRadius: dotSize * 0.3,
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
-            Expanded(
-              child: Slider(
-                value: value,
-                min: min,
-                max: max,
-                onChanged: onChanged,
-                activeColor: AppColors.accent,
-                inactiveColor: AppColors.toolbarBorder,
-                thumbColor: color,
-              ),
+          ),
+          Expanded(
+            child: Slider(
+              value: value,
+              min: min,
+              max: max,
+              onChanged: onChanged,
+              activeColor: AppColors.accent,
+              inactiveColor: AppColors.toolbarBorder,
+              thumbColor: color,
             ),
-          ],
-        ),
-      );
+          ),
+        ],
+      ),
+    );
+  }
 }
