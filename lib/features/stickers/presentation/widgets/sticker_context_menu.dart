@@ -174,6 +174,7 @@ class _OpacitySliderSheetState extends State<_OpacitySliderSheet> {
               value: _value,
               min: 0.05,
               max: 1.0,
+              // 19 divisions = 5% increments (0.05 step size)
               divisions: 19,
               label: '${(_value * 100).round()}%',
               onChanged: (v) {

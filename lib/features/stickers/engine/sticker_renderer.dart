@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:y2notes2/features/stickers/data/stamp_paths.dart';
 import 'package:y2notes2/features/stickers/data/washi_patterns.dart';
@@ -193,8 +194,8 @@ class StickerRenderer {
       ..strokeCap = StrokeCap.round;
     canvas.drawArc(
       Rect.fromCenter(center: center + const Offset(0, -1), width: 6, height: 6),
-      3.14159, // pi
-      3.14159, // pi
+      math.pi,
+      math.pi,
       false,
       shacklePaint,
     );
