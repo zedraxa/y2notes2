@@ -16,11 +16,18 @@ class FountainPenTool extends BaseFreehandTool {
   @override
   void renderStroke(Canvas canvas, List<PointData> points, ToolSettings settings) {
     if (points.isEmpty) return;
+    final inkFlow = ((settings.custom['inkFlow'] as double?) ?? 0.7).clamp(0.1, 1.0);
     final thinning = (settings.custom['thinning'] as double?) ?? 0.7;
     final smoothing = (settings.custom['smoothing'] as double?) ?? 0.5;
-    final path = buildFreehandPath(points, settings, thinning: thinning, smoothing: smoothing);
+    // Ink flow affects thinning: more flow → less thinning (fatter, wetter strokes).
+    final adjustedThinning = thinning * (1.3 - inkFlow * 0.5);
+    final path = buildFreehandPath(points, settings,
+        thinning: adjustedThinning, smoothing: smoothing);
+    // Ink flow also modulates opacity: high flow → fully opaque; low flow →
+    // slightly translucent, emulating a drier nib.
+    final opacity = (settings.opacity * (0.7 + inkFlow * 0.3)).clamp(0.0, 1.0);
     canvas.drawPath(path, Paint()
-      ..color = settings.color
+      ..color = settings.color.withOpacity(opacity)
       ..style = PaintingStyle.fill
       ..isAntiAlias = true
       ..blendMode = blendMode);

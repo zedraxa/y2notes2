@@ -16,7 +16,12 @@ class BrushPenTool extends BaseFreehandTool {
   @override
   void renderStroke(Canvas canvas, List<PointData> points, ToolSettings settings) {
     if (points.isEmpty) return;
-    final path = buildFreehandPath(points, settings, thinning: 0.8, smoothing: 0.6, streamline: 0.4);
+    final springiness = (settings.custom['springiness'] as double?) ?? 0.3;
+    // Springiness controls responsiveness: higher springiness → lower streamline
+    // (the brush "springs" back to the pen position more quickly).
+    final streamline = (0.7 - springiness * 0.5).clamp(0.1, 0.9);
+    final path = buildFreehandPath(points, settings,
+        thinning: 0.8, smoothing: 0.6, streamline: streamline);
     canvas.drawPath(path, Paint()
       ..color = settings.color
       ..style = PaintingStyle.fill

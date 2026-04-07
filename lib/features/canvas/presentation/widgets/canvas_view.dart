@@ -59,6 +59,9 @@ class _CanvasViewState extends State<CanvasView>
   PointData? _lastPoint;
   double _lastScale = 1.0;
 
+  /// Cached reference to SettingsService — used for pressure curve + sensitivity.
+  late SettingsService _settingsService;
+
   // Tracks whether the current pointer gesture is a shape interaction
   // (drag/resize), so that pointer move/up events are routed to ShapeBloc
   // instead of the stroke drawing pipeline.
@@ -90,6 +93,7 @@ class _CanvasViewState extends State<CanvasView>
     super.didChangeDependencies();
     // Apply persisted interaction effect settings once the widget tree is ready.
     final settings = ServiceProvider.of<SettingsService>(context);
+    _settingsService = settings;
     _interactionEngine.enabled = settings.interactionEffectsEnabledNotifier.value;
     for (final id in SettingsService.interactionEffectNames) {
       _interactionEngine.setEffectEnabled(
@@ -310,6 +314,9 @@ class _CanvasViewState extends State<CanvasView>
 
   /// Converts a [StylusInput] to a [PointData], calculating velocity from the
   /// previous point if available.
+  ///
+  /// Applies the user's selected pressure curve, pressure sensitivity scaling,
+  /// and light temporal smoothing to reduce stylus jitter.
   PointData _stylusInputToPointData(StylusInput input, PointData? previous) {
     double velocity = 0.0;
     if (previous != null) {
@@ -320,10 +327,31 @@ class _CanvasViewState extends State<CanvasView>
         velocity = (dx * dx + dy * dy) / dt;
       }
     }
+
+    // ── Pressure pipeline ────────────────────────────────────────────────
+    // 1. Map raw pressure through the user's Bézier pressure curve.
+    final curve = _settingsService.activePressureCurve;
+    double pressure = curve.apply(input.pressure.clamp(0.0, 1.0));
+
+    // 2. Scale pressure range by pressureSensitivity.
+    //    sensitivity = 1.0 → full range; 0.0 → constant 0.5 (no variation).
+    final bloc = context.read<CanvasBloc>();
+    final sensitivity = bloc.state.activeToolSettings.pressureSensitivity;
+    pressure = 0.5 + (pressure - 0.5) * sensitivity;
+
+    // 3. Temporal smoothing — exponential moving average on pressure to
+    //    eliminate high-frequency stylus jitter.
+    if (previous != null) {
+      const smoothing = 0.3; // 0 = no smoothing, 1 = full lag
+      pressure = previous.pressure * smoothing + pressure * (1.0 - smoothing);
+    }
+
+    pressure = pressure.clamp(0.0, 1.0);
+
     return PointData(
       x: input.position.dx,
       y: input.position.dy,
-      pressure: input.pressure,
+      pressure: pressure,
       tilt: input.altitude,
       velocity: velocity,
       timestamp: input.timestamp,
