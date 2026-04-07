@@ -4,13 +4,17 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:y2notes2/app/app.dart';
 import 'package:y2notes2/core/engine/haptic_controller.dart';
 import 'package:y2notes2/core/services/settings_service.dart';
+import 'package:y2notes2/features/audio_sync/presentation/bloc/audio_sync_bloc.dart';
+import 'package:y2notes2/features/canvas/domain/entities/tools/tool_preset.dart';
 import 'package:y2notes2/features/canvas/domain/entities/tools/tool_registry.dart';
 import 'package:y2notes2/features/canvas/presentation/bloc/canvas_bloc.dart';
+import 'package:y2notes2/features/cloud_sync/presentation/bloc/cloud_sync_bloc.dart';
 import 'package:y2notes2/features/collaboration/presentation/bloc/collaboration_bloc.dart';
 import 'package:y2notes2/features/documents/data/document_repository.dart';
 import 'package:y2notes2/features/handwriting/presentation/bloc/handwriting_bloc.dart';
 import 'package:y2notes2/features/infinite_canvas/presentation/bloc/infinite_canvas_bloc.dart';
 import 'package:y2notes2/features/library/data/library_repository.dart';
+import 'package:y2notes2/features/rich_text/presentation/bloc/rich_text_bloc.dart';
 import 'package:y2notes2/features/shapes/presentation/bloc/shape_bloc.dart';
 import 'package:y2notes2/features/stickers/presentation/bloc/sticker_bloc.dart';
 import 'package:y2notes2/features/templates/data/template_repository.dart';
@@ -36,6 +40,9 @@ void main() async {
 
   // Bind haptic controller to settings
   HapticController.bind(settingsService);
+
+  // Bind tool preset persistence to settings
+  ToolPresetManager.bind(settingsService);
 
   runApp(
     ServiceProvider<SettingsService>(
@@ -77,10 +84,23 @@ void main() async {
             BlocProvider(
               create: (_) => WidgetBloc(),
             ),
+            // AudioSyncBloc manages synchronised recording
+            // and playback with stroke timestamps.
+            BlocProvider(
+              create: (_) => AudioSyncBloc(),
+            ),
             // Root InfiniteCanvasBloc — individual pages can override with
             // their own scoped provider when needed.
             BlocProvider(
               create: (_) => InfiniteCanvasBloc(),
+            ),
+            // RichTextBloc manages rich text elements on the canvas.
+            BlocProvider(
+              create: (_) => RichTextBloc(),
+            ),
+            // CloudSyncBloc manages cloud provider connections and syncing.
+            BlocProvider(
+              create: (_) => CloudSyncBloc(),
             ),
           ],
           child: Y2NotesApp(

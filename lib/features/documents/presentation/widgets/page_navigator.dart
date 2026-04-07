@@ -75,8 +75,8 @@ class _PageNavigatorContent extends StatelessWidget {
         color: theme.scaffoldBackgroundColor,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 8,
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 10,
             offset: const Offset(0, -2),
           ),
         ],
@@ -100,13 +100,20 @@ class _PageNavigatorContent extends StatelessWidget {
               ),
             ),
           ),
+          // Visual separator before counter.
+          Container(
+            width: 1,
+            height: 32,
+            color: theme.dividerColor,
+          ),
           // Page counter.
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 10),
             child: Text(
               '${currentIndex + 1} / ${pages.length}',
               style: theme.textTheme.labelSmall?.copyWith(
                 color: theme.colorScheme.onSurfaceVariant,
+                fontWeight: FontWeight.w500,
               ),
             ),
           ),
@@ -153,6 +160,7 @@ class _PageThumbnail extends StatelessWidget {
       onLongPress: onLongPress,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 150),
+        curve: Curves.easeOutCubic,
         width: 44,
         height: 62,
         decoration: BoxDecoration(
@@ -166,7 +174,13 @@ class _PageThumbnail extends StatelessWidget {
                     blurRadius: 6,
                   )
                 ]
-              : null,
+              : [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.06),
+                    blurRadius: 3,
+                    offset: const Offset(0, 1),
+                  ),
+                ],
         ),
         child: Stack(
           children: [

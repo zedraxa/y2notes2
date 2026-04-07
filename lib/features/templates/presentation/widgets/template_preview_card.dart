@@ -17,10 +17,12 @@ class TemplatePreviewCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
+        curve: Curves.easeOutCubic,
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: isSelected
@@ -28,19 +30,31 @@ class TemplatePreviewCard extends StatelessWidget {
               : theme.cardColor,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected ? template.accentColor : Colors.grey.shade300,
+            color: isSelected
+                ? template.accentColor
+                : (isDark ? Colors.grey.shade700 : Colors.grey.shade300),
             width: isSelected ? 2 : 1,
           ),
           boxShadow: isSelected
               ? [
                   BoxShadow(
                     color: template.accentColor.withOpacity(0.2),
-                    blurRadius: 8,
+                    blurRadius: 10,
                     offset: const Offset(0, 2),
                   )
                 ]
-              : null,
+              : [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.04),
+                    blurRadius: 4,
+                    offset: const Offset(0, 1),
+                  ),
+                ],
         ),
+        transform: isSelected
+            ? (Matrix4.identity()..scale(1.02))
+            : Matrix4.identity(),
+        transformAlignment: Alignment.center,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
@@ -59,16 +73,24 @@ class TemplatePreviewCard extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                if (isSelected)
-                  Icon(Icons.check_circle,
-                      color: template.accentColor, size: 20),
+                AnimatedOpacity(
+                  duration: const Duration(milliseconds: 180),
+                  opacity: isSelected ? 1.0 : 0.0,
+                  child: AnimatedScale(
+                    duration: const Duration(milliseconds: 200),
+                    scale: isSelected ? 1.0 : 0.6,
+                    curve: Curves.easeOutBack,
+                    child: Icon(Icons.check_circle,
+                        color: template.accentColor, size: 20),
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: 6),
             Text(
               template.description,
               style: theme.textTheme.bodySmall?.copyWith(
-                color: Colors.grey.shade600,
+                color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
               ),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
