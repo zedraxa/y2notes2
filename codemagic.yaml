@@ -20,7 +20,7 @@ workflows:
           flutter pub get
       - name: Bootstrap iOS platform
         script: |
-          if [ ! -d "ios" ]; then
+          if [ ! -f "ios/Runner.xcodeproj/project.pbxproj" ]; then
             flutter create --platforms=ios --org "$APP_ORG" --project-name y2notes2 .
           fi
       - name: Configure Info.plist for iPad support
