@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:y2notes2/features/templates/data/builtin_templates.dart';
 import 'package:y2notes2/features/templates/domain/entities/page_template.dart';
 import 'package:y2notes2/features/templates/presentation/bloc/template_bloc.dart';
 import 'package:y2notes2/features/templates/presentation/bloc/template_event.dart';
