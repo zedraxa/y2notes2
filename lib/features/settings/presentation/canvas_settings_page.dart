@@ -7,7 +7,7 @@ import 'package:y2notes2/features/canvas/presentation/bloc/canvas_event.dart';
 import 'package:y2notes2/features/canvas/presentation/bloc/canvas_state.dart';
 import 'package:y2notes2/shared/widgets/service_provider.dart';
 
-/// Canvas settings: page template, spacing, margins.
+/// Canvas settings: page template, line/grid/dot spacing, and margin toggle.
 class CanvasSettingsPage extends StatelessWidget {
   const CanvasSettingsPage({super.key});
 
@@ -18,56 +18,65 @@ class CanvasSettingsPage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(title: const Text('Canvas')),
-      body: ListView(
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        children: [
-          _SectionHeader('Page Template'),
-          _PageTemplateSelector(bloc: bloc, settings: settings),
-          const Divider(height: 24),
-          _SectionHeader('Spacing'),
-          _SpacingSlider(
-            label: 'Line Spacing',
-            notifier: settings.lineSpacingNotifier,
-            onChanged: (v) {
-              settings.setLineSpacing(v);
-              final state = bloc.state;
-              bloc.add(CanvasConfigUpdated(
-                state.config.copyWith(lineSpacing: v),
-              ));
-            },
-          ),
-          _SpacingSlider(
-            label: 'Grid Spacing',
-            notifier: settings.gridSpacingNotifier,
-            onChanged: (v) {
-              settings.setGridSpacing(v);
-              final state = bloc.state;
-              bloc.add(CanvasConfigUpdated(
-                state.config.copyWith(gridSpacing: v),
-              ));
-            },
-          ),
-          _SpacingSlider(
-            label: 'Dot Spacing',
-            notifier: settings.dotSpacingNotifier,
-            onChanged: (v) {
-              settings.setDotSpacing(v);
-              final state = bloc.state;
-              bloc.add(CanvasConfigUpdated(
-                state.config.copyWith(dotSpacing: v),
-              ));
-            },
-          ),
-          const Divider(height: 24),
-          _SectionHeader('Layout'),
-          _MarginToggle(settings: settings, bloc: bloc),
-        ],
+      body: BlocBuilder<CanvasBloc, CanvasState>(
+        bloc: bloc,
+        builder: (context, state) => ListView(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          children: [
+            _SectionHeader('Page Template'),
+            _PageTemplateSelector(
+              bloc: bloc,
+              settings: settings,
+              current: state.config.template,
+              config: state.config,
+            ),
+            const Divider(height: 24),
+            _SectionHeader('Spacing'),
+            _SpacingSlider(
+              title: 'Line Spacing',
+              value: state.config.lineSpacing,
+              onChanged: (v) {
+                bloc.add(CanvasConfigUpdated(
+                  state.config.copyWith(lineSpacing: v),
+                ));
+                settings.setLineSpacing(v);
+              },
+            ),
+            _SpacingSlider(
+              title: 'Grid Spacing',
+              value: state.config.gridSpacing,
+              onChanged: (v) {
+                bloc.add(CanvasConfigUpdated(
+                  state.config.copyWith(gridSpacing: v),
+                ));
+                settings.setGridSpacing(v);
+              },
+            ),
+            _SpacingSlider(
+              title: 'Dot Spacing',
+              value: state.config.dotSpacing,
+              onChanged: (v) {
+                bloc.add(CanvasConfigUpdated(
+                  state.config.copyWith(dotSpacing: v),
+                ));
+                settings.setDotSpacing(v);
+              },
+            ),
+            const Divider(height: 24),
+            _SectionHeader('Layout'),
+            _MarginToggle(
+              bloc: bloc,
+              settings: settings,
+              showMargin: state.config.showMargin,
+            ),
+          ],
+        ),
       ),
     );
   }
 }
 
-// ─── Shared section header ────────────────────────────────────────────────────
+// ─── Section header ────────────────────────────────────────────────────────────
 
 class _SectionHeader extends StatelessWidget {
   const _SectionHeader(this.title);
@@ -87,108 +96,106 @@ class _SectionHeader extends StatelessWidget {
       );
 }
 
-// ─── Page template ────────────────────────────────────────────────────────────
+// ─── Widgets ───────────────────────────────────────────────────────────────────
 
 class _PageTemplateSelector extends StatelessWidget {
   const _PageTemplateSelector({
     required this.bloc,
     required this.settings,
+    required this.current,
+    required this.config,
   });
 
   final CanvasBloc bloc;
   final SettingsService settings;
+  final PageTemplate current;
+  final CanvasConfig config;
 
   static const _templates = [
-    (PageTemplate.blank, 'Blank', Icons.crop_square),
-    (PageTemplate.lined, 'Lined', Icons.format_line_spacing),
+    (PageTemplate.blank, 'Blank', Icons.crop_square_outlined),
+    (PageTemplate.lined, 'Lined', Icons.format_align_left),
     (PageTemplate.grid, 'Grid', Icons.grid_on),
-    (PageTemplate.dotted, 'Dotted', Icons.grain),
-    (PageTemplate.chalkboard, 'Chalkboard', Icons.school),
+    (PageTemplate.dotted, 'Dotted', Icons.more_horiz),
+    (PageTemplate.chalkboard, 'Chalkboard', Icons.dashboard_outlined),
   ];
 
   @override
-  Widget build(BuildContext context) => BlocBuilder<CanvasBloc, CanvasState>(
-        bloc: bloc,
-        builder: (context, state) => Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: Wrap(
-            spacing: 12,
-            runSpacing: 12,
-            children: _templates.map((entry) {
-              final isSelected = state.config.template == entry.$1;
-              return ChoiceChip(
-                avatar: Icon(entry.$3, size: 18),
-                label: Text(entry.$2),
-                selected: isSelected,
-                onSelected: (_) {
-                  bloc.add(CanvasConfigUpdated(
-                    state.config.copyWith(template: entry.$1),
-                  ));
-                  settings.setPageTemplate(entry.$1.name);
-                },
-              );
-            }).toList(),
-          ),
-        ),
-      );
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Wrap(
+        spacing: 12,
+        runSpacing: 12,
+        children: _templates.map((entry) {
+          final isSelected = current == entry.$1;
+          return ChoiceChip(
+            avatar: Icon(entry.$3, size: 18),
+            label: Text(entry.$2),
+            selected: isSelected,
+            onSelected: (_) {
+              bloc.add(CanvasConfigUpdated(
+                config.copyWith(template: entry.$1),
+              ));
+              settings.setPageTemplate(entry.$1.name);
+            },
+          );
+        }).toList(),
+      ),
+    );
+  }
 }
-
-// ─── Spacing sliders ──────────────────────────────────────────────────────────
 
 class _SpacingSlider extends StatelessWidget {
   const _SpacingSlider({
-    required this.label,
-    required this.notifier,
+    required this.title,
+    required this.value,
     required this.onChanged,
   });
 
-  final String label;
-  final ValueNotifier<double> notifier;
+  final String title;
+  final double value;
   final ValueChanged<double> onChanged;
 
   @override
-  Widget build(BuildContext context) => ValueListenableBuilder<double>(
-        valueListenable: notifier,
-        builder: (context, value, _) => ListTile(
-          title: Text(label),
-          subtitle: Slider(
-            value: value,
-            min: 16.0,
-            max: 64.0,
-            divisions: 24,
-            label: '${value.round()} px',
-            onChanged: onChanged,
-          ),
-          trailing: Text(
-            '${value.round()} px',
-            style: Theme.of(context).textTheme.bodySmall,
-          ),
+  Widget build(BuildContext context) => ListTile(
+        title: Text(title),
+        subtitle: Slider(
+          value: value,
+          min: 16.0,
+          max: 64.0,
+          divisions: 24,
+          label: value.round().toString(),
+          onChanged: onChanged,
+        ),
+        trailing: Text(
+          '${value.round()}px',
+          style: Theme.of(context).textTheme.bodySmall,
         ),
       );
 }
 
-// ─── Margin toggle ────────────────────────────────────────────────────────────
-
 class _MarginToggle extends StatelessWidget {
-  const _MarginToggle({required this.settings, required this.bloc});
+  const _MarginToggle({
+    required this.bloc,
+    required this.settings,
+    required this.showMargin,
+  });
 
-  final SettingsService settings;
   final CanvasBloc bloc;
+  final SettingsService settings;
+  final bool showMargin;
 
   @override
-  Widget build(BuildContext context) => ValueListenableBuilder<bool>(
-        valueListenable: settings.showMarginNotifier,
-        builder: (context, enabled, _) => SwitchListTile(
-          title: const Text('Show Margin'),
-          subtitle: const Text('Draw a margin line on lined templates'),
-          value: enabled,
-          onChanged: (v) {
-            settings.setShowMargin(v);
-            final state = bloc.state;
-            bloc.add(CanvasConfigUpdated(
-              state.config.copyWith(showMargin: v),
-            ));
-          },
-        ),
+  Widget build(BuildContext context) => SwitchListTile(
+        title: const Text('Show Margin'),
+        subtitle: const Text('Display a vertical margin line on the page'),
+        value: showMargin,
+        onChanged: (v) {
+          final state = bloc.state;
+          bloc.add(CanvasConfigUpdated(
+            state.config.copyWith(showMargin: v),
+          ));
+          settings.setShowMargin(v);
+        },
       );
 }

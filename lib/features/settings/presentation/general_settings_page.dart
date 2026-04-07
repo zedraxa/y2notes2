@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:y2notes2/core/services/settings_service.dart';
 import 'package:y2notes2/shared/widgets/service_provider.dart';
 
-/// General settings: appearance, performance, and reset.
+/// General settings: appearance (dark mode), haptic feedback, and default
+/// tool size.
 class GeneralSettingsPage extends StatelessWidget {
   const GeneralSettingsPage({super.key});
 
@@ -16,10 +17,17 @@ class GeneralSettingsPage extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 8),
         children: [
           _SectionHeader('Appearance'),
-          _ThemeToggle(settings: settings),
+          _DarkModeToggle(settings: settings),
           const Divider(height: 24),
-          _SectionHeader('Performance'),
+          _SectionHeader('Feedback'),
           _HapticsToggle(settings: settings),
+          const Divider(height: 24),
+          _SectionHeader('Defaults'),
+          _DefaultToolSizeSlider(settings: settings),
+          _AutoSaveIntervalSlider(settings: settings),
+          const Divider(height: 24),
+          _SectionHeader('Navigation'),
+          _PageGesturesToggle(settings: settings),
           const Divider(height: 24),
           _SectionHeader('Data'),
           _ResetTile(settings: settings),
@@ -29,7 +37,7 @@ class GeneralSettingsPage extends StatelessWidget {
   }
 }
 
-// ─── Shared section header ────────────────────────────────────────────────────
+// ─── Section header ────────────────────────────────────────────────────────────
 
 class _SectionHeader extends StatelessWidget {
   const _SectionHeader(this.title);
@@ -49,8 +57,10 @@ class _SectionHeader extends StatelessWidget {
       );
 }
 
-class _ThemeToggle extends StatelessWidget {
-  const _ThemeToggle({required this.settings});
+// ─── Widgets ───────────────────────────────────────────────────────────────────
+
+class _DarkModeToggle extends StatelessWidget {
+  const _DarkModeToggle({required this.settings});
 
   final SettingsService settings;
 
@@ -79,6 +89,85 @@ class _HapticsToggle extends StatelessWidget {
           subtitle: const Text('Vibration feedback for tool interactions'),
           value: enabled,
           onChanged: settings.setHapticsEnabled,
+        ),
+      );
+}
+
+class _DefaultToolSizeSlider extends StatelessWidget {
+  const _DefaultToolSizeSlider({required this.settings});
+
+  final SettingsService settings;
+
+  @override
+  Widget build(BuildContext context) => ValueListenableBuilder<double>(
+        valueListenable: settings.defaultToolSizeNotifier,
+        builder: (context, value, _) => ListTile(
+          title: const Text('Default Pen Size'),
+          subtitle: Slider(
+            value: value,
+            min: 0.5,
+            max: 20.0,
+            divisions: 39,
+            label: value.toStringAsFixed(1),
+            onChanged: settings.setDefaultToolSize,
+          ),
+          trailing: Text(
+            value.toStringAsFixed(1),
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+        ),
+      );
+}
+
+class _AutoSaveIntervalSlider extends StatelessWidget {
+  const _AutoSaveIntervalSlider({required this.settings});
+
+  final SettingsService settings;
+
+  @override
+  Widget build(BuildContext context) => ValueListenableBuilder<int>(
+        valueListenable: settings.autoSaveIntervalNotifier,
+        builder: (context, seconds, _) => ListTile(
+          title: const Text('Auto-save Interval'),
+          subtitle: Slider(
+            value: seconds.toDouble(),
+            min: 5,
+            max: 120,
+            divisions: 23,
+            label: _formatInterval(seconds),
+            onChanged: (v) => settings.setAutoSaveInterval(v.round()),
+          ),
+          trailing: Text(
+            _formatInterval(seconds),
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+        ),
+      );
+
+  String _formatInterval(int seconds) {
+    if (seconds < 60) return '${seconds}s';
+    final minutes = seconds ~/ 60;
+    final remaining = seconds % 60;
+    if (remaining == 0) return '${minutes}m';
+    return '${minutes}m ${remaining}s';
+  }
+}
+
+class _PageGesturesToggle extends StatelessWidget {
+  const _PageGesturesToggle({required this.settings});
+
+  final SettingsService settings;
+
+  @override
+  Widget build(BuildContext context) => ValueListenableBuilder<bool>(
+        valueListenable: settings.pageGesturesEnabledNotifier,
+        builder: (context, enabled, _) => SwitchListTile(
+          title: const Text('Page Gestures'),
+          subtitle: const Text(
+            'Swipe with two fingers or from the screen edge to change pages',
+          ),
+          value: enabled,
+          onChanged: settings.setPageGesturesEnabled,
         ),
       );
 }

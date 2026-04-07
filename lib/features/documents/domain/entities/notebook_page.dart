@@ -11,6 +11,8 @@ class NotebookPage extends Equatable {
   NotebookPage({
     String? id,
     required this.pageNumber,
+    this.title,
+    this.isBookmarked = false,
     this.strokes = const [],
     this.shapes = const [],
     this.stickers = const [],
@@ -21,6 +23,13 @@ class NotebookPage extends Equatable {
 
   final String id;
   final int pageNumber;
+
+  /// Optional user-assigned title for the page (e.g. "Chapter 1 Notes").
+  final String? title;
+
+  /// Whether this page has been bookmarked for quick navigation.
+  final bool isBookmarked;
+
   final List<Stroke> strokes;
   final List<ShapeElement> shapes;
   final List<StickerElement> stickers;
@@ -35,8 +44,14 @@ class NotebookPage extends Equatable {
   bool get hasBackground =>
       backgroundImage != null || backgroundPdfPath != null;
 
+  /// Display label: the user-assigned [title] if set, otherwise "Page N".
+  String get displayTitle => title ?? 'Page $pageNumber';
+
   NotebookPage copyWith({
     int? pageNumber,
+    String? title,
+    bool clearTitle = false,
+    bool? isBookmarked,
     List<Stroke>? strokes,
     List<ShapeElement>? shapes,
     List<StickerElement>? stickers,
@@ -48,6 +63,8 @@ class NotebookPage extends Equatable {
       NotebookPage(
         id: id,
         pageNumber: pageNumber ?? this.pageNumber,
+        title: clearTitle ? null : (title ?? this.title),
+        isBookmarked: isBookmarked ?? this.isBookmarked,
         strokes: strokes ?? this.strokes,
         shapes: shapes ?? this.shapes,
         stickers: stickers ?? this.stickers,
@@ -63,6 +80,8 @@ class NotebookPage extends Equatable {
   List<Object?> get props => [
         id,
         pageNumber,
+        title,
+        isBookmarked,
         strokes,
         shapes,
         stickers,

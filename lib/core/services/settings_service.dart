@@ -20,12 +20,6 @@ class SettingsService {
   final ValueNotifier<double> recognitionConfidenceNotifier =
       ValueNotifier(0.3);
 
-  // ─── Canvas spacing notifiers ──────────────────────────────────────────────
-  final ValueNotifier<double> lineSpacingNotifier = ValueNotifier(32.0);
-  final ValueNotifier<double> gridSpacingNotifier = ValueNotifier(32.0);
-  final ValueNotifier<double> dotSpacingNotifier = ValueNotifier(32.0);
-  final ValueNotifier<bool> showMarginNotifier = ValueNotifier(true);
-
   // ─── Effect-specific notifiers ────────────────────────────────────────────
   final Map<String, ValueNotifier<bool>> effectToggles = {};
   final Map<String, ValueNotifier<double>> effectIntensities = {};
@@ -59,6 +53,34 @@ class SettingsService {
   final ValueNotifier<bool> interactionEffectsEnabledNotifier =
       ValueNotifier(true);
 
+  // ─── Backup / data notifiers ──────────────────────────────────────────────
+
+  /// Whether auto-save is enabled.
+  final ValueNotifier<bool> autoSaveEnabledNotifier = ValueNotifier(true);
+
+  /// Auto-save interval in seconds.
+  final ValueNotifier<int> autoSaveIntervalNotifier = ValueNotifier(30);
+
+  /// Default export format (pdf, png, jpeg).
+  final ValueNotifier<String> defaultExportFormatNotifier =
+      ValueNotifier('pdf');
+
+  // ─── Default tool notifiers ───────────────────────────────────────────────
+
+  /// Default pen size used for new strokes.
+  final ValueNotifier<double> defaultToolSizeNotifier = ValueNotifier(3.0);
+
+  // ─── Page gesture notifiers ───────────────────────────────────────────────
+
+  /// Whether two-finger / edge swipe page navigation is enabled.
+  final ValueNotifier<bool> pageGesturesEnabledNotifier = ValueNotifier(true);
+
+  // ─── Canvas spacing notifiers ─────────────────────────────────────────────
+  final ValueNotifier<double> lineSpacingNotifier = ValueNotifier(32.0);
+  final ValueNotifier<double> gridSpacingNotifier = ValueNotifier(32.0);
+  final ValueNotifier<double> dotSpacingNotifier = ValueNotifier(32.0);
+  final ValueNotifier<bool> showMarginNotifier = ValueNotifier(true);
+
   // Key constants
   static const _darkModeKey = 'dark_mode';
   static const _effectsEnabledKey = 'effects_enabled';
@@ -79,10 +101,20 @@ class SettingsService {
   static const _recognitionLanguageKey = 'recognition_language';
   static const _recognitionRealTimeKey = 'recognition_real_time';
   static const _recognitionConfidenceKey = 'recognition_confidence';
+  // Backup / data keys
+  static const _autoSaveEnabledKey = 'auto_save_enabled';
+  static const _autoSaveIntervalKey = 'auto_save_interval';
+  static const _defaultExportFormatKey = 'default_export_format';
+  // Default tool keys
+  static const _defaultToolSizeKey = 'default_tool_size';
+  // Page gesture keys
+  static const _pageGesturesEnabledKey = 'page_gestures_enabled';
+  // Canvas spacing keys
   static const _lineSpacingKey = 'canvas_line_spacing';
   static const _gridSpacingKey = 'canvas_grid_spacing';
   static const _dotSpacingKey = 'canvas_dot_spacing';
   static const _showMarginKey = 'canvas_show_margin';
+  // Tool preset keys
   static const _toolPresetPrefix = 'tool_preset_';
 
   static const List<String> effectNames = [
@@ -130,15 +162,6 @@ class SettingsService {
     recognitionConfidenceNotifier.value =
         _prefs.getDouble(_recognitionConfidenceKey) ?? 0.3;
 
-    lineSpacingNotifier.value =
-        _prefs.getDouble(_lineSpacingKey) ?? 32.0;
-    gridSpacingNotifier.value =
-        _prefs.getDouble(_gridSpacingKey) ?? 32.0;
-    dotSpacingNotifier.value =
-        _prefs.getDouble(_dotSpacingKey) ?? 32.0;
-    showMarginNotifier.value =
-        _prefs.getBool(_showMarginKey) ?? true;
-
     for (final name in effectNames) {
       effectToggles[name] = ValueNotifier(
         _prefs.getBool('$_effectTogglePrefix$name') ?? true,
@@ -178,6 +201,32 @@ class SettingsService {
         _prefs.getDouble('$_interactionIntensityPrefix$name') ?? 1.0,
       );
     }
+
+    // Backup / data settings
+    autoSaveEnabledNotifier.value =
+        _prefs.getBool(_autoSaveEnabledKey) ?? true;
+    autoSaveIntervalNotifier.value =
+        _prefs.getInt(_autoSaveIntervalKey) ?? 30;
+    defaultExportFormatNotifier.value =
+        _prefs.getString(_defaultExportFormatKey) ?? 'pdf';
+
+    // Default tool settings
+    defaultToolSizeNotifier.value =
+        _prefs.getDouble(_defaultToolSizeKey) ?? 3.0;
+
+    // Page gesture settings
+    pageGesturesEnabledNotifier.value =
+        _prefs.getBool(_pageGesturesEnabledKey) ?? true;
+
+    // Canvas spacing settings
+    lineSpacingNotifier.value =
+        _prefs.getDouble(_lineSpacingKey) ?? 32.0;
+    gridSpacingNotifier.value =
+        _prefs.getDouble(_gridSpacingKey) ?? 32.0;
+    dotSpacingNotifier.value =
+        _prefs.getDouble(_dotSpacingKey) ?? 32.0;
+    showMarginNotifier.value =
+        _prefs.getBool(_showMarginKey) ?? true;
   }
 
   // ─── Setters ──────────────────────────────────────────────────────────────
@@ -305,6 +354,37 @@ class SettingsService {
     }
   }
 
+  // ─── Backup / data setters ─────────────────────────────────────────────────
+
+  Future<void> setAutoSaveEnabled(bool value) async {
+    autoSaveEnabledNotifier.value = value;
+    await _prefs.setBool(_autoSaveEnabledKey, value);
+  }
+
+  Future<void> setAutoSaveInterval(int seconds) async {
+    autoSaveIntervalNotifier.value = seconds.clamp(5, 120);
+    await _prefs.setInt(_autoSaveIntervalKey, autoSaveIntervalNotifier.value);
+  }
+
+  Future<void> setDefaultExportFormat(String format) async {
+    defaultExportFormatNotifier.value = format;
+    await _prefs.setString(_defaultExportFormatKey, format);
+  }
+
+  // ─── Default tool setters ─────────────────────────────────────────────────
+
+  Future<void> setDefaultToolSize(double value) async {
+    defaultToolSizeNotifier.value = value.clamp(0.5, 20.0);
+    await _prefs.setDouble(_defaultToolSizeKey, defaultToolSizeNotifier.value);
+  }
+
+  // ─── Page gesture setters ─────────────────────────────────────────────────
+
+  Future<void> setPageGesturesEnabled(bool value) async {
+    pageGesturesEnabledNotifier.value = value;
+    await _prefs.setBool(_pageGesturesEnabledKey, value);
+  }
+
   // ─── Interaction effect setters / getters ──────────────────────────────────
 
   Future<void> setInteractionEffectsEnabled(bool value) async {
@@ -366,8 +446,8 @@ class SettingsService {
   /// Resets all persisted settings to their default values.
   ///
   /// This restores every preference (appearance, effects, stylus, canvas
-  /// spacing, recognition, and interaction effects) to the factory defaults.
-  /// User notebooks and drawings are not affected.
+  /// spacing, recognition, backup, and interaction effects) to the factory
+  /// defaults. User notebooks and drawings are not affected.
   Future<void> resetAll() async {
     await setDarkMode(false);
     await setEffectsEnabled(true);
@@ -380,6 +460,11 @@ class SettingsService {
     await setGridSpacing(32.0);
     await setDotSpacing(32.0);
     await setShowMargin(true);
+    await setAutoSaveEnabled(true);
+    await setAutoSaveInterval(30);
+    await setDefaultExportFormat('pdf');
+    await setDefaultToolSize(3.0);
+    await setPageGesturesEnabled(true);
 
     for (final name in effectNames) {
       await setEffectEnabled(name, true);
@@ -412,6 +497,11 @@ class SettingsService {
     recognitionLanguageNotifier.dispose();
     recognitionRealTimeNotifier.dispose();
     recognitionConfidenceNotifier.dispose();
+    autoSaveEnabledNotifier.dispose();
+    autoSaveIntervalNotifier.dispose();
+    defaultExportFormatNotifier.dispose();
+    defaultToolSizeNotifier.dispose();
+    pageGesturesEnabledNotifier.dispose();
     lineSpacingNotifier.dispose();
     gridSpacingNotifier.dispose();
     dotSpacingNotifier.dispose();

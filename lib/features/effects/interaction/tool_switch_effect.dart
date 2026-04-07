@@ -16,17 +16,19 @@ class _ToolSwitchAnimation {
   final Color toColor;
   double age = 0.0;
 
-  // 0.2 s (200 ms) total
-  static const double duration = 0.2;
+  // 0.3 s (300 ms) total — slightly longer for richer animation
+  static const double duration = 0.3;
   bool get isDead => age >= duration;
   double get progress => (age / duration).clamp(0.0, 1.0);
 }
 
 /// Tool Switch Animation Effect.
 ///
-/// - Morphing colour halo at the cursor position
+/// - Expanding outer ring that fades outward
+/// - Shrinking inner halo that collapses inward
+/// - 2-layer blur glow with colour morphing
+/// - Colour afterimage trail (3 ghost circles)
 /// - Particle sparkle burst at cursor
-/// - 200 ms duration
 class ToolSwitchEffect implements InteractionEffect {
   @override
   final String id = 'tool_switch';
@@ -64,18 +66,18 @@ class ToolSwitchEffect implements InteractionEffect {
       toColor: toColor,
     ));
 
-    // Particle sparkle
+    // Particle sparkle burst — more particles for richer effect
     particleSystem?.emitBurst(
       cursorPosition,
-      6,
+      10,
       ParticleConfig(
         baseColor: toColor,
         colorVariations: [fromColor, toColor, Colors.white],
         minSize: 1.5,
-        maxSize: 4.0,
-        randomVelocitySpread: 40.0,
+        maxSize: 4.5,
+        randomVelocitySpread: 50.0,
         shape: ParticleShape.sparkle,
-        drag: 0.90,
+        drag: 0.88,
       ),
     );
   }
@@ -99,16 +101,53 @@ class ToolSwitchEffect implements InteractionEffect {
   }
 
   void _renderTransition(Canvas canvas, _ToolSwitchAnimation anim) {
-    final progress = anim.progress;
+    final t = anim.progress;
+    // ease-out cubic for smooth deceleration
+    final ease = 1.0 - math.pow(1.0 - t, 3);
+    final fade = 1.0 - t;
     final color =
-        Color.lerp(anim.fromColor, anim.toColor, progress) ?? anim.toColor;
-    final opacity =
-        (math.sin(progress * math.pi) * 0.4 * intensity).clamp(0.0, 1.0);
+        Color.lerp(anim.fromColor, anim.toColor, t) ?? anim.toColor;
 
-    final paint = Paint()
-      ..color = color.withOpacity(opacity)
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4.0);
-    canvas.drawCircle(anim.cursor, 12.0 * intensity, paint);
+    // Layer 1 — wide soft outer glow
+    final outerOpacity =
+        (math.sin(t * math.pi) * 0.25 * intensity).clamp(0.0, 1.0);
+    final outerPaint = Paint()
+      ..color = color.withOpacity(outerOpacity)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8.0);
+    canvas.drawCircle(anim.cursor, 20.0 * ease * intensity, outerPaint);
+
+    // Layer 2 — bright inner glow that shrinks inward
+    final innerRadius = 14.0 * (1.0 - ease * 0.6) * intensity;
+    final innerOpacity =
+        (math.sin(t * math.pi) * 0.45 * intensity).clamp(0.0, 1.0);
+    final innerPaint = Paint()
+      ..color = color.withOpacity(innerOpacity)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3.0);
+    canvas.drawCircle(anim.cursor, innerRadius, innerPaint);
+
+    // Layer 3 — expanding ring
+    final ringRadius = 24.0 * ease * intensity;
+    final ringOpacity = (fade * 0.35 * intensity).clamp(0.0, 1.0);
+    final ringPaint = Paint()
+      ..color = anim.toColor.withOpacity(ringOpacity)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.5 * (1.0 - t * 0.5);
+    canvas.drawCircle(anim.cursor, ringRadius, ringPaint);
+
+    // Layer 4 — colour afterimage trail (3 ghost circles at staggered delays)
+    for (int i = 0; i < 3; i++) {
+      final ghostT = (t - i * 0.08).clamp(0.0, 1.0);
+      if (ghostT <= 0) continue;
+      final ghostColor = i == 0
+          ? anim.fromColor
+          : Color.lerp(anim.fromColor, anim.toColor, ghostT);
+      final ghostOpacity =
+          (0.15 * (1.0 - ghostT) * intensity).clamp(0.0, 1.0);
+      final ghostRadius = 10.0 * (1.0 - ghostT * 0.4) * intensity;
+      final ghostPaint = Paint()
+        ..color = (ghostColor ?? anim.fromColor).withOpacity(ghostOpacity);
+      canvas.drawCircle(anim.cursor, ghostRadius, ghostPaint);
+    }
   }
 
   @override

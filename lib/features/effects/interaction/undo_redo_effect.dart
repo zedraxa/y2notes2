@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:y2notes2/features/effects/interaction/interaction_effect.dart';
 
@@ -10,17 +12,17 @@ class _FlashOverlay {
   final Rect? area;
   double age = 0.0;
 
-  // 0.2 s (200 ms) for undo / redo flash
-  static const double duration = 0.2;
+  // 0.35 s (350 ms) for richer undo / redo flash
+  static const double duration = 0.35;
   bool get isDead => age >= duration;
   double get progress => (age / duration).clamp(0.0, 1.0);
 }
 
 /// Undo/Redo Flash Effect.
 ///
-/// - Undo: brief blue flash over the changed area (100 ms peak)
-/// - Redo: brief orange flash
-/// - Pulsing border highlight around the changed area
+/// - Undo: radial gradient blue flash with expanding ring wave
+/// - Redo: radial gradient orange flash with expanding ring wave
+/// - Pulsing rounded-corner border highlight around the changed area
 class UndoRedoEffect implements InteractionEffect {
   @override
   final String id = 'undo_redo';
@@ -75,7 +77,10 @@ class UndoRedoEffect implements InteractionEffect {
   }
 
   void _renderFlash(Canvas canvas, Size size, _FlashOverlay flash) {
-    final opacity = (1.0 - flash.progress) * 0.25 * intensity;
+    final t = flash.progress;
+    // ease-out: fast start, slow end
+    final ease = 1.0 - math.pow(1.0 - t, 3);
+    final fade = 1.0 - t;
 
     final color = flash.type == _FlashType.undo
         ? const Color(0xFF4A90D9) // blue for undo
@@ -83,21 +88,75 @@ class UndoRedoEffect implements InteractionEffect {
 
     final renderRect =
         flash.area ?? Rect.fromLTWH(0, 0, size.width, size.height);
+    final center = renderRect.center;
 
-    // Fill flash
-    final fillPaint = Paint()
-      ..color = color.withOpacity(opacity.clamp(0.0, 1.0));
-    canvas.drawRect(renderRect, fillPaint);
+    // Layer 1 — radial gradient flash (bright center fading to edges)
+    final maxRadius =
+        math.sqrt(renderRect.width * renderRect.width +
+            renderRect.height * renderRect.height) *
+        0.5;
+    final gradientOpacity = (0.20 * intensity * fade).clamp(0.0, 1.0);
+    final gradientPaint = Paint()
+      ..shader = RadialGradient(
+        center: Alignment.center,
+        radius: 0.8,
+        colors: [
+          color.withOpacity(gradientOpacity),
+          color.withOpacity(gradientOpacity * 0.4),
+          Colors.transparent,
+        ],
+        stops: const [0.0, 0.6, 1.0],
+      ).createShader(renderRect);
+    canvas.drawRect(renderRect, gradientPaint);
 
-    // Border highlight (only when a specific area is known)
+    // Layer 2 — expanding ring wave from center
+    final ringRadius = maxRadius * ease * 0.7;
+    final ringOpacity = (0.30 * intensity * fade).clamp(0.0, 1.0);
+    final ringPaint = Paint()
+      ..color = color.withOpacity(ringOpacity)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.5 * (1.0 - t * 0.5);
+    canvas.drawCircle(center, ringRadius, ringPaint);
+
+    // Layer 3 — secondary softer ring (slightly delayed)
+    final ring2Progress = (t * 1.3 - 0.15).clamp(0.0, 1.0);
+    if (ring2Progress > 0) {
+      final ring2Radius = maxRadius * ring2Progress * 0.5;
+      final ring2Opacity =
+          (0.15 * intensity * (1.0 - ring2Progress)).clamp(0.0, 1.0);
+      final ring2Paint = Paint()
+        ..color = color.withOpacity(ring2Opacity)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.5;
+      canvas.drawCircle(center, ring2Radius, ring2Paint);
+    }
+
+    // Layer 4 — pulsing rounded-corner border highlight
     if (flash.area != null) {
+      final pulsePhase = math.sin(t * math.pi * 2) * 0.5 + 0.5;
       final borderOpacity =
-          ((1.0 - flash.progress) * 0.6 * intensity).clamp(0.0, 1.0);
+          (fade * 0.5 * intensity * (0.5 + pulsePhase * 0.5)).clamp(0.0, 1.0);
       final borderPaint = Paint()
         ..color = color.withOpacity(borderOpacity)
         ..style = PaintingStyle.stroke
         ..strokeWidth = 2.0;
-      canvas.drawRect(flash.area!, borderPaint);
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(flash.area!, const Radius.circular(4.0)),
+        borderPaint,
+      );
+
+      // Outer glow border
+      final glowOpacity = (fade * 0.2 * intensity).clamp(0.0, 1.0);
+      final glowPaint = Paint()
+        ..color = color.withOpacity(glowOpacity)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 4.0
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4.0);
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(
+            flash.area!.inflate(2), const Radius.circular(6.0)),
+        glowPaint,
+      );
     }
   }
 

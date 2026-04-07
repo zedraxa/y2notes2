@@ -76,3 +76,45 @@ class TabDuplicated extends WorkspaceEvent {
   @override
   List<Object?> get props => [tabId];
 }
+
+/// Close all tabs except the one with [tabId].
+class OtherTabsClosed extends WorkspaceEvent {
+  const OtherTabsClosed(this.tabId);
+  final String tabId;
+  @override
+  List<Object?> get props => [tabId];
+}
+
+/// Close all tabs to the right of [tabId].
+class TabsToTheRightClosed extends WorkspaceEvent {
+  const TabsToTheRightClosed(this.tabId);
+  final String tabId;
+  @override
+  List<Object?> get props => [tabId];
+}
+
+/// Mark a tab as having unsaved changes.
+class TabMarkedModified extends WorkspaceEvent {
+  const TabMarkedModified(this.tabId);
+  final String tabId;
+  @override
+  List<Object?> get props => [tabId];
+}
+
+/// Mark a tab as saved (clear the modified flag).
+class TabMarkedSaved extends WorkspaceEvent {
+  const TabMarkedSaved(this.tabId);
+  final String tabId;
+  @override
+  List<Object?> get props => [tabId];
+}
+
+/// Switch to the next tab (wraps around).
+class NextTabActivated extends WorkspaceEvent {
+  const NextTabActivated();
+}
+
+/// Switch to the previous tab (wraps around).
+class PreviousTabActivated extends WorkspaceEvent {
+  const PreviousTabActivated();
+}
