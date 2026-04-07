@@ -65,7 +65,7 @@ class InkShimmerEffect implements WritingEffect {
     final step = (points.length / count).ceil();
     for (int i = 0; i < points.length; i += step) {
       final p = points[i];
-      final delay = (i / points.length) * 0.3; // up to 300ms cascade
+      final delay = (i / points.length) * 0.3; // up to 0.3s (300ms) cascade
       _pendingEmissions.add(_CascadeEmission(
         position: Offset(p.x, p.y),
         colorIndex: i % _shimmerColors.length,

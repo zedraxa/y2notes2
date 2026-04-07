@@ -71,7 +71,7 @@ class DragShadowEffect implements InteractionEffect {
     if (drag == null) return;
     drag.trail.add(drag.currentPosition);
     if (drag.trail.length > _DragState.maxTrail) drag.trail.removeAt(0);
-    drag.speed = (position - drag.currentPosition).distance;
+    drag.speed = (position - drag.currentPosition).distance; // px per frame
     drag.previousPosition = drag.currentPosition;
     drag.currentPosition = position;
   }
