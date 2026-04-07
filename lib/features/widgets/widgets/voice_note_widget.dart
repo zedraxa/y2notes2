@@ -185,7 +185,7 @@ class _VoiceNoteOverlayState
         },
       );
 
-      // Collect amplitude samples for waveform visualisation.
+      // Collect amplitude samples for waveform visualization.
       _ampSub?.cancel();
       _ampSub = _audioService!.amplitudeStream.listen((amp) {
         if (!mounted) return;

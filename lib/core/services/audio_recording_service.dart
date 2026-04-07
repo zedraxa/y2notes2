@@ -79,7 +79,7 @@ class AudioRecordingService {
         try {
           final amp = await _recorder.getAmplitude();
           // amp.current is in dBFS (negative values, 0 = max).
-          // Normalise to 0‑1 range.
+          // Normalize to 0-1 range.
           final normalised =
               ((amp.current + 50) / 50).clamp(0.0, 1.0);
           _amplitudeController.add(normalised);
