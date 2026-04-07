@@ -11,7 +11,7 @@ class Pencil2bTool extends BaseFreehandTool {
   @override String get name => 'Pencil 2B';
   @override String get description => 'Soft dark 2B pencil';
   @override ToolCategory get category => ToolCategory.dry;
-  @override IconData get icon => Icons.edit_off_outlined;
+  @override IconData get icon => Icons.edit;
   @override BlendMode get blendMode => BlendMode.srcOver;
 
   @override

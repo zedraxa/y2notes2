@@ -10,7 +10,7 @@ class SoftHighlighterTool extends BaseFreehandTool {
   @override String get name => 'Soft Highlight';
   @override String get description => 'Feathered soft highlighter';
   @override ToolCategory get category => ToolCategory.highlighter;
-  @override IconData get icon => Icons.blur_linear;
+  @override IconData get icon => Icons.blur_on;
   @override BlendMode get blendMode => BlendMode.multiply;
 
   @override

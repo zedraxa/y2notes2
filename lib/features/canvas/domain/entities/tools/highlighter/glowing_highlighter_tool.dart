@@ -11,7 +11,7 @@ class GlowingHighlighterTool extends BaseFreehandTool {
   @override String get name => 'Glowing Hi';
   @override String get description => 'Pulsating glowing highlighter';
   @override ToolCategory get category => ToolCategory.highlighter;
-  @override IconData get icon => Icons.lens_blur;
+  @override IconData get icon => Icons.blur_on;
   @override BlendMode get blendMode => BlendMode.srcOver;
 
   @override

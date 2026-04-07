@@ -10,7 +10,7 @@ class NeonPenTool extends BaseFreehandTool {
   @override String get name => 'Neon Pen';
   @override String get description => 'Glowing neon pen with multiple glow layers';
   @override ToolCategory get category => ToolCategory.glow;
-  @override IconData get icon => Icons.light_mode;
+  @override IconData get icon => Icons.wb_sunny;
   @override BlendMode get blendMode => BlendMode.srcOver;
 
   Path _buildLayerPath(List<PointData> points, double sizeFactor, ToolSettings settings) =>

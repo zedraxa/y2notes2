@@ -10,7 +10,7 @@ class LaserPenTool extends BaseFreehandTool {
   @override String get name => 'Laser Pen';
   @override String get description => 'Thin bright laser beam';
   @override ToolCategory get category => ToolCategory.glow;
-  @override IconData get icon => Icons.linear_scale;
+  @override IconData get icon => Icons.horizontal_rule;
   @override BlendMode get blendMode => BlendMode.srcOver;
 
   @override

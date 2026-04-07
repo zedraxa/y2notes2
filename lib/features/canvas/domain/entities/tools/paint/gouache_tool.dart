@@ -10,7 +10,7 @@ class GouacheTool extends BaseFreehandTool {
   @override String get name => 'Gouache';
   @override String get description => 'Flat opaque gouache paint';
   @override ToolCategory get category => ToolCategory.paint;
-  @override IconData get icon => Icons.format_paint;
+  @override IconData get icon => Icons.brush;
   @override BlendMode get blendMode => BlendMode.srcOver;
 
   @override

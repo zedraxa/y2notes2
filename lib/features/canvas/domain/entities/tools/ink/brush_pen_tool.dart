@@ -10,7 +10,7 @@ class BrushPenTool extends BaseFreehandTool {
   @override String get name => 'Brush Pen';
   @override String get description => 'Pressure-sensitive brush pen';
   @override ToolCategory get category => ToolCategory.ink;
-  @override IconData get icon => Icons.brush_outlined;
+  @override IconData get icon => Icons.brush;
   @override BlendMode get blendMode => BlendMode.srcOver;
 
   @override

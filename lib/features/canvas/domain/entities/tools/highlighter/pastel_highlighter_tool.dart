@@ -18,7 +18,7 @@ class PastelHighlighterTool extends BaseFreehandTool {
   @override String get name => 'Pastel Hi';
   @override String get description => 'Muted pastel tone highlighter';
   @override ToolCategory get category => ToolCategory.highlighter;
-  @override IconData get icon => Icons.color_lens_outlined;
+  @override IconData get icon => Icons.color_lens;
   @override BlendMode get blendMode => BlendMode.multiply;
 
   @override

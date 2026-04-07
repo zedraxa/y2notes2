@@ -11,7 +11,7 @@ class GlowGelTool extends BaseFreehandTool {
   @override String get name => 'Glow Gel';
   @override String get description => 'Smooth gel pen with soft glow';
   @override ToolCategory get category => ToolCategory.glow;
-  @override IconData get icon => Icons.auto_awesome;
+  @override IconData get icon => Icons.star;
   @override BlendMode get blendMode => BlendMode.srcOver;
 
   @override

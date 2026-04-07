@@ -11,7 +11,7 @@ class CalligraphyTool extends BaseFreehandTool {
   @override String get name => 'Calligraphy';
   @override String get description => 'Angle-sensitive calligraphy nib';
   @override ToolCategory get category => ToolCategory.ink;
-  @override IconData get icon => Icons.draw;
+  @override IconData get icon => Icons.create;
   @override BlendMode get blendMode => BlendMode.srcOver;
 
   @override

@@ -11,7 +11,7 @@ class WatercolorTool extends BaseFreehandTool {
   @override String get name => 'Watercolor';
   @override String get description => 'Wet watercolor paint';
   @override ToolCategory get category => ToolCategory.paint;
-  @override IconData get icon => Icons.water_drop;
+  @override IconData get icon => Icons.opacity;
   @override BlendMode get blendMode => BlendMode.multiply;
 
   @override

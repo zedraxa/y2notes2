@@ -1,7 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:y2notes2/features/canvas/domain/entities/point_data.dart';
-import 'package:y2notes2/features/canvas/domain/entities/stroke.dart';
 import 'package:y2notes2/features/canvas/domain/entities/tool.dart';
 import 'package:y2notes2/features/canvas/domain/entities/tools/tool_settings.dart';
 import 'package:y2notes2/features/canvas/domain/models/canvas_config.dart';

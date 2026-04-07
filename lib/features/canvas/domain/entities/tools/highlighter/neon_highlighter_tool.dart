@@ -10,7 +10,7 @@ class NeonHighlighterTool extends BaseFreehandTool {
   @override String get name => 'Neon Highlight';
   @override String get description => 'Saturated neon highlighter with glow';
   @override ToolCategory get category => ToolCategory.highlighter;
-  @override IconData get icon => Icons.electric_bolt;
+  @override IconData get icon => Icons.bolt;
   @override BlendMode get blendMode => BlendMode.srcOver;
 
   @override

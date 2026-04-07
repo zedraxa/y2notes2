@@ -11,7 +11,7 @@ class ChalkTool extends BaseFreehandTool {
   @override String get name => 'Chalk';
   @override String get description => 'Dusty chalk with noise gaps';
   @override ToolCategory get category => ToolCategory.dry;
-  @override IconData get icon => Icons.fiber_manual_record_outlined;
+  @override IconData get icon => Icons.radio_button_unchecked;
   @override BlendMode get blendMode => BlendMode.srcOver;
 
   @override

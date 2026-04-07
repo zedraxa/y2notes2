@@ -11,7 +11,7 @@ class HolographicPenTool extends BaseFreehandTool {
   @override String get name => 'Holographic';
   @override String get description => 'Rainbow hue-shifting holographic pen';
   @override ToolCategory get category => ToolCategory.glow;
-  @override IconData get icon => Icons.blur_circular;
+  @override IconData get icon => Icons.blur_on;
   @override BlendMode get blendMode => BlendMode.srcOver;
 
   @override

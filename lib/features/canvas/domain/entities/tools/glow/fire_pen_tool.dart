@@ -10,7 +10,7 @@ class FirePenTool extends BaseFreehandTool {
   @override String get name => 'Fire Pen';
   @override String get description => 'Fiery gradient pen';
   @override ToolCategory get category => ToolCategory.glow;
-  @override IconData get icon => Icons.local_fire_department;
+  @override IconData get icon => Icons.whatshot;
   @override BlendMode get blendMode => BlendMode.srcOver;
 
   @override
