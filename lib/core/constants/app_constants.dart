@@ -46,4 +46,30 @@ abstract class AppConstants {
   static const double colorSwatchSize = 26.0;
   static const double colorSwatchSpacing = 6.0;
   static const double borderRadius = 12.0;
+
+  // ─── Stylus ───────────────────────────────────────────────────────────────
+
+  /// Minimum pressure below which pointer input is considered a hover or
+  /// accidental palm contact.
+  static const double minEffectivePressure = 0.02;
+
+  /// Altitude angle (radians) below which the pen is considered flat /
+  /// in shading mode. Width multiplier = 2.0.
+  static const double tiltFlatThreshold = 0.5236; // 30°
+
+  /// Altitude angle (radians) above which the pen is upright / fine detail.
+  /// Width multiplier = 0.5.
+  static const double tiltUprightThreshold = 1.0472; // 60°
+
+  /// Default hover distance (logical pixels) reported by S Pen hover events.
+  static const double defaultHoverDistance = 1.0;
+
+  /// Maximum number of discrete pressure levels supported by Wacom EMR pens.
+  static const int wacomMaxPressureLevels = 4096;
+
+  /// Minimum brush size shown in the hover cursor circle (logical pixels).
+  static const double hoverCursorMinSize = 8.0;
+
+  /// Maximum brush size shown in the hover cursor circle (logical pixels).
+  static const double hoverCursorMaxSize = 60.0;
 }

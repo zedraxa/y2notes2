@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uuid/uuid.dart';
 import 'package:y2notes2/core/constants/app_constants.dart';
+import 'package:y2notes2/core/engine/stylus/stylus_detector.dart';
+import 'package:y2notes2/core/engine/stylus/stylus_gesture_handler.dart';
 import 'package:y2notes2/core/services/settings_service.dart';
 import 'package:y2notes2/features/canvas/domain/entities/stroke.dart';
 import 'package:y2notes2/features/canvas/domain/entities/tools/tool_registry.dart';
+import 'package:y2notes2/features/canvas/domain/entities/tool.dart';
 import 'package:y2notes2/features/canvas/domain/models/viewport.dart';
 import 'package:y2notes2/features/canvas/presentation/bloc/canvas_event.dart';
 import 'package:y2notes2/features/canvas/presentation/bloc/canvas_state.dart';
@@ -43,6 +46,11 @@ class CanvasBloc extends Bloc<CanvasEvent, CanvasState> {
     on<ShapeRecognitionRejected>(_onShapeRecognitionRejected);
     on<ShapeToolActivated>(_onShapeToolActivated);
     on<ShapeToolDeactivated>(_onShapeToolDeactivated);
+    // Stylus events
+    on<StylusDetectedEvent>(_onStylusDetected);
+    on<HoverPositionChanged>(_onHoverPositionChanged);
+    on<HoverEnded>(_onHoverEnded);
+    on<StylusGestureTriggered>(_onStylusGestureTriggered);
   }
 
   final SettingsService _settings;
@@ -244,4 +252,56 @@ class CanvasBloc extends Bloc<CanvasEvent, CanvasState> {
         clearActiveShapeType: true,
         clearShapeSelection: true,
       ));
+
+  // ─── Stylus event handlers ────────────────────────────────────────────────
+
+  void _onStylusDetected(
+      StylusDetectedEvent event, Emitter<CanvasState> emit) {
+    if (state.detectedStylusType != event.stylusType) {
+      emit(state.copyWith(detectedStylusType: event.stylusType));
+    }
+  }
+
+  void _onHoverPositionChanged(
+      HoverPositionChanged event, Emitter<CanvasState> emit) =>
+      emit(state.copyWith(
+        hoverPosition: event.position,
+        isHovering: true,
+      ));
+
+  void _onHoverEnded(HoverEnded event, Emitter<CanvasState> emit) =>
+      emit(state.copyWith(
+        clearHoverPosition: true,
+        isHovering: false,
+      ));
+
+  void _onStylusGestureTriggered(
+      StylusGestureTriggered event, Emitter<CanvasState> emit) {
+    switch (event.action) {
+      case StylusGestureAction.switchToEraser:
+        emit(state.copyWith(
+          activeTool: Tool.defaultEraser,
+          activeToolId: 'eraser',
+        ));
+      case StylusGestureAction.toggleEraser:
+        final isEraser = state.activeTool.type == StrokeTool.eraser;
+        if (isEraser) {
+          emit(state.copyWith(activeTool: Tool.defaultFountainPen));
+        } else {
+          emit(state.copyWith(activeTool: Tool.defaultEraser));
+        }
+      case StylusGestureAction.undo:
+        if (state.canUndo) _onUndo(const UndoRequested(), emit);
+      case StylusGestureAction.redo:
+        if (state.canRedo) _onRedo(const RedoRequested(), emit);
+      case StylusGestureAction.none:
+      case StylusGestureAction.switchToLastTool:
+      case StylusGestureAction.showToolPicker:
+      case StylusGestureAction.showColorPicker:
+      case StylusGestureAction.toggleEffects:
+      case StylusGestureAction.custom:
+        // These actions require UI interaction; handled at the widget layer.
+        break;
+    }
+  }
 }

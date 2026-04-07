@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:y2notes2/core/engine/canvas_engine.dart';
+import 'package:y2notes2/core/engine/stylus/hover_cursor.dart';
+import 'package:y2notes2/core/engine/stylus/stylus_adapter.dart';
+import 'package:y2notes2/core/engine/stylus/stylus_detector.dart';
 import 'package:y2notes2/core/extensions/iterable_extensions.dart';
 import 'package:y2notes2/features/canvas/domain/entities/point_data.dart';
 import 'package:y2notes2/features/canvas/domain/entities/stroke.dart';
+import 'package:y2notes2/features/canvas/domain/entities/tool.dart';
 import 'package:y2notes2/features/canvas/domain/entities/tools/tool_settings.dart';
 import 'package:y2notes2/features/canvas/domain/models/canvas_config.dart';
 import 'package:y2notes2/features/canvas/presentation/bloc/canvas_bloc.dart';
@@ -66,7 +70,14 @@ class _CanvasViewState extends State<CanvasView>
 
   void _onPointerDown(PointerDownEvent event) {
     final bloc = context.read<CanvasBloc>();
-    final point = _eventToPointData(event, null);
+
+    // Detect and report stylus type.
+    final stylusType = StylusDetector.detectStylusType(event);
+    bloc.add(StylusDetectedEvent(stylusType));
+
+    // Convert event via the stylus adapter pipeline.
+    final input = StylusAdapterFactory.convert(event);
+    final point = _stylusInputToPointData(input, null);
     _lastPoint = point;
     bloc.add(StrokeStarted(point));
 
@@ -80,7 +91,9 @@ class _CanvasViewState extends State<CanvasView>
   void _onPointerMove(PointerMoveEvent event) {
     final bloc = context.read<CanvasBloc>();
     final prev = _lastPoint;
-    final point = _eventToPointData(event, prev);
+
+    final input = StylusAdapterFactory.convert(event);
+    final point = _stylusInputToPointData(input, prev);
     _lastPoint = point;
     bloc.add(StrokeUpdated(point));
 
@@ -103,30 +116,41 @@ class _CanvasViewState extends State<CanvasView>
   }
 
   void _onPointerCancel(PointerCancelEvent event) {
-    context.read<CanvasBloc>().add(const StrokeEnded());
+    context.read<CanvasBloc>()
+      ..add(const StrokeEnded())
+      ..add(const HoverEnded());
     _lastPoint = null;
   }
 
-  PointData _eventToPointData(PointerEvent event, PointData? previous) {
+  /// Handles hover events when the stylus hovers above the screen.
+  void _onPointerHover(PointerHoverEvent event) {
+    if (!StylusDetector.isStylus(event)) return;
+    final bloc = context.read<CanvasBloc>();
+    bloc.add(HoverPositionChanged(event.localPosition));
+  }
+
+  /// Converts a [StylusInput] to a [PointData], calculating velocity from the
+  /// previous point if available.
+  PointData _stylusInputToPointData(StylusInput input, PointData? previous) {
     double velocity = 0.0;
     if (previous != null) {
-      final dt =
-          (event.timeStamp.inMilliseconds - previous.timestamp).abs();
+      final dt = (input.timestamp - previous.timestamp).abs();
       if (dt > 0) {
-        final dx = event.localPosition.dx - previous.x;
-        final dy = event.localPosition.dy - previous.y;
-        final dist = (dx * dx + dy * dy);
-        velocity = dist / dt;
+        final dx = input.position.dx - previous.x;
+        final dy = input.position.dy - previous.y;
+        velocity = (dx * dx + dy * dy) / dt;
       }
     }
-
     return PointData(
-      x: event.localPosition.dx,
-      y: event.localPosition.dy,
-      pressure: event.pressure.clamp(0.0, 1.0),
-      tilt: event.tilt,
+      x: input.position.dx,
+      y: input.position.dy,
+      pressure: input.pressure,
+      tilt: input.altitude,
       velocity: velocity,
-      timestamp: event.timeStamp.inMilliseconds,
+      timestamp: input.timestamp,
+      azimuth: input.azimuth,
+      altitude: input.altitude,
+      hoverDistance: input.hoverDistance,
     );
   }
 
@@ -143,7 +167,9 @@ class _CanvasViewState extends State<CanvasView>
             prev.activeToolSettings != curr.activeToolSettings ||
             prev.shapes != curr.shapes ||
             prev.shapeRecognitionProposal != curr.shapeRecognitionProposal ||
-            prev.selectedShapeId != curr.selectedShapeId,
+            prev.selectedShapeId != curr.selectedShapeId ||
+            prev.isHovering != curr.isHovering ||
+            prev.hoverPosition != curr.hoverPosition,
         builder: (context, state) {
           // Trigger async cache update when strokes change
           final canvasSize = Size(state.config.width, state.config.height);
@@ -161,14 +187,15 @@ class _CanvasViewState extends State<CanvasView>
                   height: state.config.height,
                   child: Stack(
                     children: [
-                      // Layer 1: Page background
+                       // Layer 1: Page background
                       PageBackground(config: state.config),
-                      // Layers 2–8: Canvas painter (strokes + shapes + effects)
+                       // Layers 2–8: Canvas painter (strokes + shapes + effects)
                       Listener(
                         onPointerDown: _onPointerDown,
                         onPointerMove: _onPointerMove,
                         onPointerUp: _onPointerUp,
                         onPointerCancel: _onPointerCancel,
+                        onPointerHover: _onPointerHover,
                         child: CustomPaint(
                           painter: _CanvasPainter(
                             engine: _canvasEngine,
@@ -213,11 +240,21 @@ class _CanvasViewState extends State<CanvasView>
                           guides: shapeState.snapGuides,
                         ),
                       ),
+                      // Hover cursor — inside canvas coordinate space
+                      if (state.isHovering && state.hoverPosition != null)
+                        HoverCursor(
+                          position: state.hoverPosition!,
+                          brushSize: state.activeWidth.clamp(8.0, 60.0),
+                          color: state.activeColor,
+                          isEraser: state.activeTool.type ==
+                              StrokeTool.eraser,
+                          isVisible: true,
+                        ),
                     ],
                   ),
                 ),
               ),
-              // Shape recognition confirmation banner
+               // Shape recognition confirmation banner
               if (state.shapeRecognitionProposal != null)
                 _ShapeRecognitionBanner(
                   proposal: state.shapeRecognitionProposal!.type.name,

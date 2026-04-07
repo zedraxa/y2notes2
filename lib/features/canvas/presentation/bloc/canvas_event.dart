@@ -1,5 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
+import 'package:y2notes2/core/engine/stylus/stylus_detector.dart';
+import 'package:y2notes2/core/engine/stylus/stylus_gesture_handler.dart';
 import 'package:y2notes2/features/canvas/domain/entities/point_data.dart';
 import 'package:y2notes2/features/canvas/domain/entities/tool.dart';
 import 'package:y2notes2/features/canvas/domain/entities/tools/tool_settings.dart';
@@ -183,4 +185,44 @@ class ShapeToolActivated extends CanvasEvent {
 /// Deactivate shape-drawing mode (return to freehand).
 class ShapeToolDeactivated extends CanvasEvent {
   const ShapeToolDeactivated();
+}
+
+// ─── Stylus events ────────────────────────────────────────────────────────────
+
+/// Fired when a new stylus type is detected from an incoming [PointerEvent].
+class StylusDetectedEvent extends CanvasEvent {
+  const StylusDetectedEvent(this.stylusType);
+
+  /// The detected stylus type.
+  final StylusType stylusType;
+
+  @override
+  List<Object?> get props => [stylusType];
+}
+
+/// Fired when the pen enters or moves through hover range (not touching).
+class HoverPositionChanged extends CanvasEvent {
+  const HoverPositionChanged(this.position);
+
+  /// Hover position in canvas logical pixels.
+  final Offset position;
+
+  @override
+  List<Object?> get props => [position];
+}
+
+/// Fired when the pen leaves hover range.
+class HoverEnded extends CanvasEvent {
+  const HoverEnded();
+}
+
+/// Fired when a stylus hardware gesture is translated to an [StylusGestureAction].
+class StylusGestureTriggered extends CanvasEvent {
+  const StylusGestureTriggered(this.action);
+
+  /// The resolved action to execute.
+  final StylusGestureAction action;
+
+  @override
+  List<Object?> get props => [action];
 }
