@@ -4,6 +4,12 @@ import 'package:go_router/go_router.dart';
 import 'package:y2notes2/features/canvas/presentation/pages/canvas_page.dart';
 import 'package:y2notes2/features/documents/presentation/bloc/document_bloc.dart';
 import 'package:y2notes2/features/documents/presentation/bloc/document_event.dart';
+import 'package:y2notes2/features/flashcards/presentation/pages/card_editor_page.dart';
+import 'package:y2notes2/features/flashcards/presentation/pages/deck_detail_page.dart';
+import 'package:y2notes2/features/flashcards/presentation/pages/deck_list_page.dart';
+import 'package:y2notes2/features/flashcards/presentation/pages/quiz_page.dart';
+import 'package:y2notes2/features/flashcards/presentation/pages/stats_page.dart';
+import 'package:y2notes2/features/flashcards/presentation/pages/study_session_page.dart';
 import 'package:y2notes2/features/handwriting/presentation/pages/recognition_settings_page.dart';
 import 'package:y2notes2/features/infinite_canvas/presentation/pages/infinite_canvas_page.dart';
 import 'package:y2notes2/features/library/presentation/pages/library_page.dart';
@@ -77,6 +83,52 @@ class AppRouter {
           // Canvas navigation is handled by WorkspacePage internally.
           return const WorkspacePage();
         },
+      ),
+      // ── Flash Cards ──────────────────────────────────────────────────────
+      GoRoute(
+        path: '/flashcards',
+        builder: (context, state) => const DeckListPage(),
+        routes: [
+          GoRoute(
+            path: 'deck/:deckId',
+            builder: (context, state) => DeckDetailPage(
+              deckId: state.pathParameters['deckId']!,
+            ),
+            routes: [
+              GoRoute(
+                path: 'add',
+                builder: (context, state) => CardEditorPage(
+                  deckId: state.pathParameters['deckId']!,
+                ),
+              ),
+              GoRoute(
+                path: 'edit/:cardId',
+                builder: (context, state) => CardEditorPage(
+                  deckId: state.pathParameters['deckId']!,
+                  cardId: state.pathParameters['cardId'],
+                ),
+              ),
+              GoRoute(
+                path: 'study',
+                builder: (context, state) => StudySessionPage(
+                  deckId: state.pathParameters['deckId']!,
+                ),
+              ),
+              GoRoute(
+                path: 'quiz',
+                builder: (context, state) => QuizPage(
+                  deckId: state.pathParameters['deckId']!,
+                ),
+              ),
+              GoRoute(
+                path: 'stats',
+                builder: (context, state) => StatsPage(
+                  deckId: state.pathParameters['deckId']!,
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
       // ── Settings ─────────────────────────────────────────────────────────
       GoRoute(
