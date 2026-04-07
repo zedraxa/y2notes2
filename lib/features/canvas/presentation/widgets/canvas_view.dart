@@ -75,6 +75,11 @@ class _CanvasViewState extends State<CanvasView>
     final stylusType = StylusDetector.detectStylusType(event);
     bloc.add(StylusDetectedEvent(stylusType));
 
+    // When pen touches the screen, clear any hover state.
+    if (bloc.state.isHovering) {
+      bloc.add(const HoverEnded());
+    }
+
     // Convert event via the stylus adapter pipeline.
     final input = StylusAdapterFactory.convert(event);
     final point = _stylusInputToPointData(input, null);

@@ -349,9 +349,7 @@ class _StylusIndicator extends StatelessWidget {
         type != StylusType.finger &&
         type != StylusType.generic;
 
-    return Tooltip(
-      message: isKnown ? _labelFor(type) : 'No stylus detected',
-      child: IconButton(
+    return IconButton(
         icon: Stack(
           clipBehavior: Clip.none,
           children: [
@@ -378,13 +376,12 @@ class _StylusIndicator extends StatelessWidget {
           ],
         ),
         iconSize: AppConstants.toolbarIconSize,
+        tooltip: isKnown ? _labelFor(type) : 'Stylus settings',
         onPressed: () {
           HapticController.light();
           // Navigate to stylus settings page
         },
-        tooltip: isKnown ? _labelFor(type) : 'Stylus settings',
-      ),
-    );
+      );
   }
 
   static String _labelFor(StylusType type) {
