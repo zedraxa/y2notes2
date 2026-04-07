@@ -141,13 +141,29 @@ jobs:
           security list-keychains -d user -s "$KEYCHAIN_NAME" login.keychain
 
           # Install the provisioning profile into the standard Xcode location
-          PP_UUID=$(
-            /usr/libexec/PlistBuddy -c "Print :UUID" \
-              /dev/stdin <<< "$(security cms -D -i "$PP_PATH")"
-          )
+          PP_XML=$(security cms -D -i "$PP_PATH")
+          PP_UUID=$(/usr/libexec/PlistBuddy -c "Print :UUID" /dev/stdin <<< "$PP_XML")
           mkdir -p "$HOME/Library/MobileDevice/Provisioning Profiles"
           cp "$PP_PATH" \
             "$HOME/Library/MobileDevice/Provisioning Profiles/${PP_UUID}.mobileprovision"
+
+          # Extract signing details needed by the build and export steps
+          PP_TEAM_ID=$(/usr/libexec/PlistBuddy -c \
+            "Print :Entitlements:com.apple.developer.team-identifier" \
+            /dev/stdin <<< "$PP_XML")
+          PP_PROFILE_NAME=$(/usr/libexec/PlistBuddy -c "Print :Name" \
+            /dev/stdin <<< "$PP_XML")
+          SIGNING_IDENTITY=$(
+            security find-identity -v -p codesigning "$KEYCHAIN_NAME" \
+              | grep -E '"iPhone Distribution|"Apple Distribution' \
+              | head -1 \
+              | sed -E 's/.*"(.+)".*/\1/'
+          )
+          {
+            echo "TEAM_ID=$PP_TEAM_ID"
+            echo "PROFILE_NAME=$PP_PROFILE_NAME"
+            echo "SIGNING_IDENTITY=$SIGNING_IDENTITY"
+          } >> "$GITHUB_ENV"
 
       # ----------------------------------------------------------
       # 7. Generate ExportOptions.plist
@@ -156,7 +172,7 @@ jobs:
       # ----------------------------------------------------------
       - name: Generate ExportOptions.plist
         run: |
-          cat > /tmp/ExportOptions.plist << 'EOF'
+          cat > /tmp/ExportOptions.plist << EOF
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
               "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -165,13 +181,16 @@ jobs:
               <key>method</key>
               <string>app-store</string>
               <key>destination</key>
-              <string>upload</string>
+              <string>export</string>
               <key>teamID</key>
-              <string></string>
-              <key>bundleID</key>
-              <string>com.y2notes.app</string>
+              <string>${TEAM_ID}</string>
               <key>signingStyle</key>
               <string>manual</string>
+              <key>provisioningProfiles</key>
+              <dict>
+                  <key>com.y2notes.app</key>
+                  <string>${PROFILE_NAME}</string>
+              </dict>
               <key>stripSwiftSymbols</key>
               <true/>
               <key>uploadBitcode</key>
@@ -216,12 +235,39 @@ jobs:
 
       # ----------------------------------------------------------
       # 11. Build the release IPA
+      # Uses xcodebuild directly to bypass Flutter's codesign
+      # pre-flight check ("security find-identity"), which fails in
+      # CI even after a successful certificate import.  Signing
+      # parameters are passed explicitly as build-setting overrides
+      # so Xcode never needs to auto-discover them.
       # ----------------------------------------------------------
       - name: Build IPA for App Store distribution
         run: |
-          flutter build ipa --release \
-            --build-number=${{ github.run_number }} \
-            --export-options-plist=/tmp/ExportOptions.plist
+          XCODE_LOGS_DIR=/tmp/xcodebuild_logs
+          mkdir -p "$XCODE_LOGS_DIR"
+
+          # Archive with explicit manual code signing
+          xcodebuild \
+            -workspace ios/Runner.xcworkspace \
+            -scheme Runner \
+            -configuration Release \
+            -archivePath /tmp/Runner.xcarchive \
+            CODE_SIGN_STYLE=Manual \
+            CODE_SIGN_IDENTITY="$SIGNING_IDENTITY" \
+            PROVISIONING_PROFILE_SPECIFIER="$PROFILE_NAME" \
+            DEVELOPMENT_TEAM="$TEAM_ID" \
+            CURRENT_PROJECT_VERSION="${{ github.run_number }}" \
+            archive \
+            2>&1 | tee "$XCODE_LOGS_DIR/archive.log"
+
+          # Export IPA from the archive
+          mkdir -p build/ios/ipa
+          xcodebuild \
+            -exportArchive \
+            -archivePath /tmp/Runner.xcarchive \
+            -exportOptionsPlist /tmp/ExportOptions.plist \
+            -exportPath build/ios/ipa \
+            2>&1 | tee "$XCODE_LOGS_DIR/export.log"
 
       # ----------------------------------------------------------
       # 12. Upload build artifacts to GitHub Actions
