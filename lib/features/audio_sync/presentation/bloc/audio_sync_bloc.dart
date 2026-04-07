@@ -30,6 +30,9 @@ class AudioSyncBloc
     on<AudioPlaybackPositionChanged>(
       _onPlaybackPositionChanged,
     );
+    on<RecordingElapsedTimeUpdated>(
+      _onRecordingElapsedTimeUpdated,
+    );
     on<AudioPlaybackStopped>(_onPlaybackStopped);
     on<AudioPlaybackSeeked>(_onPlaybackSeeked);
     on<AudioRecordingDeleted>(_onRecordingDeleted);
@@ -71,8 +74,8 @@ class AudioSyncBloc
             .difference(_recordingStartedAt!)
             .inMilliseconds;
         // ignore: invalid_use_of_visible_for_testing_member
-        add(AudioPlaybackPositionChanged(
-          positionMs: elapsed,
+        add(RecordingElapsedTimeUpdated(
+          elapsedMs: elapsed,
         ));
       },
     );
@@ -197,14 +200,6 @@ class AudioSyncBloc
     AudioPlaybackPositionChanged event,
     Emitter<AudioSyncState> emit,
   ) {
-    // During recording, update elapsed time.
-    if (state.isRecording) {
-      emit(state.copyWith(
-        recordingElapsedMs: event.positionMs,
-      ));
-      return;
-    }
-
     // During playback, update position and highlighted
     // strokes.
     final rec = state.activePlaybackRecording;
@@ -227,6 +222,16 @@ class AudioSyncBloc
     emit(state.copyWith(
       playbackPositionMs: event.positionMs,
       highlightedStrokeIds: highlighted,
+    ));
+  }
+
+  void _onRecordingElapsedTimeUpdated(
+    RecordingElapsedTimeUpdated event,
+    Emitter<AudioSyncState> emit,
+  ) {
+    if (!state.isRecording) return;
+    emit(state.copyWith(
+      recordingElapsedMs: event.elapsedMs,
     ));
   }
 

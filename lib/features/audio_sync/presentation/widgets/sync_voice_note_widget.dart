@@ -27,7 +27,9 @@ class SyncVoiceNoteWidget extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: Theme.of(context)
+                  .colorScheme
+                  .surface,
               borderRadius: BorderRadius.circular(12),
             ),
             child: Column(

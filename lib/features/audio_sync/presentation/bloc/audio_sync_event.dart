@@ -77,6 +77,20 @@ class AudioPlaybackPositionChanged
   List<Object?> get props => [positionMs];
 }
 
+/// Update the recording elapsed time (driven by a
+/// timer during recording).
+class RecordingElapsedTimeUpdated
+    extends AudioSyncEvent {
+  const RecordingElapsedTimeUpdated({
+    required this.elapsedMs,
+  });
+
+  final int elapsedMs;
+
+  @override
+  List<Object?> get props => [elapsedMs];
+}
+
 /// Stop the current playback.
 class AudioPlaybackStopped extends AudioSyncEvent {
   const AudioPlaybackStopped();

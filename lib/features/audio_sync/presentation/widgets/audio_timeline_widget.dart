@@ -179,7 +179,7 @@ class _TimelinePainter extends CustomPainter {
           ),
           const Radius.circular(3),
         ),
-        Paint()..color = Colors.blue.withAlpha(25),
+        Paint()..color = Colors.blue.withOpacity(0.1),
       );
 
       // Text.
