@@ -47,7 +47,6 @@ class EffectsCompositor {
   final ShapeRenderer _shapeRenderer;
   final StickerRenderer _stickerRenderer;
 
-
   void compose({
     required Canvas canvas,
     required Size size,
