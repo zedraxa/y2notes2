@@ -9,9 +9,9 @@ workflows:
       flutter: stable
       ios_signing:
         distribution_type: app_store
-        bundle_identifier: com.y2notes.app
+        bundle_identifier: com.y2notes.y2notes2
       vars:
-        BUNDLE_ID: "com.y2notes.app"
+        BUNDLE_ID: "com.y2notes.y2notes2"
         APP_ORG: "com.y2notes"
       xcode: latest
     scripts:

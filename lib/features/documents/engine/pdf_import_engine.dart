@@ -22,7 +22,7 @@ class PdfImportEngine {
   /// Opens the system file picker and returns the selected file path, or
   /// `null` if the user cancelled.
   Future<String?> pickPdfFile() async {
-    final result = await FilePicker.platform.pickFiles(
+    final result = await FilePicker.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['pdf'],
       allowMultiple: false,
