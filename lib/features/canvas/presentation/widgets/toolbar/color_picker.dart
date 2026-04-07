@@ -51,36 +51,52 @@ class _ColorSwatch extends StatelessWidget {
   final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) => GestureDetector(
-        onTap: onTap,
-        child: Container(
-          width: AppConstants.colorSwatchSize,
-          height: AppConstants.colorSwatchSize,
-          margin: EdgeInsets.symmetric(
-            horizontal: AppConstants.colorSwatchSpacing / 2,
-          ),
-          decoration: BoxDecoration(
-            color: color,
-            shape: BoxShape.circle,
-            border: isSelected
-                ? Border.all(
-                    color: Colors.white,
-                    width: 2.5,
-                    strokeAlign: BorderSide.strokeAlignOutside,
-                  )
-                : null,
-            boxShadow: isSelected
-                ? [
-                    BoxShadow(
-                      color: color.withOpacity(0.5),
-                      blurRadius: 6,
-                      spreadRadius: 1,
-                    ),
-                  ]
-                : null,
-          ),
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final borderColor = isDark ? Colors.white70 : Colors.white;
+
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        curve: Curves.easeOutCubic,
+        width: AppConstants.colorSwatchSize,
+        height: AppConstants.colorSwatchSize,
+        margin: EdgeInsets.symmetric(
+          horizontal: AppConstants.colorSwatchSpacing / 2,
         ),
-      );
+        decoration: BoxDecoration(
+          color: color,
+          shape: BoxShape.circle,
+          border: isSelected
+              ? Border.all(
+                  color: borderColor,
+                  width: 2.5,
+                  strokeAlign: BorderSide.strokeAlignOutside,
+                )
+              : null,
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: color.withOpacity(isDark ? 0.6 : 0.45),
+                    blurRadius: 8,
+                    spreadRadius: 1,
+                  ),
+                ]
+              : [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.08),
+                    blurRadius: 2,
+                  ),
+                ],
+        ),
+        transform: isSelected
+            ? (Matrix4.identity()..scale(1.12))
+            : Matrix4.identity(),
+        transformAlignment: Alignment.center,
+      ),
+    );
+  }
 }
 
 class _CustomColorButton extends StatelessWidget {
@@ -177,7 +193,9 @@ class _ColorDialogState extends State<_ColorDialog> {
                 .map(
                   (c) => GestureDetector(
                     onTap: () => setState(() => _selected = c),
-                    child: Container(
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 160),
+                      curve: Curves.easeOutCubic,
                       width: 36,
                       height: 36,
                       decoration: BoxDecoration(
@@ -190,6 +208,28 @@ class _ColorDialogState extends State<_ColorDialog> {
                                 strokeAlign: BorderSide.strokeAlignOutside,
                               )
                             : null,
+                        boxShadow: _selected.value == c.value
+                            ? [
+                                BoxShadow(
+                                  color: c.withOpacity(0.4),
+                                  blurRadius: 6,
+                                  spreadRadius: 1,
+                                ),
+                              ]
+                            : null,
+                      ),
+                      transform: _selected.value == c.value
+                          ? (Matrix4.identity()..scale(1.1))
+                          : Matrix4.identity(),
+                      transformAlignment: Alignment.center,
+                      child: AnimatedOpacity(
+                        duration: const Duration(milliseconds: 160),
+                        opacity: _selected.value == c.value ? 1.0 : 0.0,
+                        child: Icon(
+                          Icons.check,
+                          size: 16,
+                          color: _contrastColor(c),
+                        ),
                       ),
                     ),
                   ),
@@ -208,4 +248,8 @@ class _ColorDialogState extends State<_ColorDialog> {
           ),
         ],
       );
+
+  /// Returns black or white depending on which has better contrast.
+  Color _contrastColor(Color c) =>
+      c.computeLuminance() > 0.5 ? Colors.black87 : Colors.white;
 }

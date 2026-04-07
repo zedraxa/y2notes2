@@ -223,17 +223,23 @@ class _CloseButtonState extends State<_CloseButton> {
       onExit: (_) => setState(() => _hovered = false),
       child: GestureDetector(
         onTap: widget.onClose,
-        child: Container(
-          width: 16,
-          height: 16,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: _hovered ? Colors.red.withAlpha(30) : Colors.transparent,
-          ),
-          child: Icon(
-            Icons.close,
-            size: 10,
-            color: _hovered ? Colors.red : Theme.of(context).colorScheme.onSurface.withAlpha(153),
+        child: AnimatedScale(
+          scale: _hovered ? 1.15 : 1.0,
+          duration: const Duration(milliseconds: 120),
+          curve: Curves.easeOutCubic,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 120),
+            width: 16,
+            height: 16,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: _hovered ? Colors.red.withAlpha(30) : Colors.transparent,
+            ),
+            child: Icon(
+              Icons.close,
+              size: 10,
+              color: _hovered ? Colors.red : Theme.of(context).colorScheme.onSurface.withAlpha(153),
+            ),
           ),
         ),
       ),
