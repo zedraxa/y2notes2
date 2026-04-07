@@ -9,37 +9,52 @@ import 'package:y2notes2/features/canvas/domain/entities/tools/tool_settings.dar
 class PencilHbTool extends BaseFreehandTool {
   @override String get id => 'pencil_hb';
   @override String get name => 'Pencil HB';
-  @override String get description => 'Standard HB pencil with paper grain';
+  @override String get description => 'Standard HB pencil with graphite grain and tilt shading';
   @override ToolCategory get category => ToolCategory.dry;
-  @override IconData get icon => Icons.edit_outlined;
+  @override IconData get icon => Icons.edit;
   @override BlendMode get blendMode => BlendMode.srcOver;
+  @override bool get hasTexture => true;
 
   @override
   void renderStroke(Canvas canvas, List<PointData> points, ToolSettings settings) {
     if (points.isEmpty) return;
+    final hardness = (settings.custom['hardness'] as double?) ?? 0.6;
     final grainSize = (settings.custom['grainSize'] as double?) ?? 0.5;
-    final hardness = (settings.custom['hardness'] as double?) ?? 0.5;
-    final c = settings.color;
+    final tiltShading = (settings.custom['tiltShading'] as bool?) ?? true;
 
-    final path = buildFreehandPath(points, settings, thinning: 0.4, smoothing: 0.5, simulatePressure: true);
-    canvas.drawPath(path, Paint()
-      ..color = Color.fromARGB(((0.4 + hardness * 0.4) * 255).round(), c.red, c.green, c.blue)
-      ..style = PaintingStyle.fill
-      ..isAntiAlias = true
-      ..blendMode = blendMode);
+    for (int i = 1; i < points.length; i++) {
+      final p = points[i]; final prev = points[i - 1];
+      final tiltFactor = tiltShading ? (1.0 - (p.tilt / (math.pi / 2)).clamp(0.0, 1.0)) : 0.0;
+      final effectiveSize = settings.size * (1.0 + tiltFactor * 2.0);
+      final opacityBase = 0.3 + 0.7 * (1.0 - hardness * 0.5);
+      final pressureOpacity = opacityBase * (0.3 + 0.7 * p.pressure);
+      canvas.drawLine(Offset(prev.x, prev.y), Offset(p.x, p.y), Paint()
+        ..color = settings.color.withOpacity(settings.opacity * pressureOpacity)
+        ..strokeWidth = effectiveSize..strokeCap = StrokeCap.round..isAntiAlias = true);
+    }
 
-    if (grainSize > 0 && points.length > 1) {
-      final rng = math.Random(42);
-      for (int i = 0; i < points.length; i += 2) {
-        final p = points[i];
-        canvas.drawCircle(
-          Offset(p.x + (rng.nextDouble() - 0.5) * settings.size, p.y + (rng.nextDouble() - 0.5) * settings.size),
-          rng.nextDouble() * grainSize,
-          Paint()
-            ..color = Color.fromARGB((grainSize * 30).round(), 255, 255, 255)
-            ..style = PaintingStyle.fill
-            ..blendMode = BlendMode.srcOver,
-        );
+    // Graphite grain overlay
+    final rng = math.Random(points.first.timestamp);
+    for (final p in points) {
+      for (int g = 0; g < (grainSize * 6).round(); g++) {
+        final ox = (rng.nextDouble() - 0.5) * settings.size * 1.2;
+        final oy = (rng.nextDouble() - 0.5) * settings.size * 1.2;
+        canvas.drawCircle(Offset(p.x + ox, p.y + oy), 0.2 + rng.nextDouble() * 0.5 * grainSize, Paint()..color = settings.color.withOpacity(0.06 * grainSize * p.pressure));
+      }
+    }
+  }
+
+  @override
+  void postProcess(Canvas canvas, List<PointData> points, ToolSettings settings) {
+    if (points.isEmpty) return;
+    final hardness = (settings.custom['hardness'] as double?) ?? 0.6;
+    final rng = math.Random(points.first.timestamp + 31);
+    for (int i = 0; i < points.length; i += 3) {
+      final p = points[i];
+      if (rng.nextDouble() < hardness * 0.4) {
+        final ox = (rng.nextDouble() - 0.5) * settings.size;
+        final oy = (rng.nextDouble() - 0.5) * settings.size;
+        canvas.drawCircle(Offset(p.x + ox, p.y + oy), 0.3 + rng.nextDouble() * 0.3, Paint()..color = Colors.white.withOpacity(0.08 * hardness));
       }
     }
   }
@@ -47,9 +62,10 @@ class PencilHbTool extends BaseFreehandTool {
   @override
   List<ToolSettingDefinition> get settingsSchema => const [
     ToolSettingDefinition(key: 'grainSize', label: 'Grain Size', type: ToolSettingType.slider, defaultValue: 0.5, min: 0.0, max: 1.0),
-    ToolSettingDefinition(key: 'hardness', label: 'Hardness', type: ToolSettingType.slider, defaultValue: 0.5, min: 0.0, max: 1.0),
+    ToolSettingDefinition(key: 'hardness', label: 'Hardness', type: ToolSettingType.slider, defaultValue: 0.6, min: 0.0, max: 1.0),
+    ToolSettingDefinition(key: 'tiltShading', label: 'Tilt Shading', type: ToolSettingType.toggle, defaultValue: true),
   ];
 
   @override
-  ToolSettings get defaultSettings => const ToolSettings(size: 3.0, opacity: 0.8, custom: {'grainSize': 0.5, 'hardness': 0.5});
+  ToolSettings get defaultSettings => const ToolSettings(size: 3.0, opacity: 1.0, custom: {'grainSize': 0.5, 'hardness': 0.6, 'tiltShading': true});
 }
