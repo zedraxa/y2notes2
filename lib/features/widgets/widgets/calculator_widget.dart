@@ -1,17 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:y2notes2/features/widgets/domain/entities/smart_widget.dart';
 
-/// Basic calculator widget — result can be inserted as text.
+/// Full-featured calculator with history and memory operations.
 class CalculatorWidget extends SmartWidget {
   CalculatorWidget({
     super.id,
     super.position = Offset.zero,
-    super.size = const Size(220, 300),
+    super.size = const Size(220, 320),
     super.config,
     Map<String, dynamic>? state,
   }) : super(
           type: SmartWidgetType.calculator,
-          state: state ?? const {'display': '0', 'memory': 0.0},
+          state: state ??
+              const {
+                'display': '0',
+                'memory': 0.0,
+                'history': <String>[],
+              },
         );
 
   @override
@@ -35,24 +40,62 @@ class CalculatorWidget extends SmartWidget {
       );
 
   @override
-  Widget buildInteractiveOverlay(BuildContext context,
-          {required ValueChanged<Map<String, dynamic>> onStateChanged}) =>
-      _CalculatorOverlay(onStateChanged: onStateChanged);
+  Widget buildInteractiveOverlay(
+    BuildContext context, {
+    required ValueChanged<Map<String, dynamic>> onStateChanged,
+  }) =>
+      _CalculatorOverlay(
+        widget: this,
+        onStateChanged: onStateChanged,
+      );
 }
 
 class _CalculatorOverlay extends StatefulWidget {
-  const _CalculatorOverlay({required this.onStateChanged});
+  const _CalculatorOverlay({
+    required this.widget,
+    required this.onStateChanged,
+  });
+  final CalculatorWidget widget;
   final ValueChanged<Map<String, dynamic>> onStateChanged;
 
   @override
-  State<_CalculatorOverlay> createState() => _CalculatorOverlayState();
+  State<_CalculatorOverlay> createState() =>
+      _CalculatorOverlayState();
 }
 
 class _CalculatorOverlayState extends State<_CalculatorOverlay> {
   String _display = '0';
   double _mem = 0;
+  double _storedMem = 0;
   String _op = '';
   bool _clear = false;
+  String _expression = '';
+  List<String> _history = [];
+
+  static const int _maxHistory = 10;
+
+  @override
+  void initState() {
+    super.initState();
+    final s = widget.widget.state;
+    _display = s['display'] as String? ?? '0';
+    _mem = (s['memory'] as num?)?.toDouble() ?? 0;
+    _storedMem = (s['storedMemory'] as num?)?.toDouble() ?? 0;
+    final rawHist = s['history'] as List?;
+    _history = rawHist
+            ?.map((e) => e.toString())
+            .toList() ??
+        [];
+  }
+
+  void _notify() {
+    widget.onStateChanged({
+      'display': _display,
+      'memory': _mem,
+      'storedMemory': _storedMem,
+      'history': _history,
+    });
+  }
 
   void _press(String key) {
     setState(() {
@@ -61,15 +104,30 @@ class _CalculatorOverlayState extends State<_CalculatorOverlay> {
         _mem = 0;
         _op = '';
         _clear = false;
+        _expression = '';
+      } else if (key == '±') {
+        final v = double.tryParse(_display) ?? 0;
+        _display = _fmt(-v);
+      } else if (key == '%') {
+        final v = double.tryParse(_display) ?? 0;
+        _display = _fmt(v / 100);
       } else if (key == '=') {
         final cur = double.tryParse(_display) ?? 0;
         final result = _calc(_mem, cur, _op);
+        final entry =
+            '${_fmt(_mem)} $_op ${_fmt(cur)} = ${_fmt(result)}';
+        _history.insert(0, entry);
+        if (_history.length > _maxHistory) {
+          _history = _history.sublist(0, _maxHistory);
+        }
         _display = _fmt(result);
+        _expression = '';
         _mem = result;
         _op = '';
         _clear = true;
       } else if ('+-×÷'.contains(key)) {
         _mem = double.tryParse(_display) ?? 0;
+        _expression = '${_fmt(_mem)} $key';
         _op = key;
         _clear = true;
       } else if (key == '.') {
@@ -79,6 +137,17 @@ class _CalculatorOverlayState extends State<_CalculatorOverlay> {
         } else if (!_display.contains('.')) {
           _display += '.';
         }
+      } else if (key == 'M+') {
+        _storedMem +=
+            double.tryParse(_display) ?? 0;
+      } else if (key == 'M-') {
+        _storedMem -=
+            double.tryParse(_display) ?? 0;
+      } else if (key == 'MR') {
+        _display = _fmt(_storedMem);
+        _clear = true;
+      } else if (key == 'MC') {
+        _storedMem = 0;
       } else {
         if (_clear || _display == '0') {
           _display = key;
@@ -88,7 +157,7 @@ class _CalculatorOverlayState extends State<_CalculatorOverlay> {
         }
       }
     });
-    widget.onStateChanged({'display': _display, 'memory': _mem});
+    _notify();
   }
 
   double _calc(double a, double b, String op) {
@@ -108,7 +177,10 @@ class _CalculatorOverlayState extends State<_CalculatorOverlay> {
 
   String _fmt(double v) {
     if (v == v.roundToDouble()) return v.toInt().toString();
-    return v.toStringAsFixed(4).replaceAll(RegExp(r'0+$'), '');
+    return v
+        .toStringAsFixed(6)
+        .replaceAll(RegExp(r'0+$'), '')
+        .replaceAll(RegExp(r'\.$'), '');
   }
 
   @override
@@ -131,19 +203,86 @@ class _CalculatorOverlayState extends State<_CalculatorOverlay> {
         ),
         child: Column(
           children: [
+            // Expression preview
+            if (_expression.isNotEmpty)
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.only(
+                  left: 12,
+                  right: 12,
+                  top: 4,
+                ),
+                alignment: Alignment.centerRight,
+                child: Text(
+                  _expression,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey.shade500,
+                  ),
+                ),
+              ),
+            // Display
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 6,
+              ),
               alignment: Alignment.centerRight,
               child: Text(
                 _display,
                 style: const TextStyle(
-                    fontSize: 28, fontWeight: FontWeight.bold),
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
             ),
+            // Memory indicator
+            if (_storedMem != 0)
+              Padding(
+                padding: const EdgeInsets.only(
+                  right: 12,
+                  bottom: 2,
+                ),
+                child: Align(
+                  alignment: Alignment.centerRight,
+                  child: Text(
+                    'M: ${_fmt(_storedMem)}',
+                    style: TextStyle(
+                      fontSize: 10,
+                      color: Colors.blue.shade400,
+                    ),
+                  ),
+                ),
+              ),
             const Divider(height: 1),
+            // Memory row
+            SizedBox(
+              height: 28,
+              child: Row(
+                children: ['MC', 'MR', 'M-', 'M+'].map((k) {
+                  return Expanded(
+                    child: InkWell(
+                      onTap: () => _press(k),
+                      child: Center(
+                        child: Text(
+                          k,
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Colors.blue.shade600,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
+            const Divider(height: 1),
+            // Main keypad
             Expanded(
               child: Column(
                 children: rows
@@ -156,10 +295,15 @@ class _CalculatorOverlayState extends State<_CalculatorOverlay> {
                                   child: InkWell(
                                     onTap: () => k == '⌫'
                                         ? setState(() {
-                                            _display = _display.length > 1
-                                                ? _display.substring(
-                                                    0, _display.length - 1)
-                                                : '0';
+                                            _display =
+                                                _display.length > 1
+                                                    ? _display.substring(
+                                                        0,
+                                                        _display.length -
+                                                            1,
+                                                      )
+                                                    : '0';
+                                            _notify();
                                           })
                                         : _press(k),
                                     child: Center(
@@ -170,11 +314,12 @@ class _CalculatorOverlayState extends State<_CalculatorOverlay> {
                                           fontWeight: k == '='
                                               ? FontWeight.bold
                                               : FontWeight.w400,
-                                          color: '÷×-+='.contains(k)
-                                              ? Colors.orange
-                                              : k == 'C'
-                                                  ? Colors.red
-                                                  : null,
+                                          color:
+                                              '÷×-+='.contains(k)
+                                                  ? Colors.orange
+                                                  : k == 'C'
+                                                      ? Colors.red
+                                                      : null,
                                         ),
                                       ),
                                     ),
@@ -188,6 +333,37 @@ class _CalculatorOverlayState extends State<_CalculatorOverlay> {
                     .toList(),
               ),
             ),
+            // History strip
+            if (_history.isNotEmpty)
+              Container(
+                height: 28,
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 8,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade50,
+                  borderRadius: const BorderRadius.only(
+                    bottomLeft: Radius.circular(12),
+                    bottomRight: Radius.circular(12),
+                  ),
+                ),
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: _history.length,
+                  separatorBuilder: (_, __) =>
+                      const SizedBox(width: 12),
+                  itemBuilder: (_, i) => Center(
+                    child: Text(
+                      _history[i],
+                      style: TextStyle(
+                        fontSize: 10,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
           ],
         ),
       ),
