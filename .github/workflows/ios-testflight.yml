@@ -35,7 +35,7 @@ env:
 jobs:
   build-and-deploy:
     name: Build iOS IPA & Upload to TestFlight
-    runs-on: macos-14   # Apple Silicon — equivalent to Codemagic's mac_mini_m2
+    runs-on: macos-15   # Xcode 16+ required for storyboards with targetRuntime="AppleSDK"
     permissions:
       contents: read    # Minimal token permissions — no write access needed
 
@@ -300,12 +300,9 @@ jobs:
 
       # ----------------------------------------------------------
       # 13. Upload to TestFlight via App Store Connect API
-      # Uses xcrun altool with JWT-based App Store Connect API key
-      # authentication. Note: altool is available on Xcode 15
-      # (macos-14). If you migrate to macos-15 (Xcode 16+) you will
-      # need to replace this step with a direct App Store Connect
-      # REST API call or a third-party action such as
-      # apple-actions/upload-testflight-build.
+      # Uses iTMSTransporter (bundled with Xcode 16+) with JWT-based
+      # App Store Connect API key authentication. xcrun altool was
+      # removed in Xcode 16, so iTMSTransporter is the replacement.
       # ----------------------------------------------------------
       - name: Upload to TestFlight
         env:
@@ -313,8 +310,7 @@ jobs:
           ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
           API_PRIVATE_KEY: ${{ secrets.APP_STORE_CONNECT_API_PRIVATE_KEY }}
         run: |
-          # Write the private key to a temp file that altool can read.
-          # altool looks for keys in ~/.appstoreconnect/private_keys/.
+          # Write the private key to a temp file
           mkdir -p ~/.appstoreconnect/private_keys
           echo "$API_PRIVATE_KEY" \
             > ~/.appstoreconnect/private_keys/AuthKey_${API_KEY_ID}.p8
@@ -323,14 +319,11 @@ jobs:
           IPA_PATH=$(find build/ios/ipa -name "*.ipa" | head -1)
           echo "Uploading: $IPA_PATH"
 
-          # Upload to TestFlight using App Store Connect API auth.
-          # xcrun altool is deprecated in Xcode 14+ but is still
-          # present and functional in Xcode 15 (macos-14 default).
-          xcrun altool --upload-app \
-            --type ios \
-            --file "$IPA_PATH" \
-            --apiKey  "$API_KEY_ID" \
-            --apiIssuer "$ISSUER_ID"
+          # Upload to TestFlight using iTMSTransporter (bundled with Xcode 16+)
+          xcrun iTMSTransporter -m upload \
+            -assetFile "$IPA_PATH" \
+            -apiKey "$API_KEY_ID" \
+            -apiIssuer "$ISSUER_ID"
 
           # Remove the private key from disk immediately after use
           rm -f ~/.appstoreconnect/private_keys/AuthKey_${API_KEY_ID}.p8
