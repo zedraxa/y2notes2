@@ -25,7 +25,7 @@ on:
   workflow_dispatch:
 
 env:
-  BUNDLE_ID: "com.y2notes.app"
+  BUNDLE_ID: "com.y2notes.y2notes2"
   APP_ORG: "com.y2notes"
   # Temporary keychain name (unique per run to avoid conflicts)
   KEYCHAIN_NAME: "build-${{ github.run_number }}.keychain"
@@ -68,7 +68,7 @@ jobs:
       # ----------------------------------------------------------
       - name: Bootstrap iOS platform
         run: |
-          if [ ! -d "ios" ]; then
+          if [ ! -f "ios/Runner.xcodeproj/project.pbxproj" ]; then
             flutter create --platforms=ios \
               --org "$APP_ORG" \
               --project-name y2notes2 .
@@ -169,7 +169,7 @@ jobs:
               <key>teamID</key>
               <string></string>
               <key>bundleID</key>
-              <string>com.y2notes.app</string>
+              <string>com.y2notes.y2notes2</string>
               <key>signingStyle</key>
               <string>manual</string>
               <key>stripSwiftSymbols</key>

@@ -18,7 +18,7 @@ class ImageImportEngine {
   /// Opens the system file picker for image files and returns the selected
   /// path, or `null` if the user cancelled.
   Future<String?> pickImageFile() async {
-    final result = await FilePicker.platform.pickFiles(
+    final result = await FilePicker.pickFiles(
       type: FileType.image,
       allowMultiple: false,
     );
@@ -27,7 +27,7 @@ class ImageImportEngine {
 
   /// Opens the file picker allowing multiple images to be selected.
   Future<List<String>> pickMultipleImages() async {
-    final result = await FilePicker.platform.pickFiles(
+    final result = await FilePicker.pickFiles(
       type: FileType.image,
       allowMultiple: true,
     );
