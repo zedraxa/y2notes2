@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:y2notes2/app/theme/colors.dart';
 
-/// Star/sparkle icon toggle for all writing effects.
+/// Star/sparkle icon toggle for all writing effects with smooth transitions.
 class EffectsToggle extends StatelessWidget {
   const EffectsToggle({
     super.key,
@@ -19,18 +19,31 @@ class EffectsToggle extends StatelessWidget {
           onTap: () => onToggle(!enabled),
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 200),
+            curve: Curves.easeOutCubic,
             width: 38,
             height: 38,
             decoration: BoxDecoration(
               color: enabled
-                  ? AppColors.accent.withOpacity(0.12)
+                  ? AppColors.accent.withOpacity(0.14)
                   : Colors.transparent,
               borderRadius: BorderRadius.circular(10),
+              border: enabled
+                  ? Border.all(
+                      color: AppColors.accent.withOpacity(0.25),
+                      width: 1,
+                    )
+                  : null,
             ),
-            child: Icon(
-              enabled ? Icons.auto_awesome : Icons.auto_awesome_outlined,
-              size: 22,
-              color: enabled ? AppColors.accent : AppColors.textSecondary,
+            child: TweenAnimationBuilder<Color?>(
+              tween: ColorTween(
+                end: enabled ? AppColors.accent : AppColors.textSecondary,
+              ),
+              duration: const Duration(milliseconds: 200),
+              builder: (context, color, _) => Icon(
+                enabled ? Icons.auto_awesome : Icons.auto_awesome_outlined,
+                size: 22,
+                color: color,
+              ),
             ),
           ),
         ),
