@@ -37,7 +37,25 @@ class _ToolPickerPanelState extends State<ToolPickerPanel> {
             SizedBox(
               height: 200,
               child: tools.isEmpty
-                  ? const Center(child: Text('No tools available'))
+                  ? Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.construction_outlined,
+                            size: 40,
+                            color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.4),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'No tools available',
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.6),
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
                   : GridView.builder(
                       padding: const EdgeInsets.all(8),
                       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -125,7 +143,8 @@ class _ToolTile extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(8),
         child: AnimatedContainer(
-          duration: const Duration(milliseconds: 150),
+          duration: const Duration(milliseconds: 180),
+          curve: Curves.easeOutCubic,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(8),
             color: isActive
@@ -134,12 +153,31 @@ class _ToolTile extends StatelessWidget {
             border: isActive
                 ? Border.all(color: colorScheme.primary, width: 2)
                 : null,
+            boxShadow: isActive
+                ? [
+                    BoxShadow(
+                      color: colorScheme.primary.withOpacity(0.2),
+                      blurRadius: 6,
+                      offset: const Offset(0, 2),
+                    ),
+                  ]
+                : null,
           ),
+          transform: isActive
+              ? (Matrix4.identity()..scale(1.05))
+              : Matrix4.identity(),
+          transformAlignment: Alignment.center,
           child: Center(
-            child: Icon(
-              tool.icon,
-              size: 22,
-              color: isActive ? colorScheme.primary : colorScheme.onSurface,
+            child: TweenAnimationBuilder<Color?>(
+              tween: ColorTween(
+                end: isActive ? colorScheme.primary : colorScheme.onSurface,
+              ),
+              duration: const Duration(milliseconds: 180),
+              builder: (_, color, __) => Icon(
+                tool.icon,
+                size: 22,
+                color: color,
+              ),
             ),
           ),
         ),

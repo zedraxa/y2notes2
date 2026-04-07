@@ -35,27 +35,40 @@ class CanvasSettingsPage extends StatelessWidget {
             _SpacingSlider(
               title: 'Line Spacing',
               value: state.config.lineSpacing,
-              onChanged: (v) => bloc.add(CanvasConfigUpdated(
-                state.config.copyWith(lineSpacing: v),
-              )),
+              onChanged: (v) {
+                bloc.add(CanvasConfigUpdated(
+                  state.config.copyWith(lineSpacing: v),
+                ));
+                settings.setLineSpacing(v);
+              },
             ),
             _SpacingSlider(
               title: 'Grid Spacing',
               value: state.config.gridSpacing,
-              onChanged: (v) => bloc.add(CanvasConfigUpdated(
-                state.config.copyWith(gridSpacing: v),
-              )),
+              onChanged: (v) {
+                bloc.add(CanvasConfigUpdated(
+                  state.config.copyWith(gridSpacing: v),
+                ));
+                settings.setGridSpacing(v);
+              },
             ),
             _SpacingSlider(
               title: 'Dot Spacing',
               value: state.config.dotSpacing,
-              onChanged: (v) => bloc.add(CanvasConfigUpdated(
-                state.config.copyWith(dotSpacing: v),
-              )),
+              onChanged: (v) {
+                bloc.add(CanvasConfigUpdated(
+                  state.config.copyWith(dotSpacing: v),
+                ));
+                settings.setDotSpacing(v);
+              },
             ),
             const Divider(height: 24),
             _SectionHeader('Layout'),
-            _MarginToggle(bloc: bloc, showMargin: state.config.showMargin),
+            _MarginToggle(
+              bloc: bloc,
+              settings: settings,
+              showMargin: state.config.showMargin,
+            ),
           ],
         ),
       ),
@@ -162,9 +175,14 @@ class _SpacingSlider extends StatelessWidget {
 }
 
 class _MarginToggle extends StatelessWidget {
-  const _MarginToggle({required this.bloc, required this.showMargin});
+  const _MarginToggle({
+    required this.bloc,
+    required this.settings,
+    required this.showMargin,
+  });
 
   final CanvasBloc bloc;
+  final SettingsService settings;
   final bool showMargin;
 
   @override
@@ -177,6 +195,7 @@ class _MarginToggle extends StatelessWidget {
           bloc.add(CanvasConfigUpdated(
             state.config.copyWith(showMargin: v),
           ));
+          settings.setShowMargin(v);
         },
       );
 }

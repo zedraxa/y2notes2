@@ -229,3 +229,17 @@ class GoToPreviousPage extends DocumentEvent {
 class ToggleOutlinePanel extends DocumentEvent {
   const ToggleOutlinePanel();
 }
+
+// ── Audio recordings ───────────────────────────────────────────────────────
+
+/// Update the audio recordings for a specific page.
+class UpdatePageAudioRecordings extends DocumentEvent {
+  const UpdatePageAudioRecordings({
+    required this.pageIndex,
+    required this.recordings,
+  });
+  final int pageIndex;
+  final List<dynamic> recordings;
+  @override
+  List<Object?> get props => [pageIndex, recordings];
+}
