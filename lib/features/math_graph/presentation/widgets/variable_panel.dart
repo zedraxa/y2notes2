@@ -136,10 +136,11 @@ class _VariablePanelState extends State<VariablePanel> {
                         Expanded(
                           child: Text(v.value.toStringAsFixed(2)),
                         ),
-                      Text(
-                        v.value.toStringAsFixed(2),
-                        style: const TextStyle(fontSize: 12),
-                      ),
+                      if (v.hasRange)
+                        Text(
+                          v.value.toStringAsFixed(2),
+                          style: const TextStyle(fontSize: 12),
+                        ),
                       IconButton(
                         icon: const Icon(Icons.close, size: 16),
                         onPressed: () => context

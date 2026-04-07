@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:y2notes2/core/extensions/iterable_extensions.dart';
 
 import '../../domain/entities/graph_element.dart';
 import '../../domain/entities/matrix_data.dart';
@@ -41,9 +42,7 @@ class GraphState extends Equatable {
   /// The currently selected graph element.
   GraphElement? get selectedGraph => selectedGraphId == null
       ? null
-      : graphs
-          .cast<GraphElement?>()
-          .firstWhere((g) => g!.id == selectedGraphId, orElse: () => null);
+      : graphs.where((g) => g.id == selectedGraphId).firstOrNull;
 
   bool get hasSelection => selectedGraphId != null;
 
