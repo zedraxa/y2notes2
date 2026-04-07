@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:y2notes2/app/app.dart';
 import 'package:y2notes2/core/engine/haptic_controller.dart';
 import 'package:y2notes2/core/services/settings_service.dart';
+import 'package:y2notes2/features/audio_sync/presentation/bloc/audio_sync_bloc.dart';
 import 'package:y2notes2/features/canvas/domain/entities/tools/tool_registry.dart';
 import 'package:y2notes2/features/canvas/presentation/bloc/canvas_bloc.dart';
 import 'package:y2notes2/features/collaboration/presentation/bloc/collaboration_bloc.dart';
@@ -76,6 +77,11 @@ void main() async {
             ),
             BlocProvider(
               create: (_) => WidgetBloc(),
+            ),
+            // AudioSyncBloc manages synchronised recording
+            // and playback with stroke timestamps.
+            BlocProvider(
+              create: (_) => AudioSyncBloc(),
             ),
             // Root InfiniteCanvasBloc — individual pages can override with
             // their own scoped provider when needed.
