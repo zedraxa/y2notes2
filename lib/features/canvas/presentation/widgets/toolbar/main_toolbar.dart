@@ -20,6 +20,7 @@ import 'package:y2notes2/features/handwriting/presentation/bloc/handwriting_even
 import 'package:y2notes2/features/handwriting/presentation/bloc/handwriting_state.dart';
 import 'package:y2notes2/features/shapes/domain/entities/shape_type.dart';
 import 'package:y2notes2/features/shapes/presentation/widgets/shape_type_picker.dart';
+import 'package:y2notes2/features/collaboration/presentation/widgets/share_button.dart';
 import 'package:y2notes2/features/stickers/presentation/bloc/sticker_bloc.dart';
 import 'package:y2notes2/features/stickers/presentation/bloc/sticker_event.dart';
 import 'package:y2notes2/features/stickers/presentation/widgets/sticker_picker_panel.dart';
@@ -99,6 +100,9 @@ class MainToolbar extends StatelessWidget {
                 // ── Undo / Redo ────────────────────────────────────────────
                 _UndoRedoButtons(state: state, bloc: bloc),
                 const Spacer(),
+                // ── Collaboration / Share ───────────────────────────────────
+                const ShareButton(),
+                const _Divider(),
                 // ── Recognize (handwriting → text) ───────────────────────
                 const _RecognizeButton(),
                 const _Divider(),
