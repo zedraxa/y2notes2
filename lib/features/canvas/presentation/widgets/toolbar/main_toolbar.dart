@@ -20,9 +20,17 @@ import 'package:y2notes2/features/handwriting/presentation/bloc/handwriting_even
 import 'package:y2notes2/features/handwriting/presentation/bloc/handwriting_state.dart';
 import 'package:y2notes2/features/shapes/domain/entities/shape_type.dart';
 import 'package:y2notes2/features/shapes/presentation/widgets/shape_type_picker.dart';
+import 'package:y2notes2/features/collaboration/presentation/widgets/share_button.dart';
 import 'package:y2notes2/features/stickers/presentation/bloc/sticker_bloc.dart';
 import 'package:y2notes2/features/stickers/presentation/bloc/sticker_event.dart';
 import 'package:y2notes2/features/stickers/presentation/widgets/sticker_picker_panel.dart';
+import 'package:y2notes2/features/templates/domain/entities/page_template.dart';
+import 'package:y2notes2/features/templates/presentation/bloc/template_bloc.dart';
+import 'package:y2notes2/features/templates/presentation/bloc/template_event.dart';
+import 'package:y2notes2/features/templates/presentation/widgets/template_picker.dart';
+import 'package:y2notes2/features/widgets/presentation/bloc/widget_bloc.dart';
+import 'package:y2notes2/features/widgets/presentation/bloc/widget_event.dart';
+import 'package:y2notes2/features/widgets/presentation/widgets/widget_picker_panel.dart';
 
 /// GoodNotes-style thin top toolbar.
 class MainToolbar extends StatelessWidget {
@@ -99,11 +107,60 @@ class MainToolbar extends StatelessWidget {
                 // ── Undo / Redo ────────────────────────────────────────────
                 _UndoRedoButtons(state: state, bloc: bloc),
                 const Spacer(),
+                // ── Collaboration / Share ───────────────────────────────────
+                const ShareButton(),
+                const _Divider(),
                 // ── Recognize (handwriting → text) ───────────────────────
                 const _RecognizeButton(),
                 const _Divider(),
                 // ── Export / Import ────────────────────────────────────────
                 const DocumentToolbarActions(),
+                const _Divider(),
+                // ── Templates ──────────────────────────────────────────────
+                IconButton(
+                  icon: const Icon(Icons.dashboard_customize_outlined),
+                  iconSize: AppConstants.toolbarIconSize,
+                  tooltip: 'Templates',
+                  onPressed: () {
+                    HapticController.light();
+                    showModalBottomSheet<void>(
+                      context: context,
+                      isScrollControlled: true,
+                      builder: (_) => BlocProvider.value(
+                        value: context.read<TemplateBloc>(),
+                        child: TemplatePicker(
+                          onApply: (NoteTemplate t) {
+                            context
+                                .read<TemplateBloc>()
+                                .add(TemplateApplied(t.id));
+                          },
+                        ),
+                      ),
+                    );
+                  },
+                ),
+                const _Divider(),
+                // ── Smart Widgets ──────────────────────────────────────────
+                IconButton(
+                  icon: const Icon(Icons.widgets_outlined),
+                  iconSize: AppConstants.toolbarIconSize,
+                  tooltip: 'Widgets',
+                  onPressed: () {
+                    HapticController.light();
+                    showModalBottomSheet<void>(
+                      context: context,
+                      isScrollControlled: true,
+                      builder: (_) => BlocProvider.value(
+                        value: context.read<WidgetBloc>(),
+                        child: WidgetPickerPanel(
+                          onSelected: (w) {
+                            context.read<WidgetBloc>().add(WidgetAdded(w));
+                          },
+                        ),
+                      ),
+                    );
+                  },
+                ),
                 const _Divider(),
                 // ── Stickers ───────────────────────────────────────────────
                 IconButton(

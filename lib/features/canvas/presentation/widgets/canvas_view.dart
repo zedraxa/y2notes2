@@ -10,6 +10,9 @@ import 'package:y2notes2/features/canvas/presentation/bloc/canvas_bloc.dart';
 import 'package:y2notes2/features/canvas/presentation/bloc/canvas_event.dart';
 import 'package:y2notes2/features/canvas/presentation/bloc/canvas_state.dart';
 import 'package:y2notes2/features/canvas/presentation/widgets/page_background.dart';
+import 'package:y2notes2/features/collaboration/presentation/bloc/collaboration_bloc.dart';
+import 'package:y2notes2/features/collaboration/presentation/widgets/offline_indicator.dart';
+import 'package:y2notes2/features/collaboration/presentation/widgets/remote_cursors.dart';
 import 'package:y2notes2/features/effects/writing/writing_effects_engine.dart';
 import 'package:y2notes2/features/handwriting/domain/entities/text_block.dart';
 import 'package:y2notes2/features/handwriting/presentation/bloc/handwriting_bloc.dart';
@@ -95,6 +98,11 @@ class _CanvasViewState extends State<CanvasView>
     if (state.effectsEnabled && state.activeStroke != null) {
       _effectsEngine.onStrokePoint(point, prev, state.activeStroke!);
     }
+
+    // Forward cursor position to collaboration presence manager.
+    context
+        .read<CollaborationBloc>()
+        .updateCursorPosition(Offset(point.x, point.y));
   }
 
   void _onPointerUp(PointerUpEvent event) {
@@ -107,10 +115,12 @@ class _CanvasViewState extends State<CanvasView>
       _effectsEngine.onStrokeEnd(activeStroke);
     }
     _lastPoint = null;
+    context.read<CollaborationBloc>().clearCursorPosition();
   }
 
   void _onPointerCancel(PointerCancelEvent event) {
     context.read<CanvasBloc>().add(const StrokeEnded());
+    context.read<CollaborationBloc>().clearCursorPosition();
     _lastPoint = null;
   }
 
@@ -239,6 +249,12 @@ class _CanvasViewState extends State<CanvasView>
                                 guides: shapeState.snapGuides,
                               ),
                             ),
+                            // Layer 7: Remote cursors (collaboration)
+                            BlocBuilder<CollaborationBloc, CollaborationState>(
+                              builder: (_, collabState) => RemoteCursors(
+                                participants: collabState.participants,
+                              ),
+                            ),
                           ],
                         ),
                       ),
@@ -256,6 +272,13 @@ class _CanvasViewState extends State<CanvasView>
                           .read<CanvasBloc>()
                           .add(const ShapeRecognitionRejected()),
                     ),
+                  // Offline / reconnecting banner (collaboration)
+                  const Positioned(
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    child: OfflineIndicator(),
+                  ),
                 ],
               );
             },

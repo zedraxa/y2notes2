@@ -6,12 +6,17 @@ import 'package:y2notes2/core/engine/haptic_controller.dart';
 import 'package:y2notes2/core/services/settings_service.dart';
 import 'package:y2notes2/features/canvas/domain/entities/tools/tool_registry.dart';
 import 'package:y2notes2/features/canvas/presentation/bloc/canvas_bloc.dart';
+import 'package:y2notes2/features/collaboration/presentation/bloc/collaboration_bloc.dart';
 import 'package:y2notes2/features/documents/data/document_repository.dart';
 import 'package:y2notes2/features/handwriting/presentation/bloc/handwriting_bloc.dart';
 import 'package:y2notes2/features/infinite_canvas/presentation/bloc/infinite_canvas_bloc.dart';
 import 'package:y2notes2/features/library/data/library_repository.dart';
 import 'package:y2notes2/features/shapes/presentation/bloc/shape_bloc.dart';
 import 'package:y2notes2/features/stickers/presentation/bloc/sticker_bloc.dart';
+import 'package:y2notes2/features/templates/data/template_repository.dart';
+import 'package:y2notes2/features/templates/presentation/bloc/template_bloc.dart';
+import 'package:y2notes2/features/templates/presentation/bloc/template_event.dart';
+import 'package:y2notes2/features/widgets/presentation/bloc/widget_bloc.dart';
 import 'package:y2notes2/features/workspace/presentation/bloc/workspace_bloc.dart';
 import 'package:y2notes2/shared/widgets/service_provider.dart';
 
@@ -24,6 +29,7 @@ void main() async {
   final prefs = await SharedPreferences.getInstance();
   final documentRepository = DocumentRepository(prefs);
   final libraryRepository = LibraryRepository(prefs);
+  final templateRepository = TemplateRepository(prefs);
 
   // Register all plugin-based drawing tools.
   ToolRegistry.registerAll();
@@ -55,6 +61,22 @@ void main() async {
             ),
             // HandwritingBloc manages recognition state across the app.
             BlocProvider(create: (_) => HandwritingBloc()),
+            // CollaborationBloc manages real-time sync and presence.
+            BlocProvider(
+              create: (_) => CollaborationBloc(
+                // Use placeholder IDs — in a real app these come from auth.
+                localUserId: 'local_user',
+                localDisplayName: 'Me',
+              ),
+            ),
+            // Template & Widget blocs.
+            BlocProvider(
+              create: (_) => TemplateBloc(repository: templateRepository)
+                ..add(const TemplatesLoaded()),
+            ),
+            BlocProvider(
+              create: (_) => WidgetBloc(),
+            ),
             // Root InfiniteCanvasBloc — individual pages can override with
             // their own scoped provider when needed.
             BlocProvider(

@@ -21,6 +21,7 @@ import 'package:y2notes2/features/stickers/engine/sticker_renderer.dart';
 ///  5. Active stroke (live vector, drawn on top of shapes)
 ///  6. Stickers & stamps
 ///  7. Text blocks (converted handwriting)
+///  8. Remote cursors (collaboration layer — top-most)
 ///
 /// Future layers (handled by the effects engine and subsequent PRs):
 ///  8. Interaction effects
