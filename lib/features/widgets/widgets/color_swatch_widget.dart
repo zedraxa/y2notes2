@@ -87,7 +87,7 @@ class _ColorSwatchOverlayState
   }
 
   String _hex(Color c) =>
-      '#${c.toARGB32().toRadixString(16).substring(2).toUpperCase()}';
+      '#${c.value.toRadixString(16).substring(2).toUpperCase()}';
 
   void _notifyConfig() {
     widget.onStateChanged({'_config_colors': _colors});
@@ -311,7 +311,7 @@ class _ColorSwatchOverlayState
                     onTap: () {
                       setState(() {
                         _colors
-                            .add(pickerColor.toARGB32());
+                            .add(pickerColor.value);
                         _showPicker = false;
                       });
                       _notifyConfig();

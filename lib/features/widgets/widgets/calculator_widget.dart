@@ -15,6 +15,7 @@ class CalculatorWidget extends SmartWidget {
               const {
                 'display': '0',
                 'memory': 0.0,
+                'storedMemory': 0.0,
                 'history': <String>[],
               },
         );
@@ -176,11 +177,18 @@ class _CalculatorOverlayState extends State<_CalculatorOverlay> {
   }
 
   String _fmt(double v) {
-    if (v == v.roundToDouble()) return v.toInt().toString();
-    return v
-        .toStringAsFixed(6)
-        .replaceAll(RegExp(r'0+$'), '')
-        .replaceAll(RegExp(r'\.$'), '');
+    if (v == v.roundToDouble()) {
+      return v.toInt().toString();
+    }
+    final s = v.toStringAsFixed(6);
+    final dotIdx = s.indexOf('.');
+    if (dotIdx == -1) return s;
+    var end = s.length;
+    while (end > dotIdx + 1 && s[end - 1] == '0') {
+      end--;
+    }
+    if (end == dotIdx + 1) end = dotIdx;
+    return s.substring(0, end);
   }
 
   @override

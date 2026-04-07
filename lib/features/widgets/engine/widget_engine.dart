@@ -43,10 +43,11 @@ class WidgetEngine {
 
   /// Sends the widget with [id] to the back of the z-order.
   void sendToBack(String id) {
-    final minZ = _zOrder.values.fold<int>(
-      0,
-      (prev, z) => z < prev ? z : prev,
-    );
+    final minZ = _zOrder.values.isEmpty
+        ? 0
+        : _zOrder.values.reduce(
+            (a, b) => a < b ? a : b,
+          );
     _zOrder[id] = minZ - 1;
   }
 
