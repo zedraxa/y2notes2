@@ -13,8 +13,16 @@ import 'package:y2notes2/features/canvas/presentation/widgets/toolbar/pen_picker
 import 'package:y2notes2/features/canvas/presentation/widgets/toolbar/thickness_slider.dart';
 import 'package:y2notes2/features/canvas/presentation/widgets/toolbar/tool_picker_panel.dart';
 import 'package:y2notes2/features/canvas/presentation/widgets/toolbar/tool_settings_panel.dart';
+import 'package:y2notes2/features/documents/presentation/bloc/document_bloc.dart';
+import 'package:y2notes2/features/documents/presentation/pages/notebook_page_view.dart';
+import 'package:y2notes2/features/handwriting/presentation/bloc/handwriting_bloc.dart';
+import 'package:y2notes2/features/handwriting/presentation/bloc/handwriting_event.dart';
+import 'package:y2notes2/features/handwriting/presentation/bloc/handwriting_state.dart';
 import 'package:y2notes2/features/shapes/domain/entities/shape_type.dart';
 import 'package:y2notes2/features/shapes/presentation/widgets/shape_type_picker.dart';
+import 'package:y2notes2/features/stickers/presentation/bloc/sticker_bloc.dart';
+import 'package:y2notes2/features/stickers/presentation/bloc/sticker_event.dart';
+import 'package:y2notes2/features/stickers/presentation/widgets/sticker_picker_panel.dart';
 
 /// GoodNotes-style thin top toolbar.
 class MainToolbar extends StatelessWidget {
@@ -91,6 +99,37 @@ class MainToolbar extends StatelessWidget {
                 // ── Undo / Redo ────────────────────────────────────────────
                 _UndoRedoButtons(state: state, bloc: bloc),
                 const Spacer(),
+                // ── Recognize (handwriting → text) ───────────────────────
+                const _RecognizeButton(),
+                const _Divider(),
+                // ── Export / Import ────────────────────────────────────────
+                const DocumentToolbarActions(),
+                const _Divider(),
+                // ── Stickers ───────────────────────────────────────────────
+                IconButton(
+                  icon: const Icon(Icons.emoji_emotions_outlined),
+                  iconSize: AppConstants.toolbarIconSize,
+                  tooltip: 'Stickers',
+                  onPressed: () {
+                    HapticController.light();
+                    showModalBottomSheet<void>(
+                      context: context,
+                      isScrollControlled: true,
+                      builder: (_) => BlocProvider.value(
+                        value: context.read<StickerBloc>(),
+                        child: StickerPickerPanel(
+                          onSelected: (template) {
+                            Navigator.of(_).pop();
+                            context
+                                .read<StickerBloc>()
+                                .add(StickerPlacementPending(template));
+                          },
+                        ),
+                      ),
+                    );
+                  },
+                ),
+                const _Divider(),
                 // ── Settings ──────────────────────────────────────────────
                 IconButton(
                   icon: const Icon(Icons.settings_outlined),
@@ -218,6 +257,51 @@ class _Divider extends StatelessWidget {
         margin: const EdgeInsets.symmetric(horizontal: 6),
         color: AppColors.toolbarBorder,
       );
+}
+
+/// Recognize button — taps to trigger handwriting recognition on all strokes.
+class _RecognizeButton extends StatelessWidget {
+  const _RecognizeButton({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    // HandwritingBloc is provided at the app root (see main.dart).
+    // Use watch so the button rebuilds when processing state changes.
+    HandwritingBloc? hwBloc;
+    HandwritingState? hwState;
+    try {
+      hwBloc = context.watch<HandwritingBloc>();
+      hwState = hwBloc.state;
+    } on Exception {
+      // HandwritingBloc not yet in tree.
+    }
+
+    final isProcessing = hwState?.isProcessing ?? false;
+
+    return IconButton(
+      icon: isProcessing
+          ? const SizedBox(
+              width: 18,
+              height: 18,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            )
+          : const Icon(Icons.auto_fix_high_outlined),
+      iconSize: AppConstants.toolbarIconSize,
+      tooltip: 'Recognize handwriting',
+      onPressed: isProcessing
+          ? null
+          : () {
+              HapticController.medium();
+              if (hwBloc != null) {
+                // Pass current canvas strokes to the recognition event.
+                final canvasState = context.read<CanvasBloc>().state;
+                hwBloc.add(RecognitionRequested(
+                  strokes: canvasState.strokes,
+                ));
+              }
+            },
+    );
+  }
 }
 
 /// Toggle button for auto-shape recognition.

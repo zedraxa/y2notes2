@@ -6,8 +6,11 @@ import 'package:y2notes2/features/canvas/domain/entities/tools/tool_settings.dar
 import 'package:y2notes2/features/canvas/domain/models/canvas_config.dart';
 import 'package:y2notes2/features/effects/interaction/interaction_effects_engine.dart';
 import 'package:y2notes2/features/effects/writing/writing_effects_engine.dart';
+import 'package:y2notes2/features/handwriting/domain/entities/text_block.dart';
 import 'package:y2notes2/features/shapes/domain/entities/shape_element.dart';
 import 'package:y2notes2/features/shapes/engine/shape_renderer.dart';
+import 'package:y2notes2/features/stickers/domain/entities/sticker_element.dart';
+import 'package:y2notes2/features/stickers/engine/sticker_renderer.dart';
 
 /// Composites all rendering layers in the correct order.
 ///
@@ -17,26 +20,30 @@ import 'package:y2notes2/features/shapes/engine/shape_renderer.dart';
 ///  3. Writing effects on completed strokes
 ///  4. Placed shapes (ShapeElement list)
 ///  5. Active stroke (live vector, drawn on top of shapes)
-///  6. Interaction effects (touch ripple, snap glow, selection pulse, etc.)
+///  6. Stickers & stamps
+///  7. Text blocks (converted handwriting)
+///  8. Interaction effects (touch ripple, snap glow, selection pulse, etc.)
 ///
 /// Future layers:
-///  7. UI overlay (selection handles — rendered as Flutter widgets above)
+///  9. UI overlay (selection handles — rendered as Flutter widgets above)
 class EffectsCompositor {
   EffectsCompositor({
     required this.strokeRenderer,
     required this.effectsEngine,
     this.interactionEngine,
-  }) : _shapeRenderer = ShapeRenderer();
+    StickerRenderer? stickerRenderer,
+  })  : _shapeRenderer = ShapeRenderer(),
+        _stickerRenderer = stickerRenderer ?? StickerRenderer();
 
   final StrokeRenderer strokeRenderer;
   final WritingEffectsEngine effectsEngine;
 
-  /// Optional interaction engine; when set, Layer 6 is rendered.
+  /// Optional interaction engine; when set, Layer 8 is rendered.
   final InteractionEffectsEngine? interactionEngine;
 
   final ShapeRenderer _shapeRenderer;
+  final StickerRenderer _stickerRenderer;
 
-  /// Render everything onto [canvas] given current [size].
   void compose({
     required Canvas canvas,
     required Size size,
@@ -46,6 +53,9 @@ class EffectsCompositor {
     ui.Image? strokesCache,
     ToolSettings? activeToolSettings,
     List<ShapeElement> shapes = const [],
+    List<StickerElement> stickers = const [],
+    String? selectedStickerId,
+    List<TextBlock> textBlocks = const [],
   }) {
     // ── Layer 1: Background ─────────────────────────────────────────────────
     _drawBackground(canvas, size, config);
@@ -72,12 +82,78 @@ class EffectsCompositor {
       strokeRenderer.renderStroke(canvas, activeStroke, activeToolSettings);
     }
 
-    // ── Layer 6: Interaction effects (above shapes & active stroke) ──────────
+    // ── Layer 6: Stickers & stamps ──────────────────────────────────────────
+    final sorted = [...stickers]..sort((a, b) => a.zIndex.compareTo(b.zIndex));
+    for (final sticker in sorted) {
+      _stickerRenderer.renderSticker(
+        canvas,
+        sticker,
+        isSelected: sticker.id == selectedStickerId,
+      );
+    }
+
+    // ── Layer 7: Text blocks (recognized handwriting) ────────────────────────
+    _drawTextBlocks(canvas, textBlocks);
+
+    // ── Layer 8: Interaction effects (above all content) ─────────────────────
     interactionEngine?.render(canvas, size);
   }
 
   void _drawBackground(Canvas canvas, Size size, CanvasConfig config) {
     // Delegate to PageBackground logic — drawn via CustomPainter below.
     // Actual template drawing is in PageBackgroundPainter widget.
+  }
+
+  void _drawTextBlocks(Canvas canvas, List<TextBlock> textBlocks) {
+    for (final block in textBlocks) {
+      if (block.text.isEmpty) continue;
+
+      canvas.save();
+      canvas.translate(block.position.dx, block.position.dy);
+      if (block.rotation != 0) {
+        canvas.rotate(block.rotation);
+      }
+
+      // Draw background if set
+      if (block.backgroundColor != Colors.transparent) {
+        final bgPaint = Paint()
+          ..color = block.backgroundColor.withOpacity(block.opacity);
+        // Approximate height from font size
+        final approxHeight =
+            ((block.style.fontSize ?? 16) * 1.4).clamp(20.0, 200.0);
+        canvas.drawRRect(
+          RRect.fromRectAndRadius(
+            Rect.fromLTWH(0, 0, block.width, approxHeight),
+            const Radius.circular(4),
+          ),
+          bgPaint,
+        );
+      }
+
+      // Paint text using a ParagraphBuilder
+      final style = block.style;
+      final builder = ui.ParagraphBuilder(
+        ui.ParagraphStyle(
+          textAlign: block.align,
+          fontSize: style.fontSize ?? 16,
+          fontWeight: style.fontWeight ?? FontWeight.normal,
+          fontStyle: style.fontStyle ?? FontStyle.normal,
+          maxLines: null,
+        ),
+      )
+        ..pushStyle(ui.TextStyle(
+          color: (style.color ?? Colors.black).withOpacity(block.opacity),
+          fontSize: style.fontSize ?? 16,
+          fontWeight: style.fontWeight,
+          fontStyle: style.fontStyle,
+        ))
+        ..addText(block.text);
+
+      final paragraph = builder.build()
+        ..layout(ui.ParagraphConstraints(width: block.width));
+
+      canvas.drawParagraph(paragraph, Offset.zero);
+      canvas.restore();
+    }
   }
 }

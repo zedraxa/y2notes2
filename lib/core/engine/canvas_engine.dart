@@ -9,7 +9,9 @@ import 'package:y2notes2/features/canvas/domain/entities/tools/tool_settings.dar
 import 'package:y2notes2/features/canvas/domain/models/canvas_config.dart';
 import 'package:y2notes2/features/effects/interaction/interaction_effects_engine.dart';
 import 'package:y2notes2/features/effects/writing/writing_effects_engine.dart';
+import 'package:y2notes2/features/handwriting/domain/entities/text_block.dart';
 import 'package:y2notes2/features/shapes/domain/entities/shape_element.dart';
+import 'package:y2notes2/features/stickers/domain/entities/sticker_element.dart';
 
 /// Core rendering loop and coordination hub for the canvas.
 ///
@@ -81,6 +83,9 @@ class CanvasEngine with ChangeNotifier {
     required Stroke? activeStroke,
     ToolSettings? activeToolSettings,
     List<ShapeElement> shapes = const [],
+    List<StickerElement> stickers = const [],
+    String? selectedStickerId,
+    List<TextBlock> textBlocks = const [],
   }) {
     _compositor.compose(
       canvas: canvas,
@@ -91,6 +96,9 @@ class CanvasEngine with ChangeNotifier {
       strokesCache: _strokesCache,
       activeToolSettings: activeToolSettings,
       shapes: shapes,
+      stickers: stickers,
+      selectedStickerId: selectedStickerId,
+      textBlocks: textBlocks,
     );
   }
 
