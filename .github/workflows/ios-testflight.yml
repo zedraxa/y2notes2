@@ -25,7 +25,7 @@ on:
   workflow_dispatch:
 
 env:
-  BUNDLE_ID: "com.y2notes.y2notes2"
+  BUNDLE_ID: "com.y2notes.app"
   APP_ORG: "com.y2notes"
   # Temporary keychain name (unique per run to avoid conflicts)
   KEYCHAIN_NAME: "build-${{ github.run_number }}.keychain"
@@ -169,7 +169,7 @@ jobs:
               <key>teamID</key>
               <string></string>
               <key>bundleID</key>
-              <string>com.y2notes.y2notes2</string>
+              <string>com.y2notes.app</string>
               <key>signingStyle</key>
               <string>manual</string>
               <key>stripSwiftSymbols</key>
