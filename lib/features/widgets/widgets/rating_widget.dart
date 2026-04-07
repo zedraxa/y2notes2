@@ -71,6 +71,17 @@ class _RatingOverlayState
     extends State<_RatingOverlay> {
   late double _rating;
   late String _label;
+  bool _editingLabel = false;
+  final _labelCtrl = TextEditingController();
+
+  static const _descriptions = [
+    '',
+    'Poor',
+    'Fair',
+    'Good',
+    'Very Good',
+    'Excellent',
+  ];
 
   @override
   void initState() {
@@ -80,6 +91,12 @@ class _RatingOverlayState
         0.0;
     _label =
         widget.widget.state['label'] as String? ?? '';
+  }
+
+  @override
+  void dispose() {
+    _labelCtrl.dispose();
+    super.dispose();
   }
 
   int get _maxStars =>
@@ -106,6 +123,12 @@ class _RatingOverlayState
     return '${_rating.toStringAsFixed(1)}/$_maxStars';
   }
 
+  String get _ratingDescription {
+    if (_rating == 0) return '';
+    final idx = _rating.ceil().clamp(0, 5);
+    return _descriptions[idx];
+  }
+
   @override
   Widget build(BuildContext context) => Material(
         elevation: 2,
@@ -130,7 +153,7 @@ class _RatingOverlayState
                 ),
               ),
               const SizedBox(height: 4),
-              // Rating text
+              // Rating text + description
               Row(
                 mainAxisAlignment:
                     MainAxisAlignment.center,
@@ -145,6 +168,18 @@ class _RatingOverlayState
                       fontWeight: FontWeight.w500,
                     ),
                   ),
+                  if (_ratingDescription
+                      .isNotEmpty) ...[
+                    const SizedBox(width: 4),
+                    Text(
+                      '· $_ratingDescription',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color:
+                            Colors.grey.shade500,
+                      ),
+                    ),
+                  ],
                   if (_rating > 0) ...[
                     const SizedBox(width: 6),
                     GestureDetector(
@@ -157,22 +192,67 @@ class _RatingOverlayState
                       child: Icon(
                         Icons.close,
                         size: 14,
-                        color: Colors.grey.shade400,
+                        color:
+                            Colors.grey.shade400,
                       ),
                     ),
                   ],
                 ],
               ),
-              // Optional label
-              if (_label.isNotEmpty)
-                Padding(
-                  padding:
-                      const EdgeInsets.only(top: 2),
+              // Editable label
+              const SizedBox(height: 4),
+              if (_editingLabel)
+                SizedBox(
+                  height: 22,
+                  width: 160,
+                  child: TextField(
+                    controller: _labelCtrl,
+                    autofocus: true,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 11,
+                    ),
+                    decoration:
+                        const InputDecoration(
+                      isDense: true,
+                      hintText: 'Add a label...',
+                      contentPadding:
+                          EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 4,
+                      ),
+                      border:
+                          OutlineInputBorder(),
+                    ),
+                    onSubmitted: (v) {
+                      setState(() {
+                        _label = v;
+                        _editingLabel = false;
+                      });
+                      _notify();
+                    },
+                  ),
+                )
+              else
+                GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _editingLabel = true;
+                      _labelCtrl.text = _label;
+                    });
+                  },
                   child: Text(
-                    _label,
+                    _label.isEmpty
+                        ? 'Tap to add label'
+                        : _label,
                     style: TextStyle(
                       fontSize: 11,
-                      color: Colors.grey.shade600,
+                      color: _label.isEmpty
+                          ? Colors.grey.shade400
+                          : Colors.grey.shade600,
+                      fontStyle: _label.isEmpty
+                          ? FontStyle.italic
+                          : FontStyle.normal,
                     ),
                   ),
                 ),
