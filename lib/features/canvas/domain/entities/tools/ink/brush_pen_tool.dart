@@ -6,6 +6,12 @@ import 'package:y2notes2/features/canvas/domain/entities/tools/tool_setting_defi
 import 'package:y2notes2/features/canvas/domain/entities/tools/tool_settings.dart';
 
 class BrushPenTool extends BaseFreehandTool {
+  // ── Springiness-to-streamline mapping ──────────────────────────────────
+  static const double _baseStreamline = 0.7;
+  static const double _springinessScale = 0.5;
+  static const double _minStreamline = 0.1;
+  static const double _maxStreamline = 0.9;
+
   @override String get id => 'brush_pen';
   @override String get name => 'Brush Pen';
   @override String get description => 'Pressure-sensitive brush pen';
@@ -19,7 +25,8 @@ class BrushPenTool extends BaseFreehandTool {
     final springiness = (settings.custom['springiness'] as double?) ?? 0.3;
     // Springiness controls responsiveness: higher springiness → lower streamline
     // (the brush "springs" back to the pen position more quickly).
-    final streamline = (0.7 - springiness * 0.5).clamp(0.1, 0.9);
+    final streamline = (_baseStreamline - springiness * _springinessScale)
+        .clamp(_minStreamline, _maxStreamline);
     final path = buildFreehandPath(points, settings,
         thinning: 0.8, smoothing: 0.6, streamline: streamline);
     canvas.drawPath(path, Paint()

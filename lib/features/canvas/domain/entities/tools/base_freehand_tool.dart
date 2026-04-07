@@ -6,6 +6,20 @@ import 'package:y2notes2/features/canvas/domain/entities/tools/drawing_tool.dart
 import 'package:y2notes2/features/canvas/domain/entities/tools/tool_settings.dart';
 
 abstract class BaseFreehandTool implements DrawingTool {
+  // ── Velocity-based streamline tuning constants ──────────────────────────
+  /// Maximum velocity value used for streamline adjustment.
+  static const double _maxVelocityForStreamline = 1.5;
+
+  /// How much velocity contributes to streamline increase.
+  static const double _velocityStreamlineScale = 0.15;
+
+  /// Hard ceiling for streamline to avoid over-smoothing.
+  static const double _maxStreamline = 0.95;
+
+  // ── Tilt thresholds ────────────────────────────────────────────────────
+  static const double _flatAngleRad = 0.5236; // 30°
+  static const double _normalAngleRad = 1.0472; // 60°
+
   Path buildFreehandPath(
     List<PointData> points,
     ToolSettings settings, {
@@ -38,9 +52,10 @@ abstract class BaseFreehandTool implements DrawingTool {
         avgVelocity += p.velocity;
       }
       avgVelocity /= points.length;
-      // Increase streamline for faster strokes (capped)
-      adjustedStreamline =
-          (streamline + avgVelocity.clamp(0.0, 1.5) * 0.15).clamp(0.0, 0.95);
+      adjustedStreamline = (streamline +
+              avgVelocity.clamp(0.0, _maxVelocityForStreamline) *
+                  _velocityStreamlineScale)
+          .clamp(0.0, _maxStreamline);
     }
 
     final outlinePoints = getStroke(
@@ -65,11 +80,9 @@ abstract class BaseFreehandTool implements DrawingTool {
 
   /// Returns a width multiplier based on the pen altitude angle [radians].
   static double _tiltMultiplier(double radians) {
-    const flat = 30.0 * math.pi / 180.0; // 30°
-    const normal = 60.0 * math.pi / 180.0; // 60°
-    if (radians < flat) return 2.0;
-    if (radians > normal) return 0.5;
-    final t = (radians - flat) / (normal - flat);
+    if (radians < _flatAngleRad) return 2.0;
+    if (radians > _normalAngleRad) return 0.5;
+    final t = (radians - _flatAngleRad) / (_normalAngleRad - _flatAngleRad);
     return 2.0 - 1.5 * t;
   }
 

@@ -7,6 +7,13 @@ import 'package:y2notes2/features/canvas/domain/entities/tools/tool_setting_defi
 import 'package:y2notes2/features/canvas/domain/entities/tools/tool_settings.dart';
 
 class CalligraphyTool extends BaseFreehandTool {
+  // ── Flexibility tuning ─────────────────────────────────────────────────
+  /// Pressure value treated as neutral (no boost/reduction).
+  static const double _pressureNeutralPoint = 0.5;
+
+  /// How strongly flexibility maps pressure to width variation.
+  static const double _flexibilityScale = 0.8;
+
   @override String get id => 'calligraphy';
   @override String get name => 'Calligraphy';
   @override String get description => 'Angle-sensitive calligraphy nib';
@@ -36,7 +43,8 @@ class CalligraphyTool extends BaseFreehandTool {
       final angleWidth = 0.15 + 0.85 * math.sin(angleDiff).abs().clamp(0.0, 1.0);
       // Flexibility adds pressure-based width variation: pressing harder
       // opens the nib wider, like a flexible broad-edge pen.
-      final pressureBoost = 1.0 + flexibility * (p2.pressure - 0.5) * 0.8;
+      final pressureBoost =
+          1.0 + flexibility * (p2.pressure - _pressureNeutralPoint) * _flexibilityScale;
       final width = settings.size * angleWidth * pressureBoost.clamp(0.5, 1.8);
       final perp = Offset(-math.sin(angle) * width * 0.5, math.cos(angle) * width * 0.5);
       final path = Path()

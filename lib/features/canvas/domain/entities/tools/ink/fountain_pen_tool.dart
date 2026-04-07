@@ -6,6 +6,19 @@ import 'package:y2notes2/features/canvas/domain/entities/tools/tool_setting_defi
 import 'package:y2notes2/features/canvas/domain/entities/tools/tool_settings.dart';
 
 class FountainPenTool extends BaseFreehandTool {
+  // ── Ink flow tuning constants ──────────────────────────────────────────
+  /// Base multiplier for thinning-to-flow mapping (before flow subtraction).
+  static const double _inkFlowThinningBase = 1.3;
+
+  /// How much ink flow reduces thinning.
+  static const double _inkFlowThinningScale = 0.5;
+
+  /// Minimum opacity multiplier at lowest ink flow.
+  static const double _minOpacityMultiplier = 0.7;
+
+  /// How much ink flow adds to opacity (fills gap from _minOpacityMultiplier to 1.0).
+  static const double _opacityFlowRange = 0.3;
+
   @override String get id => 'fountain_pen';
   @override String get name => 'Fountain Pen';
   @override String get description => 'Classic fountain pen with pressure sensitivity';
@@ -20,12 +33,13 @@ class FountainPenTool extends BaseFreehandTool {
     final thinning = (settings.custom['thinning'] as double?) ?? 0.7;
     final smoothing = (settings.custom['smoothing'] as double?) ?? 0.5;
     // Ink flow affects thinning: more flow → less thinning (fatter, wetter strokes).
-    final adjustedThinning = thinning * (1.3 - inkFlow * 0.5);
+    final adjustedThinning = thinning * (_inkFlowThinningBase - inkFlow * _inkFlowThinningScale);
     final path = buildFreehandPath(points, settings,
         thinning: adjustedThinning, smoothing: smoothing);
     // Ink flow also modulates opacity: high flow → fully opaque; low flow →
     // slightly translucent, emulating a drier nib.
-    final opacity = (settings.opacity * (0.7 + inkFlow * 0.3)).clamp(0.0, 1.0);
+    final opacity = (settings.opacity * (_minOpacityMultiplier + inkFlow * _opacityFlowRange))
+        .clamp(0.0, 1.0);
     canvas.drawPath(path, Paint()
       ..color = settings.color.withOpacity(opacity)
       ..style = PaintingStyle.fill

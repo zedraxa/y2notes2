@@ -62,6 +62,11 @@ class _CanvasViewState extends State<CanvasView>
   /// Cached reference to SettingsService — used for pressure curve + sensitivity.
   late SettingsService _settingsService;
 
+  /// Exponential moving average factor for pressure smoothing.
+  /// 0 = no smoothing, 1 = full lag. 0.3 provides subtle jitter rejection
+  /// without perceptible input delay.
+  static const double _pressureSmoothingFactor = 0.3;
+
   // Tracks whether the current pointer gesture is a shape interaction
   // (drag/resize), so that pointer move/up events are routed to ShapeBloc
   // instead of the stroke drawing pipeline.
@@ -342,8 +347,8 @@ class _CanvasViewState extends State<CanvasView>
     // 3. Temporal smoothing — exponential moving average on pressure to
     //    eliminate high-frequency stylus jitter.
     if (previous != null) {
-      const smoothing = 0.3; // 0 = no smoothing, 1 = full lag
-      pressure = previous.pressure * smoothing + pressure * (1.0 - smoothing);
+      pressure = previous.pressure * _pressureSmoothingFactor +
+          pressure * (1.0 - _pressureSmoothingFactor);
     }
 
     pressure = pressure.clamp(0.0, 1.0);
