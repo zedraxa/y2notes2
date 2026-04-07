@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:y2notes2/core/engine/canvas_engine.dart';
 import 'package:y2notes2/core/extensions/iterable_extensions.dart';
+import 'package:y2notes2/core/services/settings_service.dart';
 import 'package:y2notes2/features/canvas/domain/entities/point_data.dart';
 import 'package:y2notes2/features/canvas/domain/entities/stroke.dart';
 import 'package:y2notes2/features/canvas/domain/entities/tools/tool_settings.dart';
@@ -18,6 +19,7 @@ import 'package:y2notes2/features/shapes/presentation/bloc/shape_event.dart';
 import 'package:y2notes2/features/shapes/presentation/bloc/shape_state.dart';
 import 'package:y2notes2/features/shapes/presentation/widgets/shape_handles.dart';
 import 'package:y2notes2/features/shapes/presentation/widgets/snap_guides_overlay.dart';
+import 'package:y2notes2/shared/widgets/service_provider.dart';
 
 /// The actual drawing surface.
 ///
@@ -59,6 +61,20 @@ class _CanvasViewState extends State<CanvasView>
 
     // Rebuild the canvas view on each animation frame
     _canvasEngine.addListener(_onEngineUpdate);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Apply persisted interaction effect settings once the widget tree is ready.
+    final settings = ServiceProvider.of<SettingsService>(context);
+    _interactionEngine.enabled = settings.interactionEffectsEnabledNotifier.value;
+    for (final id in SettingsService.interactionEffectNames) {
+      _interactionEngine.setEffectEnabled(
+          id, settings.isInteractionEffectEnabled(id));
+      _interactionEngine.setEffectIntensity(
+          id, settings.interactionEffectIntensity(id));
+    }
   }
 
   @override
