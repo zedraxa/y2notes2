@@ -25,6 +25,12 @@ class GeneralSettingsPage extends StatelessWidget {
           _SectionHeader('Defaults'),
           _DefaultToolSizeSlider(settings: settings),
           _AutoSaveIntervalSlider(settings: settings),
+          const Divider(height: 24),
+          _SectionHeader('Navigation'),
+          _PageGesturesToggle(settings: settings),
+          const Divider(height: 24),
+          _SectionHeader('Data'),
+          _ResetTile(settings: settings),
         ],
       ),
     );
@@ -145,4 +151,67 @@ class _AutoSaveIntervalSlider extends StatelessWidget {
     if (remaining == 0) return '${minutes}m';
     return '${minutes}m ${remaining}s';
   }
+}
+
+class _PageGesturesToggle extends StatelessWidget {
+  const _PageGesturesToggle({required this.settings});
+
+  final SettingsService settings;
+
+  @override
+  Widget build(BuildContext context) => ValueListenableBuilder<bool>(
+        valueListenable: settings.pageGesturesEnabledNotifier,
+        builder: (context, enabled, _) => SwitchListTile(
+          title: const Text('Page Gestures'),
+          subtitle: const Text(
+            'Swipe with two fingers or from the screen edge to change pages',
+          ),
+          value: enabled,
+          onChanged: settings.setPageGesturesEnabled,
+        ),
+      );
+}
+
+class _ResetTile extends StatelessWidget {
+  const _ResetTile({required this.settings});
+
+  final SettingsService settings;
+
+  @override
+  Widget build(BuildContext context) => ListTile(
+        leading:
+            Icon(Icons.restore, color: Theme.of(context).colorScheme.error),
+        title: const Text('Reset All Settings'),
+        subtitle: const Text('Restore every setting to its default value'),
+        onTap: () async {
+          final confirmed = await showDialog<bool>(
+            context: context,
+            builder: (ctx) => AlertDialog(
+              title: const Text('Reset All Settings?'),
+              content: const Text(
+                'This will restore every setting to its default value. '
+                'Your notebooks and drawings will not be affected.',
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx, false),
+                  child: const Text('Cancel'),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx, true),
+                  child: const Text('Reset'),
+                ),
+              ],
+            ),
+          );
+          if (confirmed == true) {
+            await settings.resetAll();
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Settings restored to defaults')),
+              );
+            }
+          }
+        },
+      );
 }

@@ -3,6 +3,7 @@ import 'package:y2notes2/features/canvas/domain/entities/stroke.dart';
 import 'package:y2notes2/features/canvas/domain/models/canvas_config.dart';
 import 'package:y2notes2/features/documents/domain/models/export_options.dart';
 import 'package:y2notes2/features/pdf_annotation/domain/entities/pdf_annotation.dart';
+import 'package:y2notes2/features/scanner/domain/entities/scanned_document.dart';
 
 /// Base class for all document-feature events.
 abstract class DocumentEvent extends Equatable {
@@ -159,6 +160,14 @@ class ImportImage extends DocumentEvent {
   List<Object?> get props => [maxWidth, maxHeight];
 }
 
+/// Import pages from a completed document scan session.
+class ImportScannedDocument extends DocumentEvent {
+  const ImportScannedDocument({required this.scanResult});
+  final ScanResult scanResult;
+  @override
+  List<Object?> get props => [scanResult];
+}
+
 // ── UI events ──────────────────────────────────────────────────────────────
 
 /// Dismiss any active error or progress state.
@@ -203,6 +212,18 @@ class TogglePageBookmark extends DocumentEvent {
   List<Object?> get props => [pageIndex];
 }
 
+// ── Page gesture navigation ────────────────────────────────────────────────
+
+/// Navigate to the next page (if available).
+class GoToNextPage extends DocumentEvent {
+  const GoToNextPage();
+}
+
+/// Navigate to the previous page (if available).
+class GoToPreviousPage extends DocumentEvent {
+  const GoToPreviousPage();
+}
+
 // ── Outline panel ──────────────────────────────────────────────────────────
 
 /// Toggle the outline/table-of-contents panel visibility.
@@ -224,14 +245,16 @@ class UpdatePagePdfAnnotations extends DocumentEvent {
   List<Object?> get props => [pageIndex, annotations];
 }
 
-// ── Page navigation with gesture support ───────────────────────────────────
+// ── Audio recordings ───────────────────────────────────────────────────────
 
-/// Navigate to the next page (convenience event).
-class GoToNextPage extends DocumentEvent {
-  const GoToNextPage();
-}
-
-/// Navigate to the previous page (convenience event).
-class GoToPreviousPage extends DocumentEvent {
-  const GoToPreviousPage();
+/// Update the audio recordings for a specific page.
+class UpdatePageAudioRecordings extends DocumentEvent {
+  const UpdatePageAudioRecordings({
+    required this.pageIndex,
+    required this.recordings,
+  });
+  final int pageIndex;
+  final List<dynamic> recordings;
+  @override
+  List<Object?> get props => [pageIndex, recordings];
 }

@@ -70,6 +70,17 @@ class SettingsService {
   /// Default pen size used for new strokes.
   final ValueNotifier<double> defaultToolSizeNotifier = ValueNotifier(3.0);
 
+  // ─── Page gesture notifiers ───────────────────────────────────────────────
+
+  /// Whether two-finger / edge swipe page navigation is enabled.
+  final ValueNotifier<bool> pageGesturesEnabledNotifier = ValueNotifier(true);
+
+  // ─── Canvas spacing notifiers ─────────────────────────────────────────────
+  final ValueNotifier<double> lineSpacingNotifier = ValueNotifier(32.0);
+  final ValueNotifier<double> gridSpacingNotifier = ValueNotifier(32.0);
+  final ValueNotifier<double> dotSpacingNotifier = ValueNotifier(32.0);
+  final ValueNotifier<bool> showMarginNotifier = ValueNotifier(true);
+
   // Key constants
   static const _darkModeKey = 'dark_mode';
   static const _effectsEnabledKey = 'effects_enabled';
@@ -96,6 +107,15 @@ class SettingsService {
   static const _defaultExportFormatKey = 'default_export_format';
   // Default tool keys
   static const _defaultToolSizeKey = 'default_tool_size';
+  // Page gesture keys
+  static const _pageGesturesEnabledKey = 'page_gestures_enabled';
+  // Canvas spacing keys
+  static const _lineSpacingKey = 'canvas_line_spacing';
+  static const _gridSpacingKey = 'canvas_grid_spacing';
+  static const _dotSpacingKey = 'canvas_dot_spacing';
+  static const _showMarginKey = 'canvas_show_margin';
+  // Tool preset keys
+  static const _toolPresetPrefix = 'tool_preset_';
 
   static const List<String> effectNames = [
     'ink_flow',
@@ -193,6 +213,20 @@ class SettingsService {
     // Default tool settings
     defaultToolSizeNotifier.value =
         _prefs.getDouble(_defaultToolSizeKey) ?? 3.0;
+
+    // Page gesture settings
+    pageGesturesEnabledNotifier.value =
+        _prefs.getBool(_pageGesturesEnabledKey) ?? true;
+
+    // Canvas spacing settings
+    lineSpacingNotifier.value =
+        _prefs.getDouble(_lineSpacingKey) ?? 32.0;
+    gridSpacingNotifier.value =
+        _prefs.getDouble(_gridSpacingKey) ?? 32.0;
+    dotSpacingNotifier.value =
+        _prefs.getDouble(_dotSpacingKey) ?? 32.0;
+    showMarginNotifier.value =
+        _prefs.getBool(_showMarginKey) ?? true;
   }
 
   // ─── Setters ──────────────────────────────────────────────────────────────
@@ -344,6 +378,13 @@ class SettingsService {
     await _prefs.setDouble(_defaultToolSizeKey, defaultToolSizeNotifier.value);
   }
 
+  // ─── Page gesture setters ─────────────────────────────────────────────────
+
+  Future<void> setPageGesturesEnabled(bool value) async {
+    pageGesturesEnabledNotifier.value = value;
+    await _prefs.setBool(_pageGesturesEnabledKey, value);
+  }
+
   // ─── Interaction effect setters / getters ──────────────────────────────────
 
   Future<void> setInteractionEffectsEnabled(bool value) async {
@@ -366,6 +407,87 @@ class SettingsService {
   double interactionEffectIntensity(String name) =>
       interactionEffectIntensities[name]?.value ?? 1.0;
 
+  // ─── Canvas spacing setters ────────────────────────────────────────────────
+
+  Future<void> setLineSpacing(double value) async {
+    lineSpacingNotifier.value = value.clamp(16.0, 64.0);
+    await _prefs.setDouble(_lineSpacingKey, lineSpacingNotifier.value);
+  }
+
+  Future<void> setGridSpacing(double value) async {
+    gridSpacingNotifier.value = value.clamp(16.0, 64.0);
+    await _prefs.setDouble(_gridSpacingKey, gridSpacingNotifier.value);
+  }
+
+  Future<void> setDotSpacing(double value) async {
+    dotSpacingNotifier.value = value.clamp(16.0, 64.0);
+    await _prefs.setDouble(_dotSpacingKey, dotSpacingNotifier.value);
+  }
+
+  Future<void> setShowMargin(bool value) async {
+    showMarginNotifier.value = value;
+    await _prefs.setBool(_showMarginKey, value);
+  }
+
+  // ─── Tool preset persistence ───────────────────────────────────────────────
+
+  /// Saves a JSON-encoded list of preset data for the given tool.
+  Future<void> saveToolPresets(String toolId, String jsonString) async {
+    await _prefs.setString('$_toolPresetPrefix$toolId', jsonString);
+  }
+
+  /// Loads the raw JSON string of presets for the given tool.
+  String? loadToolPresets(String toolId) {
+    return _prefs.getString('$_toolPresetPrefix$toolId');
+  }
+
+  // ─── Reset to defaults ─────────────────────────────────────────────────────
+
+  /// Resets all persisted settings to their default values.
+  ///
+  /// This restores every preference (appearance, effects, stylus, canvas
+  /// spacing, recognition, backup, and interaction effects) to the factory
+  /// defaults. User notebooks and drawings are not affected.
+  Future<void> resetAll() async {
+    await setDarkMode(false);
+    await setEffectsEnabled(true);
+    await setHapticsEnabled(true);
+    await setPageTemplate('lined');
+    await setRecognitionLanguage('en-US');
+    await setRecognitionRealTime(false);
+    await setRecognitionConfidence(0.3);
+    await setLineSpacing(32.0);
+    await setGridSpacing(32.0);
+    await setDotSpacing(32.0);
+    await setShowMargin(true);
+    await setAutoSaveEnabled(true);
+    await setAutoSaveInterval(30);
+    await setDefaultExportFormat('pdf');
+    await setDefaultToolSize(3.0);
+    await setPageGesturesEnabled(true);
+
+    for (final name in effectNames) {
+      await setEffectEnabled(name, true);
+      await setEffectIntensity(name, 1.0);
+    }
+
+    await setPressureCurvePreset(PressureCurvePreset.soft);
+    await setTiltSensitivity(1.0);
+    await setHoverPreviewEnabled(true);
+    await setPalmRejectionEnabled(true);
+    await setLeftHandMode(false);
+
+    for (final gesture in StylusGesture.values) {
+      await setGestureMapping(gesture, _defaultGestureAction(gesture));
+    }
+
+    await setInteractionEffectsEnabled(true);
+    for (final name in interactionEffectNames) {
+      await setInteractionEffectEnabled(name, true);
+      await setInteractionEffectIntensity(name, 1.0);
+    }
+  }
+
   void dispose() {
     darkModeNotifier.dispose();
     effectsEnabledNotifier.dispose();
@@ -379,6 +501,11 @@ class SettingsService {
     autoSaveIntervalNotifier.dispose();
     defaultExportFormatNotifier.dispose();
     defaultToolSizeNotifier.dispose();
+    pageGesturesEnabledNotifier.dispose();
+    lineSpacingNotifier.dispose();
+    gridSpacingNotifier.dispose();
+    dotSpacingNotifier.dispose();
+    showMarginNotifier.dispose();
     for (final n in effectToggles.values) {
       n.dispose();
     }
