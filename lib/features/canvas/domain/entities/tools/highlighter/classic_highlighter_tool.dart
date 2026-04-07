@@ -17,7 +17,9 @@ class ClassicHighlighterTool extends BaseFreehandTool {
   void renderStroke(Canvas canvas, List<PointData> points, ToolSettings settings) {
     if (points.isEmpty) return;
     final c = settings.color;
-    final path = buildFreehandPath(points, settings, thinning: 0.0, smoothing: 0.4, streamline: 0.5, simulatePressure: false);
+    final straighten = (settings.custom['straighten'] as double?) ?? 0.5;
+    final streamline = 0.5 + straighten * 0.4;
+    final path = buildFreehandPath(points, settings, thinning: 0.0, smoothing: 0.4, streamline: streamline, simulatePressure: false);
     canvas.drawPath(path, Paint()
       ..color = Color.fromARGB(89, c.red, c.green, c.blue)
       ..style = PaintingStyle.fill

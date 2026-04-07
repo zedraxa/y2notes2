@@ -16,9 +16,14 @@ class GouacheTool extends BaseFreehandTool {
   @override
   void renderStroke(Canvas canvas, List<PointData> points, ToolSettings settings) {
     if (points.isEmpty) return;
-    final path = buildFreehandPath(points, settings, thinning: 0.0, smoothing: 0.4, streamline: 0.7);
+    final flatness = (settings.custom['flatness'] as double?) ?? 0.7;
+    final coverage = (settings.custom['coverage'] as double?) ?? 0.8;
+    final streamline = 0.5 + flatness * 0.3;
+    final c = settings.color;
+    final effectiveColor = Color.fromARGB((coverage * 255).round(), c.red, c.green, c.blue);
+    final path = buildFreehandPath(points, settings, thinning: 0.0, smoothing: 0.4, streamline: streamline);
     canvas.drawPath(path, Paint()
-      ..color = settings.color
+      ..color = effectiveColor
       ..style = PaintingStyle.fill
       ..isAntiAlias = true
       ..blendMode = blendMode);

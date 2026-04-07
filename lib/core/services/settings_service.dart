@@ -364,6 +364,10 @@ class SettingsService {
   // ─── Reset to defaults ─────────────────────────────────────────────────────
 
   /// Resets all persisted settings to their default values.
+  ///
+  /// This restores every preference (appearance, effects, stylus, canvas
+  /// spacing, recognition, and interaction effects) to the factory defaults.
+  /// User notebooks and drawings are not affected.
   Future<void> resetAll() async {
     await setDarkMode(false);
     await setEffectsEnabled(true);
