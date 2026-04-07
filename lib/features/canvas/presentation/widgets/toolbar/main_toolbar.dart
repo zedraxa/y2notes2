@@ -13,6 +13,11 @@ import 'package:y2notes2/features/canvas/presentation/widgets/toolbar/pen_picker
 import 'package:y2notes2/features/canvas/presentation/widgets/toolbar/thickness_slider.dart';
 import 'package:y2notes2/features/canvas/presentation/widgets/toolbar/tool_picker_panel.dart';
 import 'package:y2notes2/features/canvas/presentation/widgets/toolbar/tool_settings_panel.dart';
+import 'package:y2notes2/features/documents/presentation/bloc/document_bloc.dart';
+import 'package:y2notes2/features/documents/presentation/pages/notebook_page_view.dart';
+import 'package:y2notes2/features/handwriting/presentation/bloc/handwriting_bloc.dart';
+import 'package:y2notes2/features/handwriting/presentation/bloc/handwriting_event.dart';
+import 'package:y2notes2/features/handwriting/presentation/bloc/handwriting_state.dart';
 import 'package:y2notes2/features/shapes/domain/entities/shape_type.dart';
 import 'package:y2notes2/features/shapes/presentation/widgets/shape_type_picker.dart';
 import 'package:y2notes2/features/collaboration/presentation/widgets/share_button.dart';
@@ -97,6 +102,12 @@ class MainToolbar extends StatelessWidget {
                 const Spacer(),
                 // ── Collaboration / Share ───────────────────────────────────
                 const ShareButton(),
+                const _Divider(),
+                // ── Recognize (handwriting → text) ───────────────────────
+                const _RecognizeButton(),
+                const _Divider(),
+                // ── Export / Import ────────────────────────────────────────
+                const DocumentToolbarActions(),
                 const _Divider(),
                 // ── Stickers ───────────────────────────────────────────────
                 IconButton(
@@ -250,6 +261,51 @@ class _Divider extends StatelessWidget {
         margin: const EdgeInsets.symmetric(horizontal: 6),
         color: AppColors.toolbarBorder,
       );
+}
+
+/// Recognize button — taps to trigger handwriting recognition on all strokes.
+class _RecognizeButton extends StatelessWidget {
+  const _RecognizeButton({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    // HandwritingBloc is provided at the app root (see main.dart).
+    // Use watch so the button rebuilds when processing state changes.
+    HandwritingBloc? hwBloc;
+    HandwritingState? hwState;
+    try {
+      hwBloc = context.watch<HandwritingBloc>();
+      hwState = hwBloc.state;
+    } on Exception {
+      // HandwritingBloc not yet in tree.
+    }
+
+    final isProcessing = hwState?.isProcessing ?? false;
+
+    return IconButton(
+      icon: isProcessing
+          ? const SizedBox(
+              width: 18,
+              height: 18,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            )
+          : const Icon(Icons.auto_fix_high_outlined),
+      iconSize: AppConstants.toolbarIconSize,
+      tooltip: 'Recognize handwriting',
+      onPressed: isProcessing
+          ? null
+          : () {
+              HapticController.medium();
+              if (hwBloc != null) {
+                // Pass current canvas strokes to the recognition event.
+                final canvasState = context.read<CanvasBloc>().state;
+                hwBloc.add(RecognitionRequested(
+                  strokes: canvasState.strokes,
+                ));
+              }
+            },
+    );
+  }
 }
 
 /// Toggle button for auto-shape recognition.
