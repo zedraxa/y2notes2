@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:y2notes2/core/engine/canvas_engine.dart';
 import 'package:y2notes2/core/extensions/iterable_extensions.dart';
+import 'package:y2notes2/core/services/settings_service.dart';
 import 'package:y2notes2/features/canvas/domain/entities/point_data.dart';
 import 'package:y2notes2/features/canvas/domain/entities/stroke.dart';
 import 'package:y2notes2/features/canvas/domain/entities/tools/tool_settings.dart';
@@ -13,7 +14,7 @@ import 'package:y2notes2/features/canvas/presentation/widgets/page_background.da
 import 'package:y2notes2/features/collaboration/presentation/bloc/collaboration_bloc.dart';
 import 'package:y2notes2/features/collaboration/presentation/widgets/offline_indicator.dart';
 import 'package:y2notes2/features/collaboration/presentation/widgets/remote_cursors.dart';
-import 'package:y2notes2/features/effects/writing/writing_effects_engine.dart';
+import 'package:y2notes2/features/effects/interaction/interaction_effects_engine.dart';
 import 'package:y2notes2/features/handwriting/domain/entities/text_block.dart';
 import 'package:y2notes2/features/handwriting/presentation/bloc/handwriting_bloc.dart';
 import 'package:y2notes2/features/handwriting/presentation/bloc/handwriting_state.dart';
@@ -27,6 +28,7 @@ import 'package:y2notes2/features/stickers/domain/entities/sticker_element.dart'
 import 'package:y2notes2/features/stickers/presentation/bloc/sticker_bloc.dart';
 import 'package:y2notes2/features/stickers/presentation/bloc/sticker_state.dart';
 import 'package:y2notes2/features/stickers/presentation/widgets/sticker_interaction_handler.dart';
+import 'package:y2notes2/shared/widgets/service_provider.dart';
 
 /// The actual drawing surface.
 ///
@@ -43,19 +45,45 @@ class CanvasView extends StatefulWidget {
 class _CanvasViewState extends State<CanvasView>
     with TickerProviderStateMixin {
   late final WritingEffectsEngine _effectsEngine;
+  late final InteractionEffectsEngine _interactionEngine;
   late final CanvasEngine _canvasEngine;
   late final TransformationController _transformController;
   PointData? _lastPoint;
+  double _lastScale = 1.0;
+
+  // For detecting undo/redo/tool-switch between BLoC states
+  int _prevStrokeCount = 0;
+  int _prevRedoCount = 0;
+  String _prevToolId = '';
 
   @override
   void initState() {
     super.initState();
     _effectsEngine = WritingEffectsEngine();
-    _canvasEngine = CanvasEngine(vsync: this, effectsEngine: _effectsEngine);
+    _interactionEngine = InteractionEffectsEngine();
+    _canvasEngine = CanvasEngine(
+      vsync: this,
+      effectsEngine: _effectsEngine,
+      interactionEngine: _interactionEngine,
+    );
     _transformController = TransformationController();
 
     // Rebuild the canvas view on each animation frame
     _canvasEngine.addListener(_onEngineUpdate);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Apply persisted interaction effect settings once the widget tree is ready.
+    final settings = ServiceProvider.of<SettingsService>(context);
+    _interactionEngine.enabled = settings.interactionEffectsEnabledNotifier.value;
+    for (final id in SettingsService.interactionEffectNames) {
+      _interactionEngine.setEffectEnabled(
+          id, settings.isInteractionEffectEnabled(id));
+      _interactionEngine.setEffectIntensity(
+          id, settings.interactionEffectIntensity(id));
+    }
   }
 
   @override
@@ -64,6 +92,7 @@ class _CanvasViewState extends State<CanvasView>
       ..removeListener(_onEngineUpdate)
       ..dispose();
     _effectsEngine.dispose();
+    _interactionEngine.dispose();
     _transformController.dispose();
     super.dispose();
   }
@@ -80,10 +109,15 @@ class _CanvasViewState extends State<CanvasView>
     _lastPoint = point;
     bloc.add(StrokeStarted(point));
 
-    // Notify effects engine
+    // Notify effects engines
     final state = bloc.state;
     if (state.effectsEnabled) {
       _effectsEngine.onStrokeStart(point);
+      _interactionEngine.onTouchDown(
+        event.localPosition,
+        toolColor: state.activeColor,
+        pressure: event.pressure.clamp(0.0, 1.0),
+      );
     }
   }
 
@@ -124,6 +158,52 @@ class _CanvasViewState extends State<CanvasView>
     _lastPoint = null;
   }
 
+  // ─── InteractiveViewer zoom callbacks ────────────────────────────────────
+
+  void _onViewerInteractionUpdate(ScaleUpdateDetails details) {
+    if (details.scale != _lastScale) {
+      _interactionEngine.onZoomChange(
+        details.scale,
+        details.localFocalPoint,
+      );
+      _lastScale = details.scale;
+    }
+  }
+
+  void _onViewerInteractionEnd(ScaleEndDetails details) {
+    _interactionEngine.onZoomEnd();
+    _lastScale = 1.0;
+  }
+
+  // ─── BLoC state listener: detect undo/redo/tool switch ───────────────────
+
+  void _onBlocStateChange(BuildContext context, CanvasState state) {
+    final strokeCount = state.strokes.length;
+    final redoCount = state.redoStack.length;
+
+    // Detect undo (strokes decreased, redo stack grew)
+    if (strokeCount < _prevStrokeCount && redoCount > _prevRedoCount) {
+      _interactionEngine.onUndo();
+    }
+    // Detect redo (strokes grew, redo stack shrank)
+    else if (strokeCount > _prevStrokeCount && redoCount < _prevRedoCount) {
+      _interactionEngine.onRedo();
+    }
+
+    // Detect tool switch
+    if (state.activeToolId != _prevToolId && _prevToolId.isNotEmpty) {
+      _interactionEngine.onToolSwitch(
+        Offset.zero, // cursor not available here; effects fall back gracefully
+        fromColor: state.activeColor,
+        toColor: state.activeColor,
+      );
+    }
+
+    _prevStrokeCount = strokeCount;
+    _prevRedoCount = redoCount;
+    _prevToolId = state.activeToolId;
+  }
+
   PointData _eventToPointData(PointerEvent event, PointData? previous) {
     double velocity = 0.0;
     if (previous != null) {
@@ -151,7 +231,12 @@ class _CanvasViewState extends State<CanvasView>
 
   @override
   Widget build(BuildContext context) =>
-      BlocBuilder<CanvasBloc, CanvasState>(
+      BlocConsumer<CanvasBloc, CanvasState>(
+        listenWhen: (prev, curr) =>
+            prev.strokes.length != curr.strokes.length ||
+            prev.redoStack.length != curr.redoStack.length ||
+            prev.activeToolId != curr.activeToolId,
+        listener: _onBlocStateChange,
         buildWhen: (prev, curr) =>
             prev.strokes != curr.strokes ||
             prev.activeStroke != curr.activeStroke ||
@@ -183,6 +268,8 @@ class _CanvasViewState extends State<CanvasView>
                     minScale: 0.3,
                     maxScale: 5.0,
                     boundaryMargin: const EdgeInsets.all(200),
+                    onInteractionUpdate: _onViewerInteractionUpdate,
+                    onInteractionEnd: _onViewerInteractionEnd,
                     child: SizedBox(
                       width: state.config.width,
                       height: state.config.height,
@@ -191,8 +278,8 @@ class _CanvasViewState extends State<CanvasView>
                           children: [
                             // Layer 1: Page background
                             PageBackground(config: state.config),
-                            // Layers 2–7: Canvas painter
-                            // (strokes + shapes + stickers + effects + text blocks)
+                            // Layers 2–8: Canvas painter
+                            // (strokes + shapes + stickers + effects + text blocks + interaction)
                             Listener(
                               onPointerDown: _onPointerDown,
                               onPointerMove: _onPointerMove,
