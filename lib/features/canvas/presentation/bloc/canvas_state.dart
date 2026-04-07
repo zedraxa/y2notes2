@@ -30,6 +30,7 @@ class CanvasState extends Equatable {
     this.activeToolSettings = const ToolSettings(),
     // ── Shape state ──────────────────────────────────────────────────────
     this.shapes = const [],
+    this.shapeUndoStack = const [],
     this.shapeRedoStack = const [],
     this.selectedShapeId,
     this.autoShapeRecognition = false,
@@ -69,6 +70,9 @@ class CanvasState extends Equatable {
   /// All shapes placed on the canvas.
   final List<ShapeElement> shapes;
 
+  /// Shapes available for undo (populated before each committed mutation).
+  final List<List<ShapeElement>> shapeUndoStack;
+
   /// Shapes available for redo (parallels stroke redo stack).
   final List<List<ShapeElement>> shapeRedoStack;
 
@@ -103,8 +107,8 @@ class CanvasState extends Equatable {
   /// Returns the active plugin-based DrawingTool if registered.
   DrawingTool? get activeDrawingTool => ToolRegistry.get(activeToolId);
 
-  bool get canUndo => strokes.isNotEmpty;
-  bool get canRedo => redoStack.isNotEmpty;
+  bool get canUndo => strokes.isNotEmpty || shapeUndoStack.isNotEmpty;
+  bool get canRedo => redoStack.isNotEmpty || shapeRedoStack.isNotEmpty;
   bool get isDrawing => activeStroke != null;
 
   /// The currently selected ShapeElement.
@@ -127,6 +131,7 @@ class CanvasState extends Equatable {
     String? activeToolId,
     ToolSettings? activeToolSettings,
     List<ShapeElement>? shapes,
+    List<List<ShapeElement>>? shapeUndoStack,
     List<List<ShapeElement>>? shapeRedoStack,
     String? selectedShapeId,
     bool clearShapeSelection = false,
@@ -155,6 +160,7 @@ class CanvasState extends Equatable {
         activeToolId: activeToolId ?? this.activeToolId,
         activeToolSettings: activeToolSettings ?? this.activeToolSettings,
         shapes: shapes ?? this.shapes,
+        shapeUndoStack: shapeUndoStack ?? this.shapeUndoStack,
         shapeRedoStack: shapeRedoStack ?? this.shapeRedoStack,
         selectedShapeId: clearShapeSelection
             ? null
@@ -188,6 +194,7 @@ class CanvasState extends Equatable {
         activeToolId,
         activeToolSettings,
         shapes,
+        shapeUndoStack,
         shapeRedoStack,
         selectedShapeId,
         autoShapeRecognition,

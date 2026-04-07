@@ -46,6 +46,7 @@ class CanvasBloc extends Bloc<CanvasEvent, CanvasState> {
     on<ShapeRecognitionRejected>(_onShapeRecognitionRejected);
     on<ShapeToolActivated>(_onShapeToolActivated);
     on<ShapeToolDeactivated>(_onShapeToolDeactivated);
+    on<ShapeSnapshotRequested>(_onShapeSnapshotRequested);
     // Stylus events
     on<StylusDetectedEvent>(_onStylusDetected);
     on<HoverPositionChanged>(_onHoverPositionChanged);
@@ -97,6 +98,18 @@ class CanvasBloc extends Bloc<CanvasEvent, CanvasState> {
   }
 
   void _onUndo(UndoRequested event, Emitter<CanvasState> emit) {
+    // Shape undo takes priority over stroke undo (LIFO across both stacks).
+    if (state.shapeUndoStack.isNotEmpty) {
+      final prevShapes = state.shapeUndoStack.last;
+      final newUndoStack = state.shapeUndoStack
+          .sublist(0, state.shapeUndoStack.length - 1);
+      emit(state.copyWith(
+        shapes: prevShapes,
+        shapeUndoStack: newUndoStack,
+        shapeRedoStack: [...state.shapeRedoStack, state.shapes],
+      ));
+      return;
+    }
     if (!state.canUndo) return;
     final strokes = List<Stroke>.of(state.strokes);
     final undone = strokes.removeLast();
@@ -107,6 +120,18 @@ class CanvasBloc extends Bloc<CanvasEvent, CanvasState> {
   }
 
   void _onRedo(RedoRequested event, Emitter<CanvasState> emit) {
+    // Shape redo takes priority over stroke redo.
+    if (state.shapeRedoStack.isNotEmpty) {
+      final nextShapes = state.shapeRedoStack.last;
+      final newRedoStack = state.shapeRedoStack
+          .sublist(0, state.shapeRedoStack.length - 1);
+      emit(state.copyWith(
+        shapes: nextShapes,
+        shapeRedoStack: newRedoStack,
+        shapeUndoStack: [...state.shapeUndoStack, state.shapes],
+      ));
+      return;
+    }
     if (!state.canRedo) return;
     final redoStack = List<Stroke>.of(state.redoStack);
     final restored = redoStack.removeLast();
@@ -193,6 +218,23 @@ class CanvasBloc extends Bloc<CanvasEvent, CanvasState> {
     ));
   }
 
+  /// Saves the current shapes list onto the undo stack.
+  ///
+  /// [ShapeBloc] dispatches this event immediately before any committed shape
+  /// mutation (add, delete, drag end, style / type change).
+  void _onShapeSnapshotRequested(
+      ShapeSnapshotRequested event, Emitter<CanvasState> emit) {
+    final newStack = [...state.shapeUndoStack, state.shapes];
+    // Cap history the same way strokes are capped.
+    final capped = newStack.length > AppConstants.maxUndoHistory
+        ? newStack.sublist(newStack.length - AppConstants.maxUndoHistory)
+        : newStack;
+    emit(state.copyWith(
+      shapeUndoStack: capped,
+      shapeRedoStack: [], // clear redo on new operation
+    ));
+  }
+
   void _onShapeSelected(ShapeSelected event, Emitter<CanvasState> emit) =>
       emit(state.copyWith(selectedShapeId: event.shapeId));
 
@@ -227,8 +269,16 @@ class CanvasBloc extends Bloc<CanvasEvent, CanvasState> {
         ? state.strokes
         : state.strokes.sublist(0, state.strokes.length - 1);
 
+    // Snapshot current shapes so the add can be undone.
+    final newUndoStack = [...state.shapeUndoStack, state.shapes];
+    final cappedUndo = newUndoStack.length > AppConstants.maxUndoHistory
+        ? newUndoStack.sublist(newUndoStack.length - AppConstants.maxUndoHistory)
+        : newUndoStack;
+
     emit(state.copyWith(
       shapes: [...state.shapes, shape],
+      shapeUndoStack: cappedUndo,
+      shapeRedoStack: [],
       strokes: strokes,
       clearShapeProposal: true,
     ));

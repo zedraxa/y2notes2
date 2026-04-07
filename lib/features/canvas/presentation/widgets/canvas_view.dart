@@ -24,10 +24,12 @@ import 'package:y2notes2/features/handwriting/domain/entities/text_block.dart';
 import 'package:y2notes2/features/handwriting/presentation/bloc/handwriting_bloc.dart';
 import 'package:y2notes2/features/handwriting/presentation/bloc/handwriting_state.dart';
 import 'package:y2notes2/features/shapes/domain/entities/shape_element.dart';
+import 'package:y2notes2/features/shapes/engine/shape_hit_tester.dart';
 import 'package:y2notes2/features/shapes/presentation/bloc/shape_bloc.dart';
 import 'package:y2notes2/features/shapes/presentation/bloc/shape_event.dart';
 import 'package:y2notes2/features/shapes/presentation/bloc/shape_state.dart';
 import 'package:y2notes2/features/shapes/presentation/widgets/shape_handles.dart';
+import 'package:y2notes2/features/shapes/presentation/widgets/shape_properties_panel.dart';
 import 'package:y2notes2/features/shapes/presentation/widgets/snap_guides_overlay.dart';
 import 'package:y2notes2/features/stickers/domain/entities/sticker_element.dart';
 import 'package:y2notes2/features/stickers/presentation/bloc/sticker_bloc.dart';
@@ -55,6 +57,11 @@ class _CanvasViewState extends State<CanvasView>
   late final TransformationController _transformController;
   PointData? _lastPoint;
   double _lastScale = 1.0;
+
+  // Tracks whether the current pointer gesture is a shape interaction
+  // (drag/resize), so that pointer move/up events are routed to ShapeBloc
+  // instead of the stroke drawing pipeline.
+  bool _activeShapeGesture = false;
 
   // For detecting undo/redo/tool-switch between BLoC states
   int _prevStrokeCount = 0;
@@ -120,7 +127,40 @@ class _CanvasViewState extends State<CanvasView>
       bloc.add(const HoverEnded());
     }
 
-    // Convert event via the stylus adapter pipeline.
+    // ── Shape hit-testing ─────────────────────────────────────────────────
+    // When shapes exist on the canvas, check whether the pointer landed on a
+    // shape body or resize/rotation handle.  If so, route the gesture to the
+    // ShapeBloc instead of starting a new ink stroke.
+    final shapes = bloc.state.shapes;
+    if (shapes.isNotEmpty) {
+      final hit = ShapeHitTester.hitTest(shapes, event.localPosition);
+      if (hit != null) {
+        final shapeBloc = context.read<ShapeBloc>();
+        if (hit.isHandle) {
+          shapeBloc.add(HandleDragStarted(
+            shapeId: hit.shapeId,
+            handleIndex: hit.handleIndex!,
+            startPoint: event.localPosition,
+          ));
+        } else {
+          shapeBloc.add(ShapeTapped(hit.shapeId));
+          shapeBloc.add(ShapeDragStarted(
+            shapeId: hit.shapeId,
+            startPoint: event.localPosition,
+          ));
+        }
+        _activeShapeGesture = true;
+        return; // Do NOT start an ink stroke.
+      }
+
+      // Tapped on empty canvas — deselect any selected shape.
+      if (bloc.state.selectedShapeId != null) {
+        context.read<ShapeBloc>().add(const ShapeDeselectedEvent());
+      }
+    }
+
+    // ── Regular ink stroke ─────────────────────────────────────────────────
+    _activeShapeGesture = false;
     final input = StylusAdapterFactory.convert(event);
     final point = _stylusInputToPointData(input, null);
     _lastPoint = point;
@@ -139,6 +179,18 @@ class _CanvasViewState extends State<CanvasView>
   }
 
   void _onPointerMove(PointerMoveEvent event) {
+    // Route to ShapeBloc if this gesture started on a shape.
+    if (_activeShapeGesture) {
+      final shapeBloc = context.read<ShapeBloc>();
+      final shapeState = shapeBloc.state;
+      if (shapeState.isDragging) {
+        shapeBloc.add(ShapeDragUpdated(event.localPosition));
+      } else if (shapeState.isResizing) {
+        shapeBloc.add(HandleDragUpdated(event.localPosition));
+      }
+      return;
+    }
+
     final bloc = context.read<CanvasBloc>();
     final prev = _lastPoint;
 
@@ -159,6 +211,19 @@ class _CanvasViewState extends State<CanvasView>
   }
 
   void _onPointerUp(PointerUpEvent event) {
+    // End a shape drag/resize gesture.
+    if (_activeShapeGesture) {
+      _activeShapeGesture = false;
+      final shapeBloc = context.read<ShapeBloc>();
+      final shapeState = shapeBloc.state;
+      if (shapeState.isDragging) {
+        shapeBloc.add(const ShapeDragEnded());
+      } else if (shapeState.isResizing) {
+        shapeBloc.add(const HandleDragEnded());
+      }
+      return;
+    }
+
     final bloc = context.read<CanvasBloc>();
     // Capture active stroke BEFORE adding StrokeEnded (which clears it)
     final activeStroke = bloc.state.activeStroke;
@@ -172,6 +237,16 @@ class _CanvasViewState extends State<CanvasView>
   }
 
   void _onPointerCancel(PointerCancelEvent event) {
+    if (_activeShapeGesture) {
+      _activeShapeGesture = false;
+      final shapeBloc = context.read<ShapeBloc>();
+      if (shapeBloc.state.isDragging) {
+        shapeBloc.add(const ShapeDragEnded());
+      } else if (shapeBloc.state.isResizing) {
+        shapeBloc.add(const HandleDragEnded());
+      }
+      return;
+    }
     context.read<CanvasBloc>()
       ..add(const StrokeEnded())
       ..add(const HoverEnded());
@@ -401,6 +476,15 @@ class _CanvasViewState extends State<CanvasView>
                       onReject: () => context
                           .read<CanvasBloc>()
                           .add(const ShapeRecognitionRejected()),
+                    ),
+                  // Shape properties panel — shown at bottom when a shape is
+                  // selected so the user can adjust colours, fill, etc.
+                  if (state.selectedShapeId != null)
+                    const Positioned(
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      child: ShapePropertiesPanel(),
                     ),
                   // Offline / reconnecting banner (collaboration)
                   const Positioned(
