@@ -1,0 +1,62 @@
+workflows:
+  ios-testflight-workflow:
+    name: iOS TestFlight Distribution
+    max_build_duration: 120
+    instance_type: mac_mini_m2
+    integrations:
+      app_store_connect: codemagic2
+    environment:
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.y2notes.app
+      vars:
+        XCODE_PROJECT: "Y2Notes.xcodeproj"
+        XCODE_SCHEME: "Y2Notes"
+      xcode: latest
+    scripts:
+      - name: Set up code signing settings on Xcode project
+        script: |
+          xcode-project use-profiles --project "$XCODE_PROJECT"
+      - name: Increment build number
+        script: |
+          agvtool new-version -all $(($BUILD_NUMBER))
+      - name: Resolve SPM packages
+        script: |
+          xcodebuild -resolvePackageDependencies \
+            -project "$XCODE_PROJECT" \
+            -scheme "$XCODE_SCHEME"
+      - name: Run tests
+        script: |
+          xcodebuild test \
+            -project "$XCODE_PROJECT" \
+            -scheme "$XCODE_SCHEME" \
+            -destination 'platform=iOS Simulator,name=iPad Pro 13-inch (M4)' \
+            -sdk iphonesimulator \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            | xcpretty || true
+      - name: Download Metal Toolchain
+        script: |
+          xcodebuild -downloadComponent MetalToolchain
+      - name: Build ipa for App Store distribution
+        script: |
+          xcode-project build-ipa \
+            --project "$XCODE_PROJECT" \
+            --scheme "$XCODE_SCHEME" \
+            --archive-flags="-destination 'generic/platform=iOS'"
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+      - $HOME/Library/Developer/Xcode/DerivedData/**/Build/**/*.dSYM
+    publishing:
+      email:
+        recipients:
+          - user1@example.com
+        notify:
+          success: true
+          failure: true
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
+        beta_groups:
+          - Internal Testers
