@@ -12,6 +12,7 @@ import 'package:y2notes2/features/canvas/presentation/widgets/toolbar/effects_to
 import 'package:y2notes2/features/canvas/presentation/widgets/toolbar/pen_picker.dart';
 import 'package:y2notes2/features/canvas/presentation/widgets/toolbar/thickness_slider.dart';
 import 'package:y2notes2/features/canvas/presentation/widgets/toolbar/tool_picker_panel.dart';
+import 'package:y2notes2/features/canvas/presentation/widgets/toolbar/tool_settings_panel.dart';
 
 /// GoodNotes-style thin top toolbar.
 class MainToolbar extends StatelessWidget {
@@ -75,6 +76,9 @@ class MainToolbar extends StatelessWidget {
                 const _Divider(),
                 // ── Plugin tool picker ─────────────────────────────────────
                 _ToolPickerButton(state: state),
+                const _Divider(),
+                // ── Tool-specific settings ─────────────────────────────────
+                _ToolSettingsButton(state: state),
                 const _Divider(),
                 // ── Undo / Redo ────────────────────────────────────────────
                 _UndoRedoButtons(state: state, bloc: bloc),
@@ -158,6 +162,37 @@ class _ToolPickerButton extends StatelessWidget {
           builder: (_) => BlocProvider.value(
             value: context.read<CanvasBloc>(),
             child: const ToolPickerPanel(),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _ToolSettingsButton extends StatelessWidget {
+  const _ToolSettingsButton({required this.state});
+
+  final CanvasState state;
+
+  @override
+  Widget build(BuildContext context) {
+    final tool = state.activeDrawingTool;
+    final hasSettings = tool != null && tool.settingsSchema.isNotEmpty;
+    return IconButton(
+      icon: const Icon(Icons.tune),
+      iconSize: AppConstants.toolbarIconSize,
+      tooltip: hasSettings ? '${tool.name} settings' : 'Tool settings',
+      onPressed: () {
+        HapticController.light();
+        showModalBottomSheet<void>(
+          context: context,
+          isScrollControlled: true,
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+          ),
+          builder: (_) => BlocProvider.value(
+            value: context.read<CanvasBloc>(),
+            child: const ToolSettingsPanel(),
           ),
         );
       },
