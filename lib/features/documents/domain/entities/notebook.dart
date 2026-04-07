@@ -18,6 +18,7 @@ class Notebook extends Equatable {
   Notebook({
     String? id,
     required this.title,
+    this.description,
     this.pages = const [],
     DateTime? createdAt,
     DateTime? updatedAt,
@@ -28,6 +29,10 @@ class Notebook extends Equatable {
 
   final String id;
   final String title;
+
+  /// Optional description or subtitle for the notebook.
+  final String? description;
+
   final List<NotebookPage> pages;
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -37,8 +42,18 @@ class Notebook extends Equatable {
 
   bool get isEmpty => pages.isEmpty;
 
+  /// Returns all pages that have been bookmarked.
+  List<NotebookPage> get bookmarkedPages =>
+      pages.where((p) => p.isBookmarked).toList();
+
+  /// Returns all pages that have a user-assigned title.
+  List<NotebookPage> get titledPages =>
+      pages.where((p) => p.title != null).toList();
+
   Notebook copyWith({
     String? title,
+    String? description,
+    bool clearDescription = false,
     List<NotebookPage>? pages,
     DateTime? updatedAt,
     NotebookCover? cover,
@@ -46,6 +61,8 @@ class Notebook extends Equatable {
       Notebook(
         id: id,
         title: title ?? this.title,
+        description:
+            clearDescription ? null : (description ?? this.description),
         pages: pages ?? this.pages,
         createdAt: createdAt,
         updatedAt: updatedAt ?? DateTime.now(),
@@ -76,5 +93,5 @@ class Notebook extends Equatable {
   }
 
   @override
-  List<Object?> get props => [id, title, pages, createdAt, cover];
+  List<Object?> get props => [id, title, description, pages, createdAt, cover];
 }

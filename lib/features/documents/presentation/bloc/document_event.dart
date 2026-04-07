@@ -164,3 +164,47 @@ class ImportImage extends DocumentEvent {
 class ClearDocumentStatus extends DocumentEvent {
   const ClearDocumentStatus();
 }
+
+// ── Notebook metadata ──────────────────────────────────────────────────────
+
+/// Rename the current notebook.
+class RenameNotebook extends DocumentEvent {
+  const RenameNotebook({required this.title});
+  final String title;
+  @override
+  List<Object?> get props => [title];
+}
+
+/// Update the notebook description.
+class UpdateNotebookDescription extends DocumentEvent {
+  const UpdateNotebookDescription({this.description});
+  final String? description;
+  @override
+  List<Object?> get props => [description];
+}
+
+// ── Page metadata ──────────────────────────────────────────────────────────
+
+/// Set or clear the title of the page at [pageIndex].
+class UpdatePageTitle extends DocumentEvent {
+  const UpdatePageTitle({required this.pageIndex, this.title});
+  final int pageIndex;
+  final String? title;
+  @override
+  List<Object?> get props => [pageIndex, title];
+}
+
+/// Toggle the bookmark state of the page at [pageIndex].
+class TogglePageBookmark extends DocumentEvent {
+  const TogglePageBookmark({required this.pageIndex});
+  final int pageIndex;
+  @override
+  List<Object?> get props => [pageIndex];
+}
+
+// ── Outline panel ──────────────────────────────────────────────────────────
+
+/// Toggle the outline/table-of-contents panel visibility.
+class ToggleOutlinePanel extends DocumentEvent {
+  const ToggleOutlinePanel();
+}

@@ -5,10 +5,11 @@ import 'package:y2notes2/features/documents/presentation/bloc/document_event.dar
 import 'package:y2notes2/features/documents/presentation/bloc/document_state.dart';
 import 'package:y2notes2/features/documents/presentation/widgets/export_dialog.dart';
 import 'package:y2notes2/features/documents/presentation/widgets/import_button.dart';
+import 'package:y2notes2/features/documents/presentation/widgets/outline_panel.dart';
 import 'package:y2notes2/features/documents/presentation/widgets/page_navigator.dart';
 
 /// Full notebook view: the canvas (passed as [child]) surrounded by the
-/// page navigator strip and export/import affordances.
+/// page navigator strip, outline panel, and export/import affordances.
 class NotebookPageView extends StatelessWidget {
   const NotebookPageView({
     super.key,
@@ -36,11 +37,18 @@ class NotebookPageView extends StatelessWidget {
       },
       child: Stack(
         children: [
-          // Main canvas area.
-          Column(
+          // Main content: outline panel + canvas + page navigator.
+          Row(
             children: [
-              Expanded(child: child),
-              const PageNavigator(),
+              const OutlinePanel(),
+              Expanded(
+                child: Column(
+                  children: [
+                    Expanded(child: child),
+                    const PageNavigator(),
+                  ],
+                ),
+              ),
             ],
           ),
           // Progress overlay (shown during export/import).
@@ -51,7 +59,7 @@ class NotebookPageView extends StatelessWidget {
   }
 }
 
-/// Toolbar buttons for export and import actions.
+/// Toolbar buttons for export, import, and outline toggle.
 class DocumentToolbarActions extends StatelessWidget {
   const DocumentToolbarActions({super.key});
 
@@ -59,6 +67,23 @@ class DocumentToolbarActions extends StatelessWidget {
   Widget build(BuildContext context) => Row(
         mainAxisSize: MainAxisSize.min,
         children: [
+          // Outline toggle button.
+          BlocBuilder<DocumentBloc, DocumentState>(
+            buildWhen: (prev, curr) =>
+                prev.isOutlineOpen != curr.isOutlineOpen,
+            builder: (context, state) => IconButton(
+              icon: Icon(
+                state.isOutlineOpen
+                    ? Icons.menu_book_rounded
+                    : Icons.menu_book_outlined,
+              ),
+              tooltip: state.isOutlineOpen ? 'Close outline' : 'Outline',
+              iconSize: 20,
+              onPressed: () => context
+                  .read<DocumentBloc>()
+                  .add(const ToggleOutlinePanel()),
+            ),
+          ),
           // Export button.
           IconButton(
             icon: const Icon(Icons.ios_share_rounded),

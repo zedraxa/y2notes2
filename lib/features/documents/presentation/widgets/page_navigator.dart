@@ -26,7 +26,8 @@ class PageNavigator extends StatelessWidget {
               insertAfterIndex: state.currentPageIndex,
             )),
             onPageLongPress: (i) =>
-                _showPageOptions(context, bloc, i, state.notebook!.pageCount),
+                _showPageOptions(context, bloc, i, state.notebook!.pageCount,
+                    state.notebook!.pages[i]),
           );
         },
       );
@@ -36,6 +37,7 @@ class PageNavigator extends StatelessWidget {
     DocumentBloc bloc,
     int pageIndex,
     int totalPages,
+    NotebookPage page,
   ) {
     showModalBottomSheet<void>(
       context: context,
@@ -43,6 +45,7 @@ class PageNavigator extends StatelessWidget {
         pageIndex: pageIndex,
         totalPages: totalPages,
         bloc: bloc,
+        page: page,
       ),
     );
   }
@@ -90,6 +93,8 @@ class _PageNavigatorContent extends StatelessWidget {
               itemBuilder: (context, i) => _PageThumbnail(
                 pageNumber: pages[i].pageNumber,
                 isSelected: i == currentIndex,
+                isBookmarked: pages[i].isBookmarked,
+                title: pages[i].title,
                 onTap: () => onPageTap(i),
                 onLongPress: () => onPageLongPress(i),
               ),
@@ -122,12 +127,16 @@ class _PageThumbnail extends StatelessWidget {
   const _PageThumbnail({
     required this.pageNumber,
     required this.isSelected,
+    required this.isBookmarked,
+    this.title,
     required this.onTap,
     required this.onLongPress,
   });
 
   final int pageNumber;
   final bool isSelected;
+  final bool isBookmarked;
+  final String? title;
   final VoidCallback onTap;
   final VoidCallback onLongPress;
 
@@ -159,17 +168,49 @@ class _PageThumbnail extends StatelessWidget {
                 ]
               : null,
         ),
-        child: Center(
-          child: Text(
-            '$pageNumber',
-            style: theme.textTheme.labelSmall?.copyWith(
-              color: isSelected
-                  ? theme.colorScheme.primary
-                  : theme.colorScheme.onSurfaceVariant,
-              fontWeight:
-                  isSelected ? FontWeight.bold : FontWeight.normal,
+        child: Stack(
+          children: [
+            Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    '$pageNumber',
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color: isSelected
+                          ? theme.colorScheme.primary
+                          : theme.colorScheme.onSurfaceVariant,
+                      fontWeight:
+                          isSelected ? FontWeight.bold : FontWeight.normal,
+                    ),
+                  ),
+                  if (title != null)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 2),
+                      child: Text(
+                        title!,
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          fontSize: 7,
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                ],
+              ),
             ),
-          ),
+            if (isBookmarked)
+              Positioned(
+                top: 2,
+                right: 2,
+                child: Icon(
+                  Icons.bookmark_rounded,
+                  size: 10,
+                  color: theme.colorScheme.primary,
+                ),
+              ),
+          ],
         ),
       ),
     );
@@ -182,11 +223,13 @@ class _PageOptionsSheet extends StatelessWidget {
     required this.pageIndex,
     required this.totalPages,
     required this.bloc,
+    required this.page,
   });
 
   final int pageIndex;
   final int totalPages;
   final DocumentBloc bloc;
+  final NotebookPage page;
 
   @override
   Widget build(BuildContext context) {
@@ -197,6 +240,30 @@ class _PageOptionsSheet extends StatelessWidget {
           const SizedBox(height: 8),
           _sheetHandle(context),
           const SizedBox(height: 8),
+          ListTile(
+            leading: Icon(
+              page.isBookmarked
+                  ? Icons.bookmark_rounded
+                  : Icons.bookmark_border_rounded,
+            ),
+            title: Text(
+              page.isBookmarked ? 'Remove bookmark' : 'Bookmark page',
+            ),
+            onTap: () {
+              Navigator.pop(context);
+              bloc.add(TogglePageBookmark(pageIndex: pageIndex));
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.edit_outlined),
+            title: const Text('Set page title'),
+            subtitle: page.title != null ? Text(page.title!) : null,
+            onTap: () {
+              Navigator.pop(context);
+              _showRenamePage(context);
+            },
+          ),
+          const Divider(height: 1, indent: 16, endIndent: 16),
           ListTile(
             leading: const Icon(Icons.add_to_photos_outlined),
             title: const Text('Insert page before'),
@@ -232,6 +299,57 @@ class _PageOptionsSheet extends StatelessWidget {
               },
             ),
           const SizedBox(height: 8),
+        ],
+      ),
+    );
+  }
+
+  void _showRenamePage(BuildContext context) {
+    final controller = TextEditingController(text: page.title ?? '');
+    showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text('Page ${page.pageNumber} title'),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          decoration: const InputDecoration(
+            hintText: 'Enter page title',
+            border: OutlineInputBorder(),
+          ),
+          onSubmitted: (_) {
+            final value = controller.text.trim();
+            bloc.add(UpdatePageTitle(
+              pageIndex: pageIndex,
+              title: value.isEmpty ? null : value,
+            ));
+            Navigator.pop(dialogContext);
+          },
+        ),
+        actions: [
+          if (page.title != null)
+            TextButton(
+              onPressed: () {
+                bloc.add(UpdatePageTitle(pageIndex: pageIndex));
+                Navigator.pop(dialogContext);
+              },
+              child: const Text('Clear'),
+            ),
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () {
+              final value = controller.text.trim();
+              bloc.add(UpdatePageTitle(
+                pageIndex: pageIndex,
+                title: value.isEmpty ? null : value,
+              ));
+              Navigator.pop(dialogContext);
+            },
+            child: const Text('Save'),
+          ),
         ],
       ),
     );
