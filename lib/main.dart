@@ -13,6 +13,7 @@ import 'package:y2notes2/features/collaboration/presentation/bloc/collaboration_
 import 'package:y2notes2/features/documents/data/document_repository.dart';
 import 'package:y2notes2/features/handwriting/presentation/bloc/handwriting_bloc.dart';
 import 'package:y2notes2/features/infinite_canvas/presentation/bloc/infinite_canvas_bloc.dart';
+import 'package:y2notes2/features/math_graph/presentation/bloc/graph_bloc.dart';
 import 'package:y2notes2/features/library/data/library_repository.dart';
 import 'package:y2notes2/features/rich_text/presentation/bloc/rich_text_bloc.dart';
 import 'package:y2notes2/features/shapes/presentation/bloc/shape_bloc.dart';
@@ -93,6 +94,10 @@ void main() async {
             // their own scoped provider when needed.
             BlocProvider(
               create: (_) => InfiniteCanvasBloc(),
+            ),
+            // GraphBloc manages interactive math graphs.
+            BlocProvider(
+              create: (_) => GraphBloc(),
             ),
             // RichTextBloc manages rich text elements on the canvas.
             BlocProvider(

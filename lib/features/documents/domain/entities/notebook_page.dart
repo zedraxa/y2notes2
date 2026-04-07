@@ -19,6 +19,7 @@ class NotebookPage extends Equatable {
     this.strokes = const [],
     this.shapes = const [],
     this.stickers = const [],
+    this.graphs = const [],
     this.pdfAnnotations = const [],
     this.richTexts = const [],
     this.config = const CanvasConfig(),
@@ -39,6 +40,7 @@ class NotebookPage extends Equatable {
   final List<Stroke> strokes;
   final List<ShapeElement> shapes;
   final List<StickerElement> stickers;
+  final List<GraphElement> graphs;
 
   /// PDF annotations (highlights, underlines, sticky notes, etc.)
   /// for pages imported from a PDF.
@@ -80,6 +82,7 @@ class NotebookPage extends Equatable {
     List<Stroke>? strokes,
     List<ShapeElement>? shapes,
     List<StickerElement>? stickers,
+    List<GraphElement>? graphs,
     List<PdfAnnotation>? pdfAnnotations,
     List<RichTextElement>? richTexts,
     CanvasConfig? config,
@@ -96,6 +99,7 @@ class NotebookPage extends Equatable {
         strokes: strokes ?? this.strokes,
         shapes: shapes ?? this.shapes,
         stickers: stickers ?? this.stickers,
+        graphs: graphs ?? this.graphs,
         pdfAnnotations: pdfAnnotations ?? this.pdfAnnotations,
         richTexts: richTexts ?? this.richTexts,
         config: config ?? this.config,
@@ -117,6 +121,7 @@ class NotebookPage extends Equatable {
         strokes,
         shapes,
         stickers,
+        graphs,
         pdfAnnotations,
         richTexts,
         config,
