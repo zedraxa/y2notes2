@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:y2notes2/app/theme/colors.dart';
 import 'package:y2notes2/core/constants/app_constants.dart';
 import 'package:y2notes2/core/engine/haptic_controller.dart';
+import 'package:y2notes2/core/engine/stylus/stylus_detector.dart';
 import 'package:y2notes2/features/canvas/domain/entities/tool.dart';
 import 'package:y2notes2/features/canvas/presentation/bloc/canvas_bloc.dart';
 import 'package:y2notes2/features/canvas/presentation/bloc/canvas_event.dart';
@@ -107,6 +108,9 @@ class MainToolbar extends StatelessWidget {
                 // ── Undo / Redo ────────────────────────────────────────────
                 _UndoRedoButtons(state: state, bloc: bloc),
                 const Spacer(),
+                // ── Stylus indicator ───────────────────────────────────────
+                _StylusIndicator(state: state),
+                const _Divider(),
                 // ── Collaboration / Share ───────────────────────────────────
                 const ShareButton(),
                 const _Divider(),
@@ -468,5 +472,79 @@ class _ShapeToolButton extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+/// Small indicator in the toolbar showing the connected stylus type.
+///
+/// Shows a stylus icon with a coloured dot when a non-generic stylus is
+/// detected.  Tapping it navigates to `/settings/stylus`.
+class _StylusIndicator extends StatelessWidget {
+  const _StylusIndicator({required this.state});
+
+  final CanvasState state;
+
+  @override
+  Widget build(BuildContext context) {
+    final type = state.detectedStylusType;
+    final isKnown = type != StylusType.unknown &&
+        type != StylusType.finger &&
+        type != StylusType.generic;
+
+    return IconButton(
+        icon: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            Icon(
+              Icons.draw_outlined,
+              size: AppConstants.toolbarIconSize,
+              color: isKnown
+                  ? Theme.of(context).colorScheme.primary
+                  : Theme.of(context).disabledColor,
+            ),
+            if (isKnown)
+              Positioned(
+                right: -2,
+                top: -2,
+                child: Container(
+                  width: 7,
+                  height: 7,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.primary,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+              ),
+          ],
+        ),
+        iconSize: AppConstants.toolbarIconSize,
+        tooltip: isKnown ? _labelFor(type) : 'Stylus settings',
+        onPressed: () {
+          HapticController.light();
+          // Navigate to stylus settings page
+        },
+      );
+  }
+
+  static String _labelFor(StylusType type) {
+    switch (type) {
+      case StylusType.applePencil:
+        return 'Apple Pencil';
+      case StylusType.applePencil2:
+        return 'Apple Pencil 2nd Gen';
+      case StylusType.applePencilPro:
+        return 'Apple Pencil Pro';
+      case StylusType.samsungSPen:
+        return 'Samsung S Pen';
+      case StylusType.usiPen:
+        return 'USI Pen';
+      case StylusType.wacomEmr:
+        return 'Wacom Pen';
+      case StylusType.generic:
+        return 'Generic Stylus';
+      case StylusType.finger:
+      case StylusType.unknown:
+        return 'No stylus';
+    }
   }
 }

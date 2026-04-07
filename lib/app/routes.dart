@@ -8,6 +8,7 @@ import 'package:y2notes2/features/handwriting/presentation/pages/recognition_set
 import 'package:y2notes2/features/infinite_canvas/presentation/pages/infinite_canvas_page.dart';
 import 'package:y2notes2/features/library/presentation/pages/library_page.dart';
 import 'package:y2notes2/features/settings/presentation/effects_settings_page.dart';
+import 'package:y2notes2/features/settings/presentation/stylus_settings_page.dart';
 import 'package:y2notes2/features/workspace/presentation/pages/workspace_page.dart';
 
 /// Application router using GoRouter.
@@ -81,6 +82,10 @@ class AppRouter {
             path: 'effects',
             builder: (context, state) =>
                 const EffectsSettingsPage(showEffectsOnly: true),
+          ),
+          GoRoute(
+            path: 'stylus',
+            builder: (context, state) => const StylusSettingsPage(),
           ),
           GoRoute(
             path: 'recognition',

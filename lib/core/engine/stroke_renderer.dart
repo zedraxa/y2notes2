@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:perfect_freehand/perfect_freehand.dart';
 import 'package:y2notes2/features/canvas/domain/entities/stroke.dart';
@@ -63,8 +64,31 @@ class StrokeRenderer {
 
   // ─── Private helpers ───────────────────────────────────────────────────────
 
-  List<PointVector> _toFreehandPoints(List<PointData> points) =>
-      points.map((p) => PointVector(p.x, p.y, p.pressure)).toList();
+  List<PointVector> _toFreehandPoints(List<PointData> points) {
+    return points.map((p) {
+      // Apply tilt-to-width: altitude modulates the pressure passed to
+      // perfect_freehand, so very flat strokes produce wider marks.
+      final tiltMultiplier = _tiltMultiplier(p.altitude);
+      final modulatedPressure = (p.pressure * tiltMultiplier).clamp(0.0, 1.0);
+      return PointVector(p.x, p.y, modulatedPressure);
+    }).toList();
+  }
+
+  /// Returns a width multiplier based on the pen altitude angle [radians].
+  ///
+  /// | Altitude  | Multiplier | Description          |
+  /// |-----------|------------|----------------------|
+  /// | < 30°     | 2.0        | Flat — shading mode  |
+  /// | 30° – 60° | 1.0        | Normal writing       |
+  /// | > 60°     | 0.5        | Upright — fine detail|
+  static double _tiltMultiplier(double radians) {
+    const flat = 30.0 * math.pi / 180.0;   // 30°
+    const normal = 60.0 * math.pi / 180.0; // 60°
+    if (radians < flat) return 2.0;
+    if (radians > normal) return 0.5;
+    final t = (radians - flat) / (normal - flat);
+    return 2.0 - 1.5 * t;
+  }
 
   StrokeOptions _buildOptions(Stroke stroke) =>
       _buildOptionsFromParams(stroke.baseWidth, stroke.tool);

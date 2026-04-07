@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:y2notes2/app/theme/colors.dart';
+import 'package:y2notes2/core/engine/stylus/stylus_detector.dart';
 import 'package:y2notes2/core/extensions/iterable_extensions.dart';
 import 'package:y2notes2/features/canvas/domain/entities/stroke.dart';
 import 'package:y2notes2/features/canvas/domain/entities/tool.dart';
@@ -35,6 +36,10 @@ class CanvasState extends Equatable {
     this.shapeRecognitionProposal,
     this.activeShapeType,
     this.isShapeMode = false,
+    // ── Stylus state ──────────────────────────────────────────────────────
+    this.detectedStylusType = StylusType.unknown,
+    this.hoverPosition,
+    this.isHovering = false,
   });
 
   /// All committed strokes in order.
@@ -82,6 +87,17 @@ class CanvasState extends Equatable {
   /// Whether the canvas is in shape-drawing mode (vs freehand).
   final bool isShapeMode;
 
+  // ── Stylus state ──────────────────────────────────────────────────────────
+
+  /// The most recently detected stylus type (updated on each pointer event).
+  final StylusType detectedStylusType;
+
+  /// Current hover position in canvas logical pixels. `null` when not hovering.
+  final Offset? hoverPosition;
+
+  /// Whether the stylus is currently hovering above the screen (not touching).
+  final bool isHovering;
+
   // ── Derived getters ──────────────────────────────────────────────────────
 
   /// Returns the active plugin-based DrawingTool if registered.
@@ -120,6 +136,10 @@ class CanvasState extends Equatable {
     ShapeType? activeShapeType,
     bool clearActiveShapeType = false,
     bool? isShapeMode,
+    StylusType? detectedStylusType,
+    Offset? hoverPosition,
+    bool clearHoverPosition = false,
+    bool? isHovering,
   }) =>
       CanvasState(
         strokes: strokes ?? this.strokes,
@@ -148,6 +168,10 @@ class CanvasState extends Equatable {
             ? null
             : (activeShapeType ?? this.activeShapeType),
         isShapeMode: isShapeMode ?? this.isShapeMode,
+        detectedStylusType: detectedStylusType ?? this.detectedStylusType,
+        hoverPosition:
+            clearHoverPosition ? null : (hoverPosition ?? this.hoverPosition),
+        isHovering: isHovering ?? this.isHovering,
       );
 
   @override
@@ -170,5 +194,8 @@ class CanvasState extends Equatable {
         shapeRecognitionProposal,
         activeShapeType,
         isShapeMode,
+        detectedStylusType,
+        hoverPosition,
+        isHovering,
       ];
 }
