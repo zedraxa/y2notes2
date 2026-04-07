@@ -4,6 +4,7 @@ import 'package:y2notes2/features/canvas/domain/entities/stroke.dart';
 import 'package:y2notes2/features/canvas/domain/entities/tool.dart';
 import 'package:y2notes2/features/canvas/domain/entities/point_data.dart';
 import 'package:y2notes2/features/canvas/domain/entities/tools/drawing_tool.dart';
+import 'package:y2notes2/features/canvas/domain/entities/tools/tool_registry.dart';
 import 'package:y2notes2/features/canvas/domain/entities/tools/tool_settings.dart';
 
 /// Renders strokes using the `perfect_freehand` algorithm.
@@ -18,8 +19,26 @@ class StrokeRenderer {
   }
 
   /// Render [stroke] onto [canvas].
-  void renderStroke(Canvas canvas, Stroke stroke) {
+  ///
+  /// If the stroke has a [Stroke.toolId] referencing a registered [DrawingTool],
+  /// delegates to that tool's [DrawingTool.renderStroke]. Otherwise falls back
+  /// to the legacy perfect_freehand path.
+  void renderStroke(Canvas canvas, Stroke stroke, [ToolSettings? overrideSettings]) {
     if (stroke.points.isEmpty) return;
+
+    final pluginTool = stroke.toolId != null ? ToolRegistry.get(stroke.toolId!) : null;
+    if (pluginTool != null) {
+      final settings = overrideSettings ??
+          pluginTool.defaultSettings.copyWith(
+            color: stroke.color,
+            size: stroke.baseWidth,
+          );
+      pluginTool.renderStroke(canvas, stroke.points, settings);
+      pluginTool.postProcess(canvas, stroke.points, settings);
+      return;
+    }
+
+    // Legacy path
     final path = buildStrokePath(stroke);
     final paint = _buildPaint(stroke);
     canvas.drawPath(path, paint);

@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:y2notes2/core/engine/canvas_engine.dart';
 import 'package:y2notes2/features/canvas/domain/entities/point_data.dart';
 import 'package:y2notes2/features/canvas/domain/entities/stroke.dart';
+import 'package:y2notes2/features/canvas/domain/entities/tools/tool_settings.dart';
 import 'package:y2notes2/features/canvas/domain/models/canvas_config.dart';
 import 'package:y2notes2/features/canvas/presentation/bloc/canvas_bloc.dart';
 import 'package:y2notes2/features/canvas/presentation/bloc/canvas_event.dart';
@@ -130,7 +131,9 @@ class _CanvasViewState extends State<CanvasView>
         buildWhen: (prev, curr) =>
             prev.strokes != curr.strokes ||
             prev.activeStroke != curr.activeStroke ||
-            prev.config != curr.config,
+            prev.config != curr.config ||
+            prev.activeToolId != curr.activeToolId ||
+            prev.activeToolSettings != curr.activeToolSettings,
         builder: (context, state) {
           // Trigger async cache update when strokes change
           final canvasSize = Size(state.config.width, state.config.height);
@@ -159,6 +162,7 @@ class _CanvasViewState extends State<CanvasView>
                         engine: _canvasEngine,
                         strokes: state.strokes,
                         activeStroke: state.activeStroke,
+                        activeToolSettings: state.activeToolSettings,
                         config: state.config,
                       ),
                       size: canvasSize,
@@ -178,12 +182,14 @@ class _CanvasPainter extends CustomPainter {
     required this.engine,
     required this.strokes,
     required this.activeStroke,
+    required this.activeToolSettings,
     required this.config,
   });
 
   final CanvasEngine engine;
   final List<Stroke> strokes;
   final Stroke? activeStroke;
+  final ToolSettings activeToolSettings;
   final CanvasConfig config;
 
   @override
@@ -194,6 +200,7 @@ class _CanvasPainter extends CustomPainter {
       config: config,
       strokes: strokes,
       activeStroke: activeStroke,
+      activeToolSettings: activeToolSettings,
     );
   }
 
@@ -201,5 +208,6 @@ class _CanvasPainter extends CustomPainter {
   bool shouldRepaint(_CanvasPainter old) =>
       old.strokes != strokes ||
       old.activeStroke != activeStroke ||
+      old.activeToolSettings != activeToolSettings ||
       old.config != config;
 }
