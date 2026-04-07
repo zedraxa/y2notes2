@@ -25,6 +25,9 @@ class GeneralSettingsPage extends StatelessWidget {
           _SectionHeader('Defaults'),
           _DefaultToolSizeSlider(settings: settings),
           _AutoSaveIntervalSlider(settings: settings),
+          const Divider(height: 24),
+          _SectionHeader('Navigation'),
+          _PageGesturesToggle(settings: settings),
         ],
       ),
     );
@@ -145,4 +148,23 @@ class _AutoSaveIntervalSlider extends StatelessWidget {
     if (remaining == 0) return '${minutes}m';
     return '${minutes}m ${remaining}s';
   }
+}
+
+class _PageGesturesToggle extends StatelessWidget {
+  const _PageGesturesToggle({required this.settings});
+
+  final SettingsService settings;
+
+  @override
+  Widget build(BuildContext context) => ValueListenableBuilder<bool>(
+        valueListenable: settings.pageGesturesEnabledNotifier,
+        builder: (context, enabled, _) => SwitchListTile(
+          title: const Text('Page Gestures'),
+          subtitle: const Text(
+            'Swipe with two fingers or from the screen edge to change pages',
+          ),
+          value: enabled,
+          onChanged: settings.setPageGesturesEnabled,
+        ),
+      );
 }

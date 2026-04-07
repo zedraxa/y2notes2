@@ -202,6 +202,18 @@ class TogglePageBookmark extends DocumentEvent {
   List<Object?> get props => [pageIndex];
 }
 
+// ── Page gesture navigation ────────────────────────────────────────────────
+
+/// Navigate to the next page (if available).
+class GoToNextPage extends DocumentEvent {
+  const GoToNextPage();
+}
+
+/// Navigate to the previous page (if available).
+class GoToPreviousPage extends DocumentEvent {
+  const GoToPreviousPage();
+}
+
 // ── Outline panel ──────────────────────────────────────────────────────────
 
 /// Toggle the outline/table-of-contents panel visibility.

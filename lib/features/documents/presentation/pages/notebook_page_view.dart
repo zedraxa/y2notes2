@@ -6,6 +6,7 @@ import 'package:y2notes2/features/documents/presentation/bloc/document_state.dar
 import 'package:y2notes2/features/documents/presentation/widgets/export_dialog.dart';
 import 'package:y2notes2/features/documents/presentation/widgets/import_button.dart';
 import 'package:y2notes2/features/documents/presentation/widgets/outline_panel.dart';
+import 'package:y2notes2/features/documents/presentation/widgets/page_gesture_handler.dart';
 import 'package:y2notes2/features/documents/presentation/widgets/page_navigator.dart';
 
 /// Full notebook view: the canvas (passed as [child]) surrounded by the
@@ -44,7 +45,9 @@ class NotebookPageView extends StatelessWidget {
               Expanded(
                 child: Column(
                   children: [
-                    Expanded(child: child),
+                    Expanded(
+                      child: PageGestureHandler(child: child),
+                    ),
                     const PageNavigator(),
                   ],
                 ),

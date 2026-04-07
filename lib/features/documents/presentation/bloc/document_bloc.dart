@@ -49,6 +49,8 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
     on<UpdatePageTitle>(_onUpdatePageTitle);
     on<TogglePageBookmark>(_onTogglePageBookmark);
     on<ToggleOutlinePanel>(_onToggleOutlinePanel);
+    on<GoToNextPage>(_onGoToNextPage);
+    on<GoToPreviousPage>(_onGoToPreviousPage);
   }
 
   /// Optional repository for persisting/loading notebooks.
@@ -624,6 +626,22 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
     Emitter<DocumentState> emit,
   ) =>
       emit(state.copyWith(isOutlineOpen: !state.isOutlineOpen));
+
+  void _onGoToNextPage(
+    GoToNextPage event,
+    Emitter<DocumentState> emit,
+  ) {
+    if (!state.canGoForward) return;
+    emit(state.copyWith(currentPageIndex: state.currentPageIndex + 1));
+  }
+
+  void _onGoToPreviousPage(
+    GoToPreviousPage event,
+    Emitter<DocumentState> emit,
+  ) {
+    if (!state.canGoBack) return;
+    emit(state.copyWith(currentPageIndex: state.currentPageIndex - 1));
+  }
 
   List<NotebookPage> _renumber(List<NotebookPage> pages) => pages
       .asMap()
