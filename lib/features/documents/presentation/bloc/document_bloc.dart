@@ -44,6 +44,13 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
     on<ImportPdf>(_onImportPdf);
     on<ImportImage>(_onImportImage);
     on<ClearDocumentStatus>(_onClearStatus);
+    on<RenameNotebook>(_onRenameNotebook);
+    on<UpdateNotebookDescription>(_onUpdateNotebookDescription);
+    on<UpdatePageTitle>(_onUpdatePageTitle);
+    on<TogglePageBookmark>(_onTogglePageBookmark);
+    on<ToggleOutlinePanel>(_onToggleOutlinePanel);
+    on<GoToNextPage>(_onGoToNextPage);
+    on<GoToPreviousPage>(_onGoToPreviousPage);
   }
 
   /// Optional repository for persisting/loading notebooks.
@@ -180,6 +187,7 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
     final duplicate = NotebookPage(
       id: _uuid.v4(),
       pageNumber: source.pageNumber + 1,
+      title: source.title,
       strokes: List.of(source.strokes),
       shapes: List.of(source.shapes),
       stickers: List.of(source.stickers),
@@ -554,6 +562,86 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
         exportProgress: 0.0,
         importProgress: 0.0,
       ));
+
+  // ── Notebook metadata ─────────────────────────────────────────────────────
+
+  void _onRenameNotebook(
+    RenameNotebook event,
+    Emitter<DocumentState> emit,
+  ) {
+    final nb = state.notebook;
+    if (nb == null) return;
+    emit(state.copyWith(notebook: nb.copyWith(title: event.title)));
+  }
+
+  void _onUpdateNotebookDescription(
+    UpdateNotebookDescription event,
+    Emitter<DocumentState> emit,
+  ) {
+    final nb = state.notebook;
+    if (nb == null) return;
+    if (event.description == null) {
+      emit(state.copyWith(
+        notebook: nb.copyWith(clearDescription: true),
+      ));
+    } else {
+      emit(state.copyWith(
+        notebook: nb.copyWith(description: event.description),
+      ));
+    }
+  }
+
+  // ── Page metadata ─────────────────────────────────────────────────────────
+
+  void _onUpdatePageTitle(
+    UpdatePageTitle event,
+    Emitter<DocumentState> emit,
+  ) {
+    final nb = state.notebook;
+    if (nb == null) return;
+
+    final page = nb.pages[event.pageIndex];
+    final updated = event.title == null
+        ? page.copyWith(clearTitle: true)
+        : page.copyWith(title: event.title);
+    emit(state.copyWith(notebook: nb.updatePage(event.pageIndex, updated)));
+  }
+
+  void _onTogglePageBookmark(
+    TogglePageBookmark event,
+    Emitter<DocumentState> emit,
+  ) {
+    final nb = state.notebook;
+    if (nb == null) return;
+
+    final page = nb.pages[event.pageIndex];
+    final updated = page.copyWith(isBookmarked: !page.isBookmarked);
+    emit(state.copyWith(notebook: nb.updatePage(event.pageIndex, updated)));
+  }
+
+  // ── Outline panel ─────────────────────────────────────────────────────────
+
+  void _onToggleOutlinePanel(
+    ToggleOutlinePanel event,
+    Emitter<DocumentState> emit,
+  ) =>
+      emit(state.copyWith(isOutlineOpen: !state.isOutlineOpen));
+
+  void _onGoToNextPage(
+    GoToNextPage event,
+    Emitter<DocumentState> emit,
+  ) {
+    if (!state.canGoForward) return;
+    emit(state.copyWith(currentPageIndex: state.currentPageIndex + 1));
+  }
+
+  void _onGoToPreviousPage(
+    GoToPreviousPage event,
+    Emitter<DocumentState> emit,
+  ) {
+    if (!state.canGoBack) return;
+    emit(state.copyWith(currentPageIndex: state.currentPageIndex - 1));
+  }
 
   List<NotebookPage> _renumber(List<NotebookPage> pages) => pages
       .asMap()

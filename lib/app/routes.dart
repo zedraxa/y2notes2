@@ -7,7 +7,12 @@ import 'package:y2notes2/features/documents/presentation/bloc/document_event.dar
 import 'package:y2notes2/features/handwriting/presentation/pages/recognition_settings_page.dart';
 import 'package:y2notes2/features/infinite_canvas/presentation/pages/infinite_canvas_page.dart';
 import 'package:y2notes2/features/library/presentation/pages/library_page.dart';
+import 'package:y2notes2/features/settings/presentation/about_page.dart';
+import 'package:y2notes2/features/settings/presentation/backup_settings_page.dart';
+import 'package:y2notes2/features/settings/presentation/canvas_settings_page.dart';
 import 'package:y2notes2/features/settings/presentation/effects_settings_page.dart';
+import 'package:y2notes2/features/settings/presentation/general_settings_page.dart';
+import 'package:y2notes2/features/settings/presentation/settings_home_page.dart';
 import 'package:y2notes2/features/settings/presentation/stylus_settings_page.dart';
 import 'package:y2notes2/features/workspace/presentation/pages/workspace_page.dart';
 
@@ -76,8 +81,16 @@ class AppRouter {
       // ── Settings ─────────────────────────────────────────────────────────
       GoRoute(
         path: '/settings',
-        builder: (context, state) => const EffectsSettingsPage(),
+        builder: (context, state) => const SettingsHomePage(),
         routes: [
+          GoRoute(
+            path: 'general',
+            builder: (context, state) => const GeneralSettingsPage(),
+          ),
+          GoRoute(
+            path: 'canvas',
+            builder: (context, state) => const CanvasSettingsPage(),
+          ),
           GoRoute(
             path: 'effects',
             builder: (context, state) =>
@@ -90,6 +103,14 @@ class AppRouter {
           GoRoute(
             path: 'recognition',
             builder: (context, state) => const RecognitionSettingsPage(),
+          ),
+          GoRoute(
+            path: 'backup',
+            builder: (context, state) => const BackupSettingsPage(),
+          ),
+          GoRoute(
+            path: 'about',
+            builder: (context, state) => const AboutPage(),
           ),
         ],
       ),

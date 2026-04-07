@@ -65,6 +65,47 @@ class StickerElement extends Equatable {
         washiTint: washiTint ?? this.washiTint,
       );
 
+  /// Serializes to a JSON-compatible map for persistence.
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'type': type.name,
+        'assetKey': assetKey,
+        'positionX': position.dx,
+        'positionY': position.dy,
+        'scale': scale,
+        'rotation': rotation,
+        'opacity': opacity,
+        'zIndex': zIndex,
+        'isLocked': isLocked,
+        'createdAt': createdAt.toIso8601String(),
+        if (washiLength != null) 'washiLength': washiLength,
+        if (washiWidth != null) 'washiWidth': washiWidth,
+        if (washiTint != null) 'washiTint': washiTint!.value,
+      };
+
+  /// Deserializes from a JSON-compatible map.
+  factory StickerElement.fromJson(Map<String, dynamic> json) => StickerElement(
+        id: json['id'] as String,
+        type: StickerType.values.byName(json['type'] as String),
+        assetKey: json['assetKey'] as String,
+        position: Offset(
+          (json['positionX'] as num).toDouble(),
+          (json['positionY'] as num).toDouble(),
+        ),
+        scale: (json['scale'] as num?)?.toDouble() ?? 1.0,
+        rotation: (json['rotation'] as num?)?.toDouble() ?? 0.0,
+        opacity: (json['opacity'] as num?)?.toDouble() ?? 1.0,
+        zIndex: (json['zIndex'] as num?)?.toInt() ?? 0,
+        isLocked: json['isLocked'] as bool? ?? false,
+        createdAt: json['createdAt'] != null
+            ? DateTime.parse(json['createdAt'] as String)
+            : null,
+        washiLength: (json['washiLength'] as num?)?.toDouble(),
+        washiWidth: (json['washiWidth'] as num?)?.toDouble(),
+        washiTint:
+            json['washiTint'] != null ? Color(json['washiTint'] as int) : null,
+      );
+
   @override
   List<Object?> get props => [
         id,

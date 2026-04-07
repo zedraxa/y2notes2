@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:y2notes2/features/stickers/presentation/bloc/sticker_bloc.dart';
 import 'package:y2notes2/features/stickers/presentation/bloc/sticker_event.dart';
+import 'package:y2notes2/features/stickers/presentation/bloc/sticker_state.dart';
 
 Future<void> showStickerContextMenu({
   required BuildContext context,
@@ -40,6 +41,14 @@ Future<void> showStickerContextMenu({
         child: ListTile(
           leading: Icon(isLocked ? Icons.lock_open_outlined : Icons.lock_outline),
           title: Text(isLocked ? 'Unlock' : 'Lock'),
+          dense: true,
+        ),
+      ),
+      const PopupMenuItem(
+        value: _ContextMenuAction.opacity,
+        child: ListTile(
+          leading: Icon(Icons.opacity),
+          title: Text('Opacity…'),
           dense: true,
         ),
       ),
@@ -88,6 +97,10 @@ Future<void> showStickerContextMenu({
       bloc.add(StickerDeleted(stickerId));
     case _ContextMenuAction.lock:
       bloc.add(StickerLocked(stickerId, isLocked: !isLocked));
+    case _ContextMenuAction.opacity:
+      if (context.mounted) {
+        _showOpacitySlider(context: context, stickerId: stickerId);
+      }
     case _ContextMenuAction.bringToFront:
       bloc.add(StickerLayerChanged(stickerId, LayerDirection.front));
     case _ContextMenuAction.sendToBack:
@@ -99,10 +112,86 @@ Future<void> showStickerContextMenu({
   }
 }
 
+void _showOpacitySlider({
+  required BuildContext context,
+  required String stickerId,
+}) {
+  final bloc = context.read<StickerBloc>();
+  final sticker = bloc.state.stickers.where((s) => s.id == stickerId).firstOrNull;
+  if (sticker == null) return;
+
+  showModalBottomSheet<void>(
+    context: context,
+    builder: (sheetContext) => _OpacitySliderSheet(
+      initialOpacity: sticker.opacity,
+      onChanged: (opacity) {
+        bloc.add(StickerOpacityChanged(stickerId, opacity));
+      },
+    ),
+  );
+}
+
+class _OpacitySliderSheet extends StatefulWidget {
+  const _OpacitySliderSheet({
+    required this.initialOpacity,
+    required this.onChanged,
+  });
+
+  final double initialOpacity;
+  final ValueChanged<double> onChanged;
+
+  @override
+  State<_OpacitySliderSheet> createState() => _OpacitySliderSheetState();
+}
+
+class _OpacitySliderSheetState extends State<_OpacitySliderSheet> {
+  late double _value;
+
+  @override
+  void initState() {
+    super.initState();
+    _value = widget.initialOpacity;
+  }
+
+  @override
+  Widget build(BuildContext context) => Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.opacity, size: 20),
+                const SizedBox(width: 8),
+                Text(
+                  'Opacity: ${(_value * 100).round()}%',
+                  style: Theme.of(context).textTheme.titleSmall,
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Slider(
+              value: _value,
+              min: 0.05,
+              max: 1.0,
+              // 19 divisions = 5% increments (0.05 step size)
+              divisions: 19,
+              label: '${(_value * 100).round()}%',
+              onChanged: (v) {
+                setState(() => _value = v);
+                widget.onChanged(v);
+              },
+            ),
+          ],
+        ),
+      );
+}
+
 enum _ContextMenuAction {
   duplicate,
   delete,
   lock,
+  opacity,
   bringToFront,
   sendToBack,
   bringForward,
