@@ -5,6 +5,7 @@ import 'package:y2notes2/features/canvas/presentation/pages/canvas_page.dart';
 import 'package:y2notes2/features/documents/presentation/bloc/document_bloc.dart';
 import 'package:y2notes2/features/documents/presentation/bloc/document_event.dart';
 import 'package:y2notes2/features/settings/presentation/effects_settings_page.dart';
+import 'package:y2notes2/features/workspace/presentation/pages/workspace_page.dart';
 
 /// Application router using GoRouter.
 class AppRouter {
@@ -13,7 +14,7 @@ class AppRouter {
     routes: [
       GoRoute(
         path: '/',
-        builder: (context, state) => const CanvasPage(),
+        builder: (context, state) => const WorkspacePage(),
       ),
       GoRoute(
         path: '/notebook/:id/page/:pageNum',
