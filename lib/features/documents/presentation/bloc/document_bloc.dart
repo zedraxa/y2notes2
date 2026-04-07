@@ -186,7 +186,6 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
       id: _uuid.v4(),
       pageNumber: source.pageNumber + 1,
       title: source.title,
-      isBookmarked: source.isBookmarked,
       strokes: List.of(source.strokes),
       shapes: List.of(source.shapes),
       stickers: List.of(source.stickers),

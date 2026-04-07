@@ -190,7 +190,7 @@ class _PageThumbnail extends StatelessWidget {
                       child: Text(
                         title!,
                         style: theme.textTheme.labelSmall?.copyWith(
-                          fontSize: 7,
+                          fontSize: 8,
                           color: theme.colorScheme.onSurfaceVariant,
                         ),
                         maxLines: 1,
@@ -330,6 +330,7 @@ class _PageOptionsSheet extends StatelessWidget {
           if (page.title != null)
             TextButton(
               onPressed: () {
+                // Passing null title clears the page title.
                 bloc.add(UpdatePageTitle(pageIndex: pageIndex));
                 Navigator.pop(dialogContext);
               },

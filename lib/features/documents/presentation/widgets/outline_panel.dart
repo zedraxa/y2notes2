@@ -242,11 +242,12 @@ class _OutlinePageTile extends StatelessWidget {
                 ),
               ),
               // Bookmark toggle.
-              GestureDetector(
-                onTap: onBookmarkToggle,
-                child: Padding(
-                  padding: const EdgeInsets.only(left: 4),
-                  child: Icon(
+              Semantics(
+                label: page.isBookmarked
+                    ? 'Remove bookmark'
+                    : 'Add bookmark',
+                child: IconButton(
+                  icon: Icon(
                     page.isBookmarked
                         ? Icons.bookmark_rounded
                         : Icons.bookmark_border_rounded,
@@ -256,6 +257,15 @@ class _OutlinePageTile extends StatelessWidget {
                         : theme.colorScheme.onSurfaceVariant
                             .withOpacity(0.5),
                   ),
+                  tooltip: page.isBookmarked
+                      ? 'Remove bookmark'
+                      : 'Bookmark page',
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(
+                    minWidth: 28,
+                    minHeight: 28,
+                  ),
+                  onPressed: onBookmarkToggle,
                 ),
               ),
             ],
