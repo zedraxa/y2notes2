@@ -53,6 +53,23 @@ class SettingsService {
   final ValueNotifier<bool> interactionEffectsEnabledNotifier =
       ValueNotifier(true);
 
+  // ─── Backup / data notifiers ──────────────────────────────────────────────
+
+  /// Whether auto-save is enabled.
+  final ValueNotifier<bool> autoSaveEnabledNotifier = ValueNotifier(true);
+
+  /// Auto-save interval in seconds.
+  final ValueNotifier<int> autoSaveIntervalNotifier = ValueNotifier(30);
+
+  /// Default export format (pdf, png, jpeg).
+  final ValueNotifier<String> defaultExportFormatNotifier =
+      ValueNotifier('pdf');
+
+  // ─── Default tool notifiers ───────────────────────────────────────────────
+
+  /// Default pen size used for new strokes.
+  final ValueNotifier<double> defaultToolSizeNotifier = ValueNotifier(3.0);
+
   // Key constants
   static const _darkModeKey = 'dark_mode';
   static const _effectsEnabledKey = 'effects_enabled';
@@ -73,6 +90,12 @@ class SettingsService {
   static const _recognitionLanguageKey = 'recognition_language';
   static const _recognitionRealTimeKey = 'recognition_real_time';
   static const _recognitionConfidenceKey = 'recognition_confidence';
+  // Backup / data keys
+  static const _autoSaveEnabledKey = 'auto_save_enabled';
+  static const _autoSaveIntervalKey = 'auto_save_interval';
+  static const _defaultExportFormatKey = 'default_export_format';
+  // Default tool keys
+  static const _defaultToolSizeKey = 'default_tool_size';
 
   static const List<String> effectNames = [
     'ink_flow',
@@ -158,6 +181,18 @@ class SettingsService {
         _prefs.getDouble('$_interactionIntensityPrefix$name') ?? 1.0,
       );
     }
+
+    // Backup / data settings
+    autoSaveEnabledNotifier.value =
+        _prefs.getBool(_autoSaveEnabledKey) ?? true;
+    autoSaveIntervalNotifier.value =
+        _prefs.getInt(_autoSaveIntervalKey) ?? 30;
+    defaultExportFormatNotifier.value =
+        _prefs.getString(_defaultExportFormatKey) ?? 'pdf';
+
+    // Default tool settings
+    defaultToolSizeNotifier.value =
+        _prefs.getDouble(_defaultToolSizeKey) ?? 3.0;
   }
 
   // ─── Setters ──────────────────────────────────────────────────────────────
@@ -285,6 +320,30 @@ class SettingsService {
     }
   }
 
+  // ─── Backup / data setters ─────────────────────────────────────────────────
+
+  Future<void> setAutoSaveEnabled(bool value) async {
+    autoSaveEnabledNotifier.value = value;
+    await _prefs.setBool(_autoSaveEnabledKey, value);
+  }
+
+  Future<void> setAutoSaveInterval(int seconds) async {
+    autoSaveIntervalNotifier.value = seconds.clamp(5, 120);
+    await _prefs.setInt(_autoSaveIntervalKey, autoSaveIntervalNotifier.value);
+  }
+
+  Future<void> setDefaultExportFormat(String format) async {
+    defaultExportFormatNotifier.value = format;
+    await _prefs.setString(_defaultExportFormatKey, format);
+  }
+
+  // ─── Default tool setters ─────────────────────────────────────────────────
+
+  Future<void> setDefaultToolSize(double value) async {
+    defaultToolSizeNotifier.value = value.clamp(0.5, 20.0);
+    await _prefs.setDouble(_defaultToolSizeKey, defaultToolSizeNotifier.value);
+  }
+
   // ─── Interaction effect setters / getters ──────────────────────────────────
 
   Future<void> setInteractionEffectsEnabled(bool value) async {
@@ -316,6 +375,10 @@ class SettingsService {
     recognitionLanguageNotifier.dispose();
     recognitionRealTimeNotifier.dispose();
     recognitionConfidenceNotifier.dispose();
+    autoSaveEnabledNotifier.dispose();
+    autoSaveIntervalNotifier.dispose();
+    defaultExportFormatNotifier.dispose();
+    defaultToolSizeNotifier.dispose();
     for (final n in effectToggles.values) {
       n.dispose();
     }
