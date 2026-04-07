@@ -34,5 +34,14 @@ end
 post_install do |installer|
   installer.pods_project.targets.each do |target|
     flutter_additional_ios_build_settings(target)
+    target.build_configurations.each do |config|
+      # Pod targets are static libraries and do not support provisioning
+      # profiles. Clearing these settings prevents xcodebuild from failing
+      # when PROVISIONING_PROFILE_SPECIFIER is passed as a global build
+      # setting override (e.g. in CI).
+      config.build_settings['CODE_SIGN_IDENTITY'] = ''
+      config.build_settings['CODE_SIGN_STYLE'] = 'Manual'
+      config.build_settings['PROVISIONING_PROFILE_SPECIFIER'] = ''
+    end
   end
 end
