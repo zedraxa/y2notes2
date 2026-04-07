@@ -39,6 +39,51 @@ class PdfTextSpan extends Equatable {
   /// Font family name if available from the PDF.
   final String? fontName;
 
+  /// Serialise to a JSON-compatible map.
+  Map<String, dynamic> toJson() => {
+        'text': text,
+        'rect': {
+          'left': rect.left,
+          'top': rect.top,
+          'right': rect.right,
+          'bottom': rect.bottom,
+        },
+        'pageIndex': pageIndex,
+        'lineIndex': lineIndex,
+        'wordIndex': wordIndex,
+        'fontSize': fontSize,
+        if (fontName != null) 'fontName': fontName,
+      };
+
+  /// Deserialise from a JSON-compatible map.
+  factory PdfTextSpan.fromJson(Map<String, dynamic> json) {
+    final r = json['rect'] as Map<String, dynamic>;
+    return PdfTextSpan(
+      text: json['text'] as String,
+      rect: Rect.fromLTRB(
+        (r['left'] as num).toDouble(),
+        (r['top'] as num).toDouble(),
+        (r['right'] as num).toDouble(),
+        (r['bottom'] as num).toDouble(),
+      ),
+      pageIndex: json['pageIndex'] as int,
+      lineIndex: json['lineIndex'] as int? ?? 0,
+      wordIndex: json['wordIndex'] as int? ?? 0,
+      fontSize: (json['fontSize'] as num?)?.toDouble() ?? 12.0,
+      fontName: json['fontName'] as String?,
+    );
+  }
+
+  /// Merge the bounding rectangles of multiple spans into one.
+  static Rect mergeRects(List<PdfTextSpan> spans) {
+    if (spans.isEmpty) return Rect.zero;
+    Rect r = spans.first.rect;
+    for (int i = 1; i < spans.length; i++) {
+      r = r.expandToInclude(spans[i].rect);
+    }
+    return r;
+  }
+
   @override
   List<Object?> get props => [
         text,

@@ -87,6 +87,48 @@ class PdfAnnotationToolbar extends StatelessWidget {
                     tool: PdfAnnotationTool.formFill,
                   )),
                 ),
+                // Separator before utility actions.
+                const SizedBox(width: 4),
+                Container(
+                  width: 1,
+                  height: 28,
+                  color: Theme.of(context)
+                      .colorScheme
+                      .outlineVariant,
+                ),
+                const SizedBox(width: 4),
+                // Undo / Redo.
+                IconButton(
+                  icon: const Icon(Icons.undo_rounded),
+                  iconSize: 20,
+                  tooltip: 'Undo',
+                  onPressed: state.canUndo
+                      ? () => bloc
+                          .add(const UndoPdfAnnotation())
+                      : null,
+                ),
+                IconButton(
+                  icon: const Icon(Icons.redo_rounded),
+                  iconSize: 20,
+                  tooltip: 'Redo',
+                  onPressed: state.canRedo
+                      ? () => bloc
+                          .add(const RedoPdfAnnotation())
+                      : null,
+                ),
+                // Annotation list toggle.
+                IconButton(
+                  icon: Icon(
+                    state.isAnnotationListOpen
+                        ? Icons.format_list_bulleted_rounded
+                        : Icons.format_list_bulleted,
+                  ),
+                  iconSize: 20,
+                  tooltip: 'Annotation list',
+                  onPressed: () => bloc.add(
+                    const ToggleAnnotationListPanel(),
+                  ),
+                ),
                 const Spacer(),
                 // Colour picker row.
                 ..._colorOptions.map(

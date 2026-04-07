@@ -18,7 +18,7 @@ class PdfBookmarkPanel extends StatelessWidget {
             return const SizedBox.shrink();
           }
           final bloc = context.read<PdfAnnotationBloc>();
-          final bookmarks = state.sortedBookmarks;
+          final bookmarks = state.filteredBookmarks;
           final theme = Theme.of(context);
 
           return Container(
@@ -66,6 +66,59 @@ class PdfBookmarkPanel extends StatelessWidget {
                         ),
                       ),
                     ],
+                  ),
+                ),
+                const Divider(height: 1),
+                // Search field.
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
+                  child: TextField(
+                    decoration: InputDecoration(
+                      hintText: 'Search bookmarks…',
+                      hintStyle:
+                          theme.textTheme.bodySmall,
+                      prefixIcon: const Icon(
+                        Icons.search_rounded,
+                        size: 18,
+                      ),
+                      isDense: true,
+                      contentPadding:
+                          const EdgeInsets.symmetric(
+                        vertical: 8,
+                        horizontal: 8,
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius:
+                            BorderRadius.circular(8),
+                        borderSide: BorderSide(
+                          color: theme.colorScheme
+                              .outlineVariant,
+                        ),
+                      ),
+                      suffixIcon:
+                          state.bookmarkSearchQuery
+                                  .isNotEmpty
+                              ? IconButton(
+                                  icon: const Icon(
+                                    Icons.clear_rounded,
+                                    size: 16,
+                                  ),
+                                  onPressed: () =>
+                                      bloc.add(
+                                    const SearchPdfBookmarks(
+                                      query: '',
+                                    ),
+                                  ),
+                                )
+                              : null,
+                    ),
+                    style: theme.textTheme.bodySmall,
+                    onChanged: (q) => bloc.add(
+                      SearchPdfBookmarks(query: q),
+                    ),
                   ),
                 ),
                 const Divider(height: 1),

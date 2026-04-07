@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:y2notes2/features/pdf_annotation/domain/entities/pdf_annotation.dart';
 import 'package:y2notes2/features/pdf_annotation/domain/entities/pdf_bookmark.dart';
 import 'package:y2notes2/features/pdf_annotation/presentation/bloc/pdf_annotation_bloc.dart';
 import 'package:y2notes2/features/pdf_annotation/presentation/bloc/pdf_annotation_event.dart';
 import 'package:y2notes2/features/pdf_annotation/presentation/bloc/pdf_annotation_state.dart';
+import 'package:y2notes2/features/pdf_annotation/presentation/widgets/pdf_annotation_list_panel.dart';
 import 'package:y2notes2/features/pdf_annotation/presentation/widgets/pdf_annotation_renderer.dart';
 import 'package:y2notes2/features/pdf_annotation/presentation/widgets/pdf_annotation_toolbar.dart';
 import 'package:y2notes2/features/pdf_annotation/presentation/widgets/pdf_bookmark_panel.dart';
@@ -55,110 +57,175 @@ class _PdfAnnotationView extends StatelessWidget {
           final bloc = context.read<PdfAnnotationBloc>();
           final theme = Theme.of(context);
 
-          return Scaffold(
-            appBar: AppBar(
-              title: Text(state.title ?? 'PDF Viewer'),
-              actions: [
-                // Bookmark toggle.
-                IconButton(
-                  icon: Icon(
-                    state.isBookmarkPanelOpen
-                        ? Icons.bookmarks_rounded
-                        : Icons.bookmarks_outlined,
-                    semanticLabel: state.isBookmarkPanelOpen
-                        ? 'Close bookmarks'
-                        : 'Open bookmarks',
-                  ),
-                  tooltip: 'Bookmarks',
-                  onPressed: () => bloc.add(
-                    const TogglePdfBookmarkPanel(),
-                  ),
-                ),
-                // Quick bookmark current page.
-                IconButton(
-                  icon: Icon(
-                    state.isCurrentPageBookmarked
-                        ? Icons.bookmark_rounded
-                        : Icons.bookmark_border_rounded,
-                    semanticLabel:
-                        state.isCurrentPageBookmarked
-                            ? 'Page bookmarked'
-                            : 'Bookmark page',
-                  ),
-                  tooltip: state.isCurrentPageBookmarked
-                      ? 'Page bookmarked'
-                      : 'Bookmark this page',
-                  onPressed: () {
-                    if (state.isCurrentPageBookmarked) {
-                      final bm = state.bookmarks.firstWhere(
-                        (b) =>
-                            b.pageIndex ==
-                            state.currentPageIndex,
-                      );
-                      bloc.add(RemovePdfBookmark(
-                        bookmarkId: bm.id,
-                      ));
-                    } else {
-                      bloc.add(AddPdfBookmark(
-                        bookmark: PdfBookmark(
-                          pageIndex:
-                              state.currentPageIndex,
-                        ),
-                      ));
-                    }
-                  },
-                ),
-                // Annotation count badge.
-                if (state.currentPageAnnotations.isNotEmpty)
-                  Padding(
-                    padding: const EdgeInsets.only(
-                      right: 12,
+          return CallbackShortcuts(
+            bindings: <ShortcutActivator, VoidCallback>{
+              const SingleActivator(LogicalKeyboardKey.arrowLeft):
+                  () {
+                if (state.canGoBack) {
+                  bloc.add(NavigateToPdfPage(
+                    pageIndex: state.currentPageIndex - 1,
+                  ));
+                }
+              },
+              const SingleActivator(LogicalKeyboardKey.arrowRight):
+                  () {
+                if (state.canGoForward) {
+                  bloc.add(NavigateToPdfPage(
+                    pageIndex: state.currentPageIndex + 1,
+                  ));
+                }
+              },
+              const SingleActivator(
+                LogicalKeyboardKey.keyZ,
+                control: true,
+              ): () =>
+                  bloc.add(const UndoPdfAnnotation()),
+              const SingleActivator(
+                LogicalKeyboardKey.keyZ,
+                control: true,
+                shift: true,
+              ): () =>
+                  bloc.add(const RedoPdfAnnotation()),
+              const SingleActivator(
+                LogicalKeyboardKey.keyY,
+                control: true,
+              ): () =>
+                  bloc.add(const RedoPdfAnnotation()),
+            },
+            child: Focus(
+              autofocus: true,
+              child: Scaffold(
+                appBar: AppBar(
+                  title: Text(state.title ?? 'PDF Viewer'),
+                  actions: [
+                    // Annotation list toggle.
+                    IconButton(
+                      icon: Icon(
+                        state.isAnnotationListOpen
+                            ? Icons
+                                .format_list_bulleted_rounded
+                            : Icons.format_list_bulleted,
+                        semanticLabel:
+                            state.isAnnotationListOpen
+                                ? 'Close annotation list'
+                                : 'Open annotation list',
+                      ),
+                      tooltip: 'Annotations',
+                      onPressed: () => bloc.add(
+                        const ToggleAnnotationListPanel(),
+                      ),
                     ),
-                    child: Center(
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 2,
+                    // Bookmark toggle.
+                    IconButton(
+                      icon: Icon(
+                        state.isBookmarkPanelOpen
+                            ? Icons.bookmarks_rounded
+                            : Icons.bookmarks_outlined,
+                        semanticLabel:
+                            state.isBookmarkPanelOpen
+                                ? 'Close bookmarks'
+                                : 'Open bookmarks',
+                      ),
+                      tooltip: 'Bookmarks',
+                      onPressed: () => bloc.add(
+                        const TogglePdfBookmarkPanel(),
+                      ),
+                    ),
+                    // Quick bookmark current page.
+                    IconButton(
+                      icon: Icon(
+                        state.isCurrentPageBookmarked
+                            ? Icons.bookmark_rounded
+                            : Icons.bookmark_border_rounded,
+                        semanticLabel:
+                            state.isCurrentPageBookmarked
+                                ? 'Page bookmarked'
+                                : 'Bookmark page',
+                      ),
+                      tooltip: state.isCurrentPageBookmarked
+                          ? 'Page bookmarked'
+                          : 'Bookmark this page',
+                      onPressed: () {
+                        if (state.isCurrentPageBookmarked) {
+                          final bm =
+                              state.bookmarks.firstWhere(
+                            (b) =>
+                                b.pageIndex ==
+                                state.currentPageIndex,
+                          );
+                          bloc.add(RemovePdfBookmark(
+                            bookmarkId: bm.id,
+                          ));
+                        } else {
+                          bloc.add(AddPdfBookmark(
+                            bookmark: PdfBookmark(
+                              pageIndex:
+                                  state.currentPageIndex,
+                            ),
+                          ));
+                        }
+                      },
+                    ),
+                    // Annotation count badge.
+                    if (state
+                        .currentPageAnnotations.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(
+                          right: 12,
                         ),
-                        decoration: BoxDecoration(
-                          color: theme
-                              .colorScheme.primaryContainer,
-                          borderRadius:
-                              BorderRadius.circular(12),
-                        ),
-                        child: Text(
-                          '${state.currentPageAnnotations.length}',
-                          style: theme.textTheme.labelSmall
-                              ?.copyWith(
-                            color: theme.colorScheme
-                                .onPrimaryContainer,
+                        child: Center(
+                          child: Container(
+                            padding:
+                                const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: theme.colorScheme
+                                  .primaryContainer,
+                              borderRadius:
+                                  BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              '${state.currentPageAnnotations.length}',
+                              style: theme
+                                  .textTheme.labelSmall
+                                  ?.copyWith(
+                                color: theme.colorScheme
+                                    .onPrimaryContainer,
+                              ),
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  ),
-              ],
-            ),
-            body: Row(
-              children: [
-                // Main content area.
-                Expanded(
-                  child: Column(
-                    children: [
-                      // Annotation toolbar.
-                      const PdfAnnotationToolbar(),
-                      // PDF page view.
-                      Expanded(
-                        child: _PdfPageView(state: state),
-                      ),
-                      // Page navigation bar.
-                      _PageNavigationBar(state: state),
-                    ],
-                  ),
+                  ],
                 ),
-                // Bookmark side-panel.
-                const PdfBookmarkPanel(),
-              ],
+                body: Row(
+                  children: [
+                    // Annotation list side-panel (left).
+                    const PdfAnnotationListPanel(),
+                    // Main content area.
+                    Expanded(
+                      child: Column(
+                        children: [
+                          // Annotation toolbar.
+                          const PdfAnnotationToolbar(),
+                          // PDF page view.
+                          Expanded(
+                            child: _PdfPageView(
+                              state: state,
+                            ),
+                          ),
+                          // Page navigation bar.
+                          _PageNavigationBar(state: state),
+                        ],
+                      ),
+                    ),
+                    // Bookmark side-panel (right).
+                    const PdfBookmarkPanel(),
+                  ],
+                ),
+              ),
             ),
           );
         },
@@ -298,8 +365,8 @@ class _StickyNoteTapTarget extends StatelessWidget {
   }
 }
 
-/// Bottom navigation bar with prev / next page buttons and a page
-/// indicator.
+/// Bottom navigation bar with prev / next page buttons, a tappable
+/// page indicator (opens jump-to-page dialog), and keyboard hints.
 class _PageNavigationBar extends StatelessWidget {
   const _PageNavigationBar({required this.state});
   final PdfAnnotationState state;
@@ -323,7 +390,7 @@ class _PageNavigationBar extends StatelessWidget {
         children: [
           IconButton(
             icon: const Icon(Icons.chevron_left_rounded),
-            tooltip: 'Previous page',
+            tooltip: 'Previous page (←)',
             onPressed: state.canGoBack
                 ? () => bloc.add(NavigateToPdfPage(
                       pageIndex:
@@ -331,24 +398,95 @@ class _PageNavigationBar extends StatelessWidget {
                     ))
                 : null,
           ),
-          const SizedBox(width: 16),
-          Text(
-            'Page ${state.currentPageIndex + 1}'
-            ' of ${state.pageCount}',
-            style: theme.textTheme.bodySmall,
+          const SizedBox(width: 8),
+          // Tappable page indicator — opens jump dialog.
+          InkWell(
+            borderRadius: BorderRadius.circular(8),
+            onTap: () =>
+                _showPageJumpDialog(context, state),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 6,
+              ),
+              child: Text(
+                'Page ${state.currentPageIndex + 1}'
+                ' of ${state.pageCount}',
+                style: theme.textTheme.bodySmall?.copyWith(
+                  decoration: TextDecoration.underline,
+                  decorationStyle:
+                      TextDecorationStyle.dotted,
+                ),
+              ),
+            ),
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: 8),
           IconButton(
             icon: const Icon(
               Icons.chevron_right_rounded,
             ),
-            tooltip: 'Next page',
+            tooltip: 'Next page (→)',
             onPressed: state.canGoForward
                 ? () => bloc.add(NavigateToPdfPage(
                       pageIndex:
                           state.currentPageIndex + 1,
                     ))
                 : null,
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showPageJumpDialog(
+    BuildContext context,
+    PdfAnnotationState state,
+  ) {
+    final bloc = context.read<PdfAnnotationBloc>();
+    final controller = TextEditingController(
+      text: '${state.currentPageIndex + 1}',
+    );
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Go to Page'),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          keyboardType: TextInputType.number,
+          inputFormatters: [
+            FilteringTextInputFormatter.digitsOnly,
+          ],
+          decoration: InputDecoration(
+            labelText: 'Page number',
+            hintText: '1–${state.pageCount}',
+            border: const OutlineInputBorder(),
+          ),
+          onSubmitted: (value) {
+            final page = int.tryParse(value);
+            if (page != null) {
+              bloc.add(JumpToPdfPage(pageNumber: page));
+            }
+            Navigator.pop(ctx);
+          },
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () {
+              final page =
+                  int.tryParse(controller.text);
+              if (page != null) {
+                bloc.add(
+                  JumpToPdfPage(pageNumber: page),
+                );
+              }
+              Navigator.pop(ctx);
+            },
+            child: const Text('Go'),
           ),
         ],
       ),

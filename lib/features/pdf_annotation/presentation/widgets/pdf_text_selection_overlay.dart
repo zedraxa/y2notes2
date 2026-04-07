@@ -170,6 +170,40 @@ class _PdfTextSelectionOverlayState
                           ),
                         ));
                       },
+                      onUnderline: () {
+                        if (state.selectionRect == null) {
+                          return;
+                        }
+                        bloc.add(AddPdfAnnotation(
+                          annotation: PdfAnnotation(
+                            pageIndex:
+                                state.currentPageIndex,
+                            type:
+                                PdfAnnotationType.underline,
+                            rect: state.selectionRect!,
+                            color: state.activeColor,
+                            selectedText:
+                                state.selectedText,
+                          ),
+                        ));
+                      },
+                      onStrikethrough: () {
+                        if (state.selectionRect == null) {
+                          return;
+                        }
+                        bloc.add(AddPdfAnnotation(
+                          annotation: PdfAnnotation(
+                            pageIndex:
+                                state.currentPageIndex,
+                            type: PdfAnnotationType
+                                .strikethrough,
+                            rect: state.selectionRect!,
+                            color: state.activeColor,
+                            selectedText:
+                                state.selectedText,
+                          ),
+                        ));
+                      },
                       onDismiss: () => bloc.add(
                         const ClearPdfTextSelection(),
                       ),
@@ -220,18 +254,22 @@ class _TextSelectionPainter extends CustomPainter {
 }
 
 /// Floating action bar shown above a text selection with Copy /
-/// Highlight / Dismiss buttons.
+/// Highlight / Underline / Strikethrough / Dismiss buttons.
 class _SelectionActionBar extends StatelessWidget {
   const _SelectionActionBar({
     required this.selectedText,
     required this.onCopy,
     required this.onHighlight,
+    required this.onUnderline,
+    required this.onStrikethrough,
     required this.onDismiss,
   });
 
   final String? selectedText;
   final VoidCallback onCopy;
   final VoidCallback onHighlight;
+  final VoidCallback onUnderline;
+  final VoidCallback onStrikethrough;
   final VoidCallback onDismiss;
 
   @override
@@ -266,6 +304,22 @@ class _SelectionActionBar extends StatelessWidget {
                   iconSize: 18,
                   tooltip: 'Highlight',
                   onPressed: onHighlight,
+                ),
+                IconButton(
+                  icon: const Icon(
+                    Icons.format_underlined_rounded,
+                  ),
+                  iconSize: 18,
+                  tooltip: 'Underline',
+                  onPressed: onUnderline,
+                ),
+                IconButton(
+                  icon: const Icon(
+                    Icons.format_strikethrough_rounded,
+                  ),
+                  iconSize: 18,
+                  tooltip: 'Strikethrough',
+                  onPressed: onStrikethrough,
                 ),
                 IconButton(
                   icon: const Icon(Icons.close_rounded),

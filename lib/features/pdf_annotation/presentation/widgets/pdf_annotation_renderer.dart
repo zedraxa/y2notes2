@@ -264,13 +264,65 @@ void _showAnnotationMenu(
                 overflow: TextOverflow.ellipsis,
               ),
             ),
-          ListTile(
-            leading: const Icon(Icons.edit_rounded),
-            title: const Text('Edit note'),
-            onTap: () {
-              Navigator.pop(context);
-              _showStickyNoteDialog(context, annotation);
-            },
+          if (annotation.type == PdfAnnotationType.stickyNote ||
+              annotation.type == PdfAnnotationType.textNote)
+            ListTile(
+              leading: const Icon(Icons.edit_rounded),
+              title: const Text('Edit note'),
+              onTap: () {
+                Navigator.pop(context);
+                _showStickyNoteDialog(context, annotation);
+              },
+            ),
+          // Colour picker row for all annotation types.
+          Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 8,
+            ),
+            child: Row(
+              children: [
+                Text(
+                  'Colour',
+                  style: Theme.of(context)
+                      .textTheme
+                      .labelMedium,
+                ),
+                const SizedBox(width: 12),
+                ..._annotationColors.map(
+                  (c) => Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 3,
+                    ),
+                    child: GestureDetector(
+                      onTap: () {
+                        Navigator.pop(context);
+                        bloc.add(ChangeAnnotationColor(
+                          annotationId: annotation.id,
+                          color: c,
+                        ));
+                      },
+                      child: Container(
+                        width: 26,
+                        height: 26,
+                        decoration: BoxDecoration(
+                          color: c,
+                          shape: BoxShape.circle,
+                          border: annotation.color == c
+                              ? Border.all(
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .primary,
+                                  width: 2,
+                                )
+                              : null,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
           ListTile(
             leading: const Icon(
@@ -294,6 +346,15 @@ void _showAnnotationMenu(
     ),
   );
 }
+
+const _annotationColors = [
+  Color(0x80FFEB3B), // Yellow
+  Color(0x804CAF50), // Green
+  Color(0x802196F3), // Blue
+  Color(0x80F44336), // Red
+  Color(0x80E91E63), // Pink
+  Color(0x80FF9800), // Orange
+];
 
 void _showStickyNoteDialog(
   BuildContext context,
