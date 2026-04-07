@@ -24,6 +24,9 @@ import 'package:y2notes2/features/stickers/engine/sticker_renderer.dart';
 ///  7. Text blocks (converted handwriting)
 ///  8. Interaction effects (touch ripple, snap glow, selection pulse, etc.)
 ///
+/// Note: Remote cursors (collaboration layer) are rendered as Flutter widgets
+/// above the canvas, not through this compositor.
+///
 /// Future layers:
 ///  9. UI overlay (selection handles — rendered as Flutter widgets above)
 class EffectsCompositor {
