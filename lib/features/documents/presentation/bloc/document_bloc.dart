@@ -254,7 +254,12 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
 
     try {
       final pageData = nb.pages
-          .map((p) => (strokes: p.strokes, config: p.config))
+          .map((p) => (
+                strokes: p.strokes,
+                shapes: p.shapes,
+                stickers: p.stickers,
+                config: p.config,
+              ))
           .toList();
 
       final bytes = await _pdfExport.exportMultiPageToPdf(

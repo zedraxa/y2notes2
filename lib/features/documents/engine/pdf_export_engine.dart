@@ -164,6 +164,9 @@ class PdfExportEngine {
   /// Converts canvas content into raw PDF bytes.
   ///
   /// [onProgress] reports a value from 0.0 to 1.0.
+  /// Note: [shapes] and [stickers] are accepted for API compatibility with
+  /// future PRs but are not yet rendered. They will be incorporated when PR 3
+  /// (Shape Recognition) and PR 4 (Stickers) are merged.
   Future<Uint8List> exportToPdf({
     required List<Stroke> strokes,
     List<ShapeElement> shapes = const [],
@@ -198,10 +201,15 @@ class PdfExportEngine {
   }
 
   /// Exports multiple pages to a single PDF.
+  /// Note: shapes and stickers within each page record are accepted for API
+  /// compatibility with future PRs but are not yet rendered.
   Future<Uint8List> exportMultiPageToPdf({
-    required List<({List<Stroke> strokes, CanvasConfig config})> pages,
-    List<ShapeElement> shapes = const [],
-    List<StickerElement> stickers = const [],
+    required List<({
+      List<Stroke> strokes,
+      List<ShapeElement> shapes,
+      List<StickerElement> stickers,
+      CanvasConfig config,
+    })> pages,
     PdfExportOptions options = const PdfExportOptions(),
     void Function(double progress)? onProgress,
   }) async {

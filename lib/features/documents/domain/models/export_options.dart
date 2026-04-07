@@ -13,27 +13,32 @@ enum PdfOrientation {
   landscape,
 }
 
-/// Export quality presets (DPI multiplier).
+/// Export quality presets.
 enum ExportQuality {
-  /// 72 DPI — screen quality.
+  /// Low quality — 72 DPI. Suitable for on-screen viewing.
   low(0.25),
 
-  /// 150 DPI — medium quality.
+  /// Medium quality — 150 DPI. Suitable for digital sharing.
   medium(0.5),
 
-  /// 300 DPI — print quality.
+  /// High quality — 300 DPI. Suitable for print.
   high(1.0);
 
-  const ExportQuality(this.value);
+  const ExportQuality(this.multiplier);
 
-  /// Normalised quality value used when rasterising (1.0 = full 300 DPI).
-  final double value;
+  /// Scale multiplier relative to the base 300 DPI resolution
+  /// (1.0 = full 300 DPI, 0.5 = 150 DPI, 0.25 = 72 DPI).
+  final double multiplier;
 
+  /// Effective DPI for this quality preset.
   int get dpi => switch (this) {
         ExportQuality.low => 72,
         ExportQuality.medium => 150,
         ExportQuality.high => 300,
       };
+
+  /// Alias for [multiplier] — used by export engines.
+  double get value => multiplier;
 }
 
 /// Configuration for PDF export.

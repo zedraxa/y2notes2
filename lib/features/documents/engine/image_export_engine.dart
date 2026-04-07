@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:image/image.dart' as img;
 import 'package:path_provider/path_provider.dart';
 import 'package:y2notes2/features/canvas/domain/entities/stroke.dart';
 import 'package:y2notes2/features/canvas/domain/models/canvas_config.dart';
@@ -95,6 +96,8 @@ class ImageExportEngine {
   // ── Public API ─────────────────────────────────────────────────────────────
 
   /// Exports the canvas as image bytes.
+  /// Note: [shapes] and [stickers] are accepted for API compatibility with
+  /// future PRs but are not yet rendered.
   Future<Uint8List> exportToImage({
     required List<Stroke> strokes,
     List<ShapeElement> shapes = const [],
@@ -142,16 +145,29 @@ class ImageExportEngine {
       }
     }
 
-    final format = options.format == ImageExportFormat.png
-        ? ui.ImageByteFormat.png
-        : ui.ImageByteFormat.rawRgba;
+    Uint8List outputBytes;
 
-    final byteData = await finalImage.toByteData(format: format);
+    if (options.format == ImageExportFormat.png) {
+      final byteData =
+          await finalImage.toByteData(format: ui.ImageByteFormat.png);
+      outputBytes = byteData!.buffer.asUint8List();
+    } else {
+      // For JPEG, get raw RGBA bytes and re-encode using the image package.
+      final rawData =
+          await finalImage.toByteData(format: ui.ImageByteFormat.rawRgba);
+      final rawBytes = rawData!.buffer.asUint8List();
+      final imgFrame = img.Image.fromBytes(
+        width: finalImage.width,
+        height: finalImage.height,
+        bytes: rawBytes.buffer,
+        numChannels: 4,
+      );
+      outputBytes = Uint8List.fromList(img.encodeJpg(imgFrame, quality: 90));
+    }
+
     if (finalImage != image) finalImage.dispose();
-
     onProgress?.call(1.0);
-
-    return byteData!.buffer.asUint8List();
+    return outputBytes;
   }
 
   /// Saves exported image bytes to the application documents directory.
