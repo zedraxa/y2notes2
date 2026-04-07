@@ -84,8 +84,9 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
 
     try {
       Notebook? loaded;
-      if (_repository != null) {
-        loaded = await _repository.loadNotebook();
+      final repo = _repository;
+      if (repo != null) {
+        loaded = await repo.loadNotebook();
         // Verify the loaded notebook matches the requested ID.
         if (loaded?.id != event.notebookId) {
           loaded = null;

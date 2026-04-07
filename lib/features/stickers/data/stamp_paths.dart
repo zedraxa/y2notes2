@@ -98,7 +98,7 @@ class StampPaths {
   }
 
   static Path _circle() =>
-      Path()..addOval(const Rect.fromCircle(center: Offset.zero, radius: 48));
+      Path()..addOval(Rect.fromCircle(center: Offset.zero, radius: 48));
 
   static Path _square() =>
       Path()..addRRect(RRect.fromRectAndRadius(
@@ -218,7 +218,7 @@ class StampPaths {
 
   static Path _sun() {
     final path = Path();
-    path.addOval(const Rect.fromCircle(center: Offset.zero, radius: 24));
+    path.addOval(Rect.fromCircle(center: Offset.zero, radius: 24));
     const rays = 8;
     for (var i = 0; i < rays; i++) {
       final angle = i * (2 * math.pi / rays);
@@ -237,15 +237,15 @@ class StampPaths {
     path.addArc(const Rect.fromLTRB(-40, -48, 40, 48), -math.pi / 2, math.pi * 1.2);
     path.close();
     // Inner circle to create crescent
-    path.addOval(const Rect.fromCircle(center: Offset(10, 0), radius: 36));
+    path.addOval(Rect.fromCircle(center: Offset(10, 0), radius: 36));
     return path;
   }
 
   static Path _cloud() {
     final path = Path();
-    path.addOval(const Rect.fromCircle(center: Offset(-20, 10), radius: 22));
-    path.addOval(const Rect.fromCircle(center: Offset(10, -5), radius: 28));
-    path.addOval(const Rect.fromCircle(center: Offset(30, 10), radius: 20));
+    path.addOval(Rect.fromCircle(center: Offset(-20, 10), radius: 22));
+    path.addOval(Rect.fromCircle(center: Offset(10, -5), radius: 28));
+    path.addOval(Rect.fromCircle(center: Offset(30, 10), radius: 20));
     path.addRect(const Rect.fromLTRB(-42, 10, 50, 38));
     return path;
   }
@@ -415,8 +415,8 @@ class StampPaths {
       ..lineTo(-8, 0)
       ..close();
     // Small circles at ends
-    path.addOval(const Rect.fromCircle(center: Offset(-44, 0), radius: 4));
-    path.addOval(const Rect.fromCircle(center: Offset(44, 0), radius: 4));
+    path.addOval(Rect.fromCircle(center: Offset(-44, 0), radius: 4));
+    path.addOval(Rect.fromCircle(center: Offset(44, 0), radius: 4));
     return path;
   }
 
@@ -430,7 +430,7 @@ class StampPaths {
     // Decorative flourish
     path.moveTo(-48, -48);
     path.cubicTo(-20, -48, -48, -20, -32, -32);
-    path.addOval(const Rect.fromCircle(center: Offset(-32, -32), radius: 8));
+    path.addOval(Rect.fromCircle(center: Offset(-32, -32), radius: 8));
     return path;
   }
 

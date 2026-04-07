@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Viewport;
 import 'package:y2notes2/app/theme/colors.dart';
 import 'package:y2notes2/core/engine/stylus/stylus_detector.dart';
 import 'package:y2notes2/core/extensions/iterable_extensions.dart';

@@ -93,7 +93,7 @@ class StickerBloc extends Bloc<StickerEvent, StickerState> {
     final duplicate = StickerElement(
       type: original.type,
       assetKey: original.assetKey,
-      position: original.position + const Offset(20, 20),
+      position: original.position + Offset(20, 20),
       scale: original.scale,
       rotation: original.rotation,
       opacity: original.opacity,

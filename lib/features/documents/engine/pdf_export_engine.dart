@@ -50,7 +50,7 @@ class PdfExportEngine {
   ) {
     if (!options.includeBackground) return;
 
-    final pw.PdfGraphics g = ctx.canvas;
+    final PdfGraphics g = ctx.canvas;
     final double w = format.availableWidth;
     final double h = format.availableHeight;
 
@@ -120,7 +120,7 @@ class PdfExportEngine {
     CanvasConfig config,
     PdfExportOptions options,
   ) {
-    final pw.PdfGraphics g = ctx.canvas;
+    final PdfGraphics g = ctx.canvas;
     final double pageH = format.availableHeight;
     final double scaleX = format.availableWidth / config.width;
     final double scaleY = pageH / config.height;
