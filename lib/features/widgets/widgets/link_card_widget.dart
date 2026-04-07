@@ -69,11 +69,15 @@ class _LinkCardOverlayState
   late String _url;
   late String _title;
   late String _description;
+  late bool _isBookmarked;
+  late List<String> _tags;
   bool _isEditing = false;
+  bool _addingTag = false;
 
   late final TextEditingController _urlCtrl;
   late final TextEditingController _titleCtrl;
   late final TextEditingController _descCtrl;
+  final _tagCtrl = TextEditingController();
 
   @override
   void initState() {
@@ -86,6 +90,16 @@ class _LinkCardOverlayState
         widget.widget.state['description']
             as String? ??
             '';
+    _isBookmarked =
+        widget.widget.state['isBookmarked']
+                as bool? ??
+            false;
+    final rawTags =
+        widget.widget.state['tags'] as List?;
+    _tags = rawTags
+            ?.map((e) => e.toString())
+            .toList() ??
+        [];
     _urlCtrl = TextEditingController(text: _url);
     _titleCtrl = TextEditingController(text: _title);
     _descCtrl =
@@ -97,6 +111,7 @@ class _LinkCardOverlayState
     _urlCtrl.dispose();
     _titleCtrl.dispose();
     _descCtrl.dispose();
+    _tagCtrl.dispose();
     super.dispose();
   }
 
@@ -107,10 +122,16 @@ class _LinkCardOverlayState
       _description = _descCtrl.text;
       _isEditing = false;
     });
+    _notifyAll();
+  }
+
+  void _notifyAll() {
     widget.onStateChanged({
       'url': _url,
       'title': _title,
       'description': _description,
+      'isBookmarked': _isBookmarked,
+      'tags': _tags,
     });
   }
 
@@ -149,6 +170,12 @@ class _LinkCardOverlayState
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(12),
+            border: _isBookmarked
+                ? Border.all(
+                    color: Colors.amber.shade300,
+                    width: 1.5,
+                  )
+                : null,
           ),
           child: Column(
             crossAxisAlignment:
@@ -170,7 +197,8 @@ class _LinkCardOverlayState
                         _faviconLetter,
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
-                          color: Colors.blue.shade600,
+                          color:
+                              Colors.blue.shade600,
                           fontSize: 16,
                         ),
                       ),
@@ -185,7 +213,8 @@ class _LinkCardOverlayState
                         Text(
                           _title,
                           style: const TextStyle(
-                            fontWeight: FontWeight.w600,
+                            fontWeight:
+                                FontWeight.w600,
                             fontSize: 14,
                           ),
                           maxLines: 1,
@@ -196,11 +225,28 @@ class _LinkCardOverlayState
                           _domain,
                           style: TextStyle(
                             fontSize: 10,
-                            color:
-                                Colors.grey.shade500,
+                            color: Colors
+                                .grey.shade500,
                           ),
                         ),
                       ],
+                    ),
+                  ),
+                  // Bookmark toggle
+                  GestureDetector(
+                    onTap: () {
+                      setState(() => _isBookmarked =
+                          !_isBookmarked);
+                      _notifyAll();
+                    },
+                    child: Icon(
+                      _isBookmarked
+                          ? Icons.bookmark
+                          : Icons.bookmark_border,
+                      size: 20,
+                      color: _isBookmarked
+                          ? Colors.amber
+                          : Colors.grey.shade400,
                     ),
                   ),
                 ],
@@ -217,6 +263,53 @@ class _LinkCardOverlayState
                   overflow: TextOverflow.ellipsis,
                 ),
               ],
+              // Tags
+              if (_tags.isNotEmpty) ...[
+                const SizedBox(height: 4),
+                Wrap(
+                  spacing: 4,
+                  runSpacing: 2,
+                  children: _tags
+                      .asMap()
+                      .entries
+                      .map(
+                        (e) => GestureDetector(
+                          onLongPress: () {
+                            setState(() =>
+                                _tags.removeAt(
+                                  e.key,
+                                ));
+                            _notifyAll();
+                          },
+                          child: Container(
+                            padding:
+                                const EdgeInsets
+                                    .symmetric(
+                              horizontal: 6,
+                              vertical: 1,
+                            ),
+                            decoration:
+                                BoxDecoration(
+                              color: Colors
+                                  .blue.shade50,
+                              borderRadius:
+                                  BorderRadius
+                                      .circular(8),
+                            ),
+                            child: Text(
+                              e.value,
+                              style: TextStyle(
+                                fontSize: 9,
+                                color: Colors.blue
+                                    .shade600,
+                              ),
+                            ),
+                          ),
+                        ),
+                      )
+                      .toList(),
+                ),
+              ],
               const Spacer(),
               // Action row
               Row(
@@ -230,9 +323,59 @@ class _LinkCardOverlayState
                         color: Colors.blue,
                       ),
                       maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                      overflow:
+                          TextOverflow.ellipsis,
                     ),
                   ),
+                  // Add tag button
+                  if (_addingTag)
+                    SizedBox(
+                      width: 60,
+                      height: 18,
+                      child: TextField(
+                        controller: _tagCtrl,
+                        autofocus: true,
+                        style: const TextStyle(
+                          fontSize: 10,
+                        ),
+                        decoration:
+                            const InputDecoration(
+                          isDense: true,
+                          hintText: 'tag',
+                          contentPadding:
+                              EdgeInsets.symmetric(
+                            horizontal: 4,
+                            vertical: 2,
+                          ),
+                          border:
+                              OutlineInputBorder(),
+                        ),
+                        onSubmitted: (v) {
+                          if (v.isNotEmpty) {
+                            setState(
+                              () => _tags.add(v),
+                            );
+                            _notifyAll();
+                          }
+                          setState(() {
+                            _addingTag = false;
+                            _tagCtrl.clear();
+                          });
+                        },
+                      ),
+                    )
+                  else
+                    GestureDetector(
+                      onTap: () => setState(
+                        () => _addingTag = true,
+                      ),
+                      child: Icon(
+                        Icons.label_outline,
+                        size: 14,
+                        color: Colors.grey.shade500,
+                      ),
+                    ),
+                  const SizedBox(width: 6),
                   // Copy button
                   GestureDetector(
                     onTap: () {
@@ -242,7 +385,8 @@ class _LinkCardOverlayState
                       ScaffoldMessenger.of(context)
                           .showSnackBar(
                         const SnackBar(
-                          content: Text('URL copied'),
+                          content:
+                              Text('URL copied'),
                           duration:
                               Duration(seconds: 1),
                         ),
@@ -254,7 +398,7 @@ class _LinkCardOverlayState
                       color: Colors.grey.shade500,
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 6),
                   // Edit button
                   GestureDetector(
                     onTap: () => setState(

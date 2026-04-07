@@ -66,6 +66,7 @@ class _DatePickerOverlayState
     extends State<_DatePickerOverlay> {
   late DateTime _date;
   late String _note;
+  late bool _isImportant;
   bool _editingNote = false;
   final _noteController = TextEditingController();
 
@@ -78,6 +79,10 @@ class _DatePickerOverlayState
         DateTime.now();
     _note =
         widget.widget.state['note'] as String? ?? '';
+    _isImportant =
+        widget.widget.state['isImportant']
+                as bool? ??
+            false;
     _noteController.text = _note;
   }
 
@@ -91,6 +96,7 @@ class _DatePickerOverlayState
     widget.onStateChanged({
       'date': _date.toIso8601String(),
       'note': _note,
+      'isImportant': _isImportant,
     });
   }
 
@@ -118,6 +124,18 @@ class _DatePickerOverlayState
     'Nov',
     'Dec',
   ];
+
+  int _weekNumber(DateTime date) {
+    // ISO 8601 week number calculation
+    final dayOfYear = date
+        .difference(DateTime(date.year, 1, 1))
+        .inDays;
+    return ((dayOfYear -
+                    date.weekday +
+                    10) ~/
+                7)
+            .clamp(1, 53);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -148,6 +166,7 @@ class _DatePickerOverlayState
 
     final weekday = _weekdays[_date.weekday - 1];
     final month = _months[_date.month - 1];
+    final weekNum = _weekNumber(_date);
 
     return Material(
       elevation: 2,
@@ -171,19 +190,34 @@ class _DatePickerOverlayState
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(12),
+            border: _isImportant
+                ? Border.all(
+                    color: Colors.amber.shade300,
+                    width: 1.5,
+                  )
+                : null,
           ),
           child: Column(
             mainAxisAlignment:
                 MainAxisAlignment.center,
             children: [
-              // Day of week + emoji
+              // Day of week + importance + week num
               Row(
                 mainAxisAlignment:
                     MainAxisAlignment.center,
                 children: [
-                  const Text(
-                    '📆',
-                    style: TextStyle(fontSize: 18),
+                  GestureDetector(
+                    onTap: () {
+                      setState(() => _isImportant =
+                          !_isImportant);
+                      _notify();
+                    },
+                    child: Text(
+                      _isImportant ? '⭐' : '📆',
+                      style: const TextStyle(
+                        fontSize: 18,
+                      ),
+                    ),
                   ),
                   const SizedBox(width: 6),
                   Text(
@@ -191,6 +225,27 @@ class _DatePickerOverlayState
                     style: TextStyle(
                       fontSize: 12,
                       color: Colors.grey.shade500,
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(
+                      horizontal: 4,
+                      vertical: 1,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade100,
+                      borderRadius:
+                          BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      'W$weekNum',
+                      style: TextStyle(
+                        fontSize: 9,
+                        color: Colors.grey.shade500,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ),
                 ],
