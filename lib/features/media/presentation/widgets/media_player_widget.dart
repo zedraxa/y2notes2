@@ -118,7 +118,10 @@ class _MediaPreview extends StatelessWidget {
             padding:
                 const EdgeInsets.symmetric(horizontal: 8),
             child: Text(
-              element.fileName ?? element.filePath.split('/').last,
+              element.fileName ??
+                  element.filePath
+                      .split(RegExp(r'[/\\]'))
+                      .last,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: Theme.of(context)

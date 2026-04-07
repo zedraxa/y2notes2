@@ -142,7 +142,7 @@ class MediaElement extends Equatable {
         zIndex: (json['zIndex'] as num?)?.toInt() ?? 0,
         createdAt: json['createdAt'] != null
             ? DateTime.parse(json['createdAt'] as String)
-            : null,
+            : DateTime.now(),
       );
 
   @override
