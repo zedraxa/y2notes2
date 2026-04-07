@@ -15,7 +15,7 @@ class _SnapGlow {
   final Color color;
   double age = 0.0;
 
-  // 600 ms duration
+  // 0.6 s (600 ms) duration
   static const double duration = 0.6;
   bool get isDead => age >= duration;
   double get progress => (age / duration).clamp(0.0, 1.0);

@@ -16,7 +16,7 @@ class _ToolSwitchAnimation {
   final Color toColor;
   double age = 0.0;
 
-  // 200 ms total
+  // 0.2 s (200 ms) total
   static const double duration = 0.2;
   bool get isDead => age >= duration;
   double get progress => (age / duration).clamp(0.0, 1.0);

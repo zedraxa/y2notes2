@@ -15,7 +15,7 @@ class _Ripple {
   final double pressure;
   double age = 0.0;
 
-  // 400 ms duration
+  // 0.4 s (400 ms) duration
   static const double duration = 0.4;
   bool get isDead => age >= duration;
   double get progress => (age / duration).clamp(0.0, 1.0);

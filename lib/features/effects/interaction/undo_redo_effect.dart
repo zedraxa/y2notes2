@@ -10,7 +10,7 @@ class _FlashOverlay {
   final Rect? area;
   double age = 0.0;
 
-  // 200 ms for undo / redo flash
+  // 0.2 s (200 ms) for undo / redo flash
   static const double duration = 0.2;
   bool get isDead => age >= duration;
   double get progress => (age / duration).clamp(0.0, 1.0);

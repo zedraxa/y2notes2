@@ -12,6 +12,7 @@ class _EdgeGlow {
   final EdgeDirection direction;
   double age = 0.0;
 
+  // 0.35 s (350 ms) duration
   static const double duration = 0.35;
   bool get isDead => age >= duration;
   double get progress => (age / duration).clamp(0.0, 1.0);
