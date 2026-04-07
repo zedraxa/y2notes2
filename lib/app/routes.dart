@@ -1,4 +1,5 @@
 import 'package:go_router/go_router.dart';
+import 'package:y2notes2/features/infinite_canvas/presentation/pages/infinite_canvas_page.dart';
 import 'package:y2notes2/features/settings/presentation/effects_settings_page.dart';
 import 'package:y2notes2/features/workspace/presentation/pages/workspace_page.dart';
 
@@ -10,6 +11,12 @@ class AppRouter {
       GoRoute(
         path: '/',
         builder: (context, state) => const WorkspacePage(),
+      ),
+      GoRoute(
+        path: '/canvas/infinite/:id',
+        builder: (context, state) => InfiniteCanvasPage(
+          canvasId: state.pathParameters['id'],
+        ),
       ),
       GoRoute(
         path: '/settings',

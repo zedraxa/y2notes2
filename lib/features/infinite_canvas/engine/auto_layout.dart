@@ -105,8 +105,12 @@ class AutoLayout {
     // Any remaining nodes.
     while (placed < children.length) {
       final angle = (2 * math.pi * placed) / children.length;
-      result[children[placed].id] =
-          center + Offset(math.cos(angle) * spacing * ringCount, math.sin(angle) * spacing * ringCount);
+      final radius = spacing * ringCount.toDouble();
+      result[children[placed].id] = center +
+          Offset(
+            math.cos(angle) * radius,
+            math.sin(angle) * radius,
+          );
       placed++;
     }
     return result;
@@ -146,7 +150,10 @@ class AutoLayout {
         placeSubtree(kid, y, depth + 1);
       }
       final endX = x;
-      result[id] = Offset((startX + endX) / 2 - spacing / 2, y + depth * spacing);
+      result[id] = Offset(
+        (startX + endX) / 2 - spacing / 2,
+        y + depth * spacing,
+      );
     }
 
     for (final r in roots) {

@@ -5,6 +5,7 @@ import 'package:y2notes2/core/engine/haptic_controller.dart';
 import 'package:y2notes2/core/services/settings_service.dart';
 import 'package:y2notes2/features/canvas/domain/entities/tools/tool_registry.dart';
 import 'package:y2notes2/features/canvas/presentation/bloc/canvas_bloc.dart';
+import 'package:y2notes2/features/infinite_canvas/presentation/bloc/infinite_canvas_bloc.dart';
 import 'package:y2notes2/features/shapes/presentation/bloc/shape_bloc.dart';
 import 'package:y2notes2/features/stickers/presentation/bloc/sticker_bloc.dart';
 import 'package:y2notes2/features/workspace/presentation/bloc/workspace_bloc.dart';
@@ -41,6 +42,11 @@ void main() async {
           ),
           BlocProvider(
             create: (_) => StickerBloc(),
+          ),
+          // Root InfiniteCanvasBloc — individual pages can override with
+          // their own scoped provider when needed.
+          BlocProvider(
+            create: (_) => InfiniteCanvasBloc(),
           ),
         ],
         child: Y2NotesApp(settingsService: settingsService),

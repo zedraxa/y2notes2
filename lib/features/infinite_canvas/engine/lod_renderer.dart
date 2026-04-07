@@ -128,18 +128,11 @@ class LodRenderer {
   // ── Private helpers ────────────────────────────────────────────────────────
 
   Color _colorForNode(CanvasNode node) {
-    switch (node.runtimeType.toString()) {
-      case 'StickyNoteNode':
-        return const Color(0xFFFFF176);
-      case 'TextCardNode':
-        return const Color(0xFFE3F2FD);
-      case 'FrameNode':
-        return const Color(0xFFE8EAF6);
-      case 'GroupNode':
-        return const Color(0xFFF3E5F5);
-      default:
-        return const Color(0xFFEEEEEE);
-    }
+    if (node is StickyNoteNode) return const Color(0xFFFFF176);
+    if (node is TextCardNode) return const Color(0xFFE3F2FD);
+    if (node is FrameNode) return const Color(0xFFE8EAF6);
+    if (node is GroupNode) return const Color(0xFFF3E5F5);
+    return const Color(0xFFEEEEEE);
   }
 
   void _drawTitle(Canvas canvas, CanvasNode node, Rect screenRect) {

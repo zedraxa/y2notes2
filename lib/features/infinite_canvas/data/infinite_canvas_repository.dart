@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../domain/entities/canvas_edge.dart';
 import '../domain/entities/canvas_node.dart';
 import '../domain/entities/infinite_canvas_document.dart';
 

@@ -91,7 +91,8 @@ class InfiniteCanvasView extends StatelessWidget {
 
               // ── Widget-based node layer (normal/detailed) ─────────────
               if (lod != LodLevel.overview)
-                for (final node in visibleNodes) _buildNodeWidget(node, w2s, state),
+                for (final node in visibleNodes)
+                  _buildNodeWidget(node, w2s, state),
 
               // ── Selection / handles overlay ────────────────────────────
               if (lod != LodLevel.overview)
@@ -146,11 +147,23 @@ class InfiniteCanvasView extends StatelessWidget {
 
     Widget content;
     if (node is TextCardNode) {
-      content = TextCardWidget(node: node, isSelected: isSelected, scale: scale);
+      content = TextCardWidget(
+        node: node,
+        isSelected: isSelected,
+        scale: scale,
+      );
     } else if (node is StickyNoteNode) {
-      content = StickyNoteWidget(node: node, isSelected: isSelected, scale: scale);
+      content = StickyNoteWidget(
+        node: node,
+        isSelected: isSelected,
+        scale: scale,
+      );
     } else if (node is StrokeRegionNode) {
-      content = StrokeRegionWidget(node: node, isSelected: isSelected, scale: scale);
+      content = StrokeRegionWidget(
+        node: node,
+        isSelected: isSelected,
+        scale: scale,
+      );
     } else if (node is ImageNode) {
       content = ImageNodeWidget(node: node, isSelected: isSelected);
     } else if (node is FrameNode) {

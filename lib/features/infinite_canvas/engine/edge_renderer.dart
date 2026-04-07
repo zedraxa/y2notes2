@@ -100,11 +100,17 @@ class EdgeRenderer {
     // Arrow heads.
     if (edge.sourceArrow != null && edge.sourceArrow != ArrowStyle.none) {
       final tangent = _startTangent(path);
-      _drawArrowHead(canvas, p1, tangent, edge.sourceArrow!, edge.color, paint.strokeWidth);
+      _drawArrowHead(
+        canvas, p1, tangent,
+        edge.sourceArrow!, edge.color, paint.strokeWidth,
+      );
     }
     if (edge.targetArrow != null && edge.targetArrow != ArrowStyle.none) {
       final tangent = _endTangent(path);
-      _drawArrowHead(canvas, p2, tangent, edge.targetArrow!, edge.color, paint.strokeWidth);
+      _drawArrowHead(
+        canvas, p2, tangent,
+        edge.targetArrow!, edge.color, paint.strokeWidth,
+      );
     }
 
     // Label at midpoint.

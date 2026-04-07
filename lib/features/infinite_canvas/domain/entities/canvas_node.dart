@@ -48,6 +48,11 @@ abstract class CanvasNode {
         height: worldSize.height,
       );
 
+  /// A stable string identifier for the concrete subtype.
+  ///
+  /// Used for JSON serialisation. Each subclass overrides this.
+  String get nodeType;
+
   /// Subclasses must return a copy with overridden fields.
   CanvasNode copyWithBase({
     Offset? worldPosition,
@@ -60,7 +65,7 @@ abstract class CanvasNode {
   /// JSON serialisation — subclasses call `super.toJson()` and spread the map.
   Map<String, dynamic> toJson() => {
         'id': id,
-        'type': runtimeType.toString(),
+        'type': nodeType,
         'worldPosition': {'dx': worldPosition.dx, 'dy': worldPosition.dy},
         'worldSize': {'width': worldSize.width, 'height': worldSize.height},
         'rotation': rotation,
@@ -143,6 +148,9 @@ class StrokeRegionNode extends CanvasNode {
         showBorder: showBorder ?? this.showBorder,
         title: title ?? this.title,
       );
+
+  @override
+  String get nodeType => 'StrokeRegionNode';
 
   @override
   CanvasNode copyWithBase({
@@ -246,6 +254,9 @@ class TextCardNode extends CanvasNode {
       );
 
   @override
+  String get nodeType => 'TextCardNode';
+
+  @override
   CanvasNode copyWithBase({
     Offset? worldPosition,
     Size? worldSize,
@@ -332,6 +343,9 @@ class ImageNode extends CanvasNode {
       );
 
   @override
+  String get nodeType => 'ImageNode';
+
+  @override
   CanvasNode copyWithBase({
     Offset? worldPosition,
     Size? worldSize,
@@ -416,29 +430,10 @@ class StickyNoteNode extends CanvasNode {
       );
 
   @override
-  CanvasNode copyWithBase({
-    Offset? worldPosition,
-    Size? worldSize,
-    double? rotation,
-    int? zIndex,
-    bool? isLocked,
-  }) =>
-      copyWith(
-        worldPosition: worldPosition,
-        worldSize: worldSize,
-        rotation: rotation,
-        zIndex: zIndex,
-        isLocked: isLocked,
-      );
+  String get nodeType => 'StickyNoteNode';
 
   @override
-  Map<String, dynamic> toJson() => {
-        ...super.toJson(),
-        'text': text,
-        'color': color.value,
-        'fontSize': fontSize,
-      };
-}
+  CanvasNode copyWithBase({
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Group node
@@ -501,6 +496,9 @@ class GroupNode extends CanvasNode {
         groupColor: groupColor ?? this.groupColor,
         groupLabel: groupLabel ?? this.groupLabel,
       );
+
+  @override
+  String get nodeType => 'GroupNode';
 
   @override
   CanvasNode copyWithBase({
@@ -592,6 +590,9 @@ class FrameNode extends CanvasNode {
       );
 
   @override
+  String get nodeType => 'FrameNode';
+
+  @override
   CanvasNode copyWithBase({
     Offset? worldPosition,
     Size? worldSize,
@@ -671,6 +672,9 @@ class EmbeddedPageNode extends CanvasNode {
         notebookId: notebookId ?? this.notebookId,
         pageNumber: pageNumber ?? this.pageNumber,
       );
+
+  @override
+  String get nodeType => 'EmbeddedPageNode';
 
   @override
   CanvasNode copyWithBase({

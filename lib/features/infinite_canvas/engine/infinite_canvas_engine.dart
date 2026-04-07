@@ -85,7 +85,8 @@ class InfiniteCanvasEngine {
 
   /// Zoom by [factor] keeping [focalScreenPoint] fixed on screen.
   void zoomBy(double factor, {Offset? focalScreenPoint}) {
-    final focal = focalScreenPoint ?? Offset(screenSize.width / 2, screenSize.height / 2);
+    final focal = focalScreenPoint ??
+        Offset(screenSize.width / 2, screenSize.height / 2);
     final worldFocal = screenToWorld(focal);
     zoomLevel = (zoomLevel * factor).clamp(minZoom, maxZoom);
     // Adjust worldOffset so the focal point stays under the pointer.

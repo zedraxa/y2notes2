@@ -1,7 +1,5 @@
-import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:uuid/uuid.dart';
 import '../../domain/entities/canvas_node.dart';
 import '../../engine/auto_layout.dart';
 import '../../engine/infinite_canvas_engine.dart';
@@ -131,7 +129,8 @@ class InfiniteCanvasBloc
     final edges = Map.of(s.edges)..remove(event.edgeId);
     emit(s.copyWith(
       edges: edges,
-      selectedEdgeId: s.selectedEdgeId == event.edgeId ? null : s.selectedEdgeId,
+      selectedEdgeId:
+          s.selectedEdgeId == event.edgeId ? null : s.selectedEdgeId,
     ));
   }
 
@@ -142,17 +141,33 @@ class InfiniteCanvasBloc
 
   // ── Selection handlers ─────────────────────────────────────────────────────
 
-  void _onSelectNode(SelectNode event, Emitter<InfiniteCanvasState> emit) =>
-      emit(state.copyWith(selectedNodeIds: {event.nodeId}, selectedEdgeId: null));
+  void _onSelectNode(
+    SelectNode event,
+    Emitter<InfiniteCanvasState> emit,
+  ) =>
+      emit(
+        state.copyWith(
+          selectedNodeIds: {event.nodeId},
+          selectedEdgeId: null,
+        ),
+      );
 
-  void _onSelectMultiple(SelectMultiple event, Emitter<InfiniteCanvasState> emit) =>
+  void _onSelectMultiple(
+    SelectMultiple event,
+    Emitter<InfiniteCanvasState> emit,
+  ) =>
       emit(state.copyWith(
         selectedNodeIds: {...state.selectedNodeIds, ...event.nodeIds},
         selectedEdgeId: null,
       ));
 
-  void _onDeselectAll(DeselectAll event, Emitter<InfiniteCanvasState> emit) =>
-      emit(state.copyWith(selectedNodeIds: const {}, selectedEdgeId: null));
+  void _onDeselectAll(
+    DeselectAll event,
+    Emitter<InfiniteCanvasState> emit,
+  ) =>
+      emit(
+        state.copyWith(selectedNodeIds: const {}, selectedEdgeId: null),
+      );
 
   void _onSelectAll(SelectAll event, Emitter<InfiniteCanvasState> emit) =>
       emit(state.copyWith(selectedNodeIds: state.nodes.keys.toSet()));
@@ -299,8 +314,12 @@ class InfiniteCanvasBloc
   void _onUndo(UndoAction event, Emitter<InfiniteCanvasState> emit) {
     if (!state.canUndo) return;
     final snap = state.undoStack.last;
-    final undoStack = state.undoStack.sublist(0, state.undoStack.length - 1);
-    final currentSnap = (nodes: Map.of(state.nodes), edges: Map.of(state.edges));
+    final undoStack =
+        state.undoStack.sublist(0, state.undoStack.length - 1);
+    final currentSnap = (
+      nodes: Map.of(state.nodes),
+      edges: Map.of(state.edges),
+    );
     emit(state.copyWith(
       nodes: snap.nodes,
       edges: snap.edges,
@@ -313,8 +332,12 @@ class InfiniteCanvasBloc
   void _onRedo(RedoAction event, Emitter<InfiniteCanvasState> emit) {
     if (!state.canRedo) return;
     final snap = state.redoStack.last;
-    final redoStack = state.redoStack.sublist(0, state.redoStack.length - 1);
-    final currentSnap = (nodes: Map.of(state.nodes), edges: Map.of(state.edges));
+    final redoStack =
+        state.redoStack.sublist(0, state.redoStack.length - 1);
+    final currentSnap = (
+      nodes: Map.of(state.nodes),
+      edges: Map.of(state.edges),
+    );
     emit(state.copyWith(
       nodes: snap.nodes,
       edges: snap.edges,
@@ -368,7 +391,10 @@ class InfiniteCanvasBloc
     ));
   }
 
-  void _onDuplicate(DuplicateSelected event, Emitter<InfiniteCanvasState> emit) {
+  void _onDuplicate(
+    DuplicateSelected event,
+    Emitter<InfiniteCanvasState> emit,
+  ) {
     if (state.selectedNodeIds.isEmpty) return;
     final s = _pushHistory(state);
     final newNodes = <String, CanvasNode>{};
@@ -388,9 +414,15 @@ class InfiniteCanvasBloc
 
   // ── UI ─────────────────────────────────────────────────────────────────────
 
-  void _onSetActiveTool(SetActiveTool event, Emitter<InfiniteCanvasState> emit) =>
+  void _onSetActiveTool(
+    SetActiveTool event,
+    Emitter<InfiniteCanvasState> emit,
+  ) =>
       emit(state.copyWith(activeTool: event.tool));
 
-  void _onToggleMinimap(ToggleMinimap event, Emitter<InfiniteCanvasState> emit) =>
+  void _onToggleMinimap(
+    ToggleMinimap event,
+    Emitter<InfiniteCanvasState> emit,
+  ) =>
       emit(state.copyWith(isMinimapVisible: !state.isMinimapVisible));
 }

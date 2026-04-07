@@ -32,16 +32,20 @@ class InfiniteCanvasToolbar extends StatelessWidget {
                     _ToolBtn(
                       icon: Icons.arrow_selector_tool,
                       label: 'Select',
-                      isActive: state.activeTool == InfiniteCanvasTool.select,
-                      onTap: () =>
-                          bloc.add(const SetActiveTool(InfiniteCanvasTool.select)),
+                      isActive:
+                          state.activeTool == InfiniteCanvasTool.select,
+                      onTap: () => bloc.add(
+                        const SetActiveTool(InfiniteCanvasTool.select),
+                      ),
                     ),
                     _ToolBtn(
                       icon: Icons.pan_tool,
                       label: 'Hand',
-                      isActive: state.activeTool == InfiniteCanvasTool.hand,
-                      onTap: () =>
-                          bloc.add(const SetActiveTool(InfiniteCanvasTool.hand)),
+                      isActive:
+                          state.activeTool == InfiniteCanvasTool.hand,
+                      onTap: () => bloc.add(
+                        const SetActiveTool(InfiniteCanvasTool.hand),
+                      ),
                     ),
                     const _Divider(),
                     _ToolBtn(
@@ -49,23 +53,27 @@ class InfiniteCanvasToolbar extends StatelessWidget {
                       label: 'Draw',
                       isActive:
                           state.activeTool == InfiniteCanvasTool.drawRegion,
-                      onTap: () =>
-                          bloc.add(const SetActiveTool(InfiniteCanvasTool.drawRegion)),
+                      onTap: () => bloc.add(
+                        const SetActiveTool(InfiniteCanvasTool.drawRegion),
+                      ),
                     ),
                     _ToolBtn(
                       icon: Icons.text_fields,
                       label: 'Text',
-                      isActive: state.activeTool == InfiniteCanvasTool.textCard,
-                      onTap: () =>
-                          bloc.add(const SetActiveTool(InfiniteCanvasTool.textCard)),
+                      isActive:
+                          state.activeTool == InfiniteCanvasTool.textCard,
+                      onTap: () => bloc.add(
+                        const SetActiveTool(InfiniteCanvasTool.textCard),
+                      ),
                     ),
                     _ToolBtn(
                       icon: Icons.sticky_note_2,
                       label: 'Sticky',
                       isActive:
                           state.activeTool == InfiniteCanvasTool.stickyNote,
-                      onTap: () =>
-                          bloc.add(const SetActiveTool(InfiniteCanvasTool.stickyNote)),
+                      onTap: () => bloc.add(
+                        const SetActiveTool(InfiniteCanvasTool.stickyNote),
+                      ),
                     ),
                     const _Divider(),
                     _ToolBtn(
@@ -73,44 +81,52 @@ class InfiniteCanvasToolbar extends StatelessWidget {
                       label: 'Connect',
                       isActive:
                           state.activeTool == InfiniteCanvasTool.connection,
-                      onTap: () =>
-                          bloc.add(const SetActiveTool(InfiniteCanvasTool.connection)),
+                      onTap: () => bloc.add(
+                        const SetActiveTool(InfiniteCanvasTool.connection),
+                      ),
                     ),
                     _ToolBtn(
                       icon: Icons.crop_square,
                       label: 'Frame',
-                      isActive: state.activeTool == InfiniteCanvasTool.frame,
-                      onTap: () =>
-                          bloc.add(const SetActiveTool(InfiniteCanvasTool.frame)),
+                      isActive:
+                          state.activeTool == InfiniteCanvasTool.frame,
+                      onTap: () => bloc.add(
+                        const SetActiveTool(InfiniteCanvasTool.frame),
+                      ),
                     ),
                     _ToolBtn(
                       icon: Icons.category,
                       label: 'Shape',
-                      isActive: state.activeTool == InfiniteCanvasTool.shape,
-                      onTap: () =>
-                          bloc.add(const SetActiveTool(InfiniteCanvasTool.shape)),
+                      isActive:
+                          state.activeTool == InfiniteCanvasTool.shape,
+                      onTap: () => bloc.add(
+                        const SetActiveTool(InfiniteCanvasTool.shape),
+                      ),
                     ),
                     _ToolBtn(
                       icon: Icons.image,
                       label: 'Image',
-                      isActive: state.activeTool == InfiniteCanvasTool.image,
-                      onTap: () =>
-                          bloc.add(const SetActiveTool(InfiniteCanvasTool.image)),
+                      isActive:
+                          state.activeTool == InfiniteCanvasTool.image,
+                      onTap: () => bloc.add(
+                        const SetActiveTool(InfiniteCanvasTool.image),
+                      ),
                     ),
                     const _Divider(),
-                    // ── Auto-layout dropdown ──────────────────────────────────
+                    // ── Auto-layout dropdown ────────────────────────────────
                     _AutoLayoutBtn(
                       activeLayout: state.activeLayout,
-                      onLayout: (algo) => bloc.add(ApplyLayout(algorithm: algo)),
+                      onLayout: (algo) =>
+                          bloc.add(ApplyLayout(algorithm: algo)),
                     ),
-                    // ── Minimap toggle ─────────────────────────────────────────
+                    // ── Minimap toggle ──────────────────────────────────────
                     _ToolBtn(
                       icon: Icons.map,
                       label: 'Map',
                       isActive: state.isMinimapVisible,
                       onTap: () => bloc.add(const ToggleMinimap()),
                     ),
-                    // ── Undo / Redo ────────────────────────────────────────────
+                    // ── Undo / Redo ─────────────────────────────────────────
                     const _Divider(),
                     IconButton(
                       icon: const Icon(Icons.undo),

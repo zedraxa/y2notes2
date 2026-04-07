@@ -64,7 +64,8 @@ class QuadTree<T> {
   // ── Private helpers ────────────────────────────────────────────────────────
 
   void _insert(_QtEntry<T> entry) {
-    if (!bounds.overlaps(entry.bounds) && !bounds.contains(entry.bounds.center)) {
+    if (!bounds.overlaps(entry.bounds) &&
+        !bounds.contains(entry.bounds.center)) {
       // Clamp out-of-bounds items into this root.
       _items.add(entry);
       return;
