@@ -7,6 +7,7 @@ import 'package:y2notes2/core/services/settings_service.dart';
 import 'package:y2notes2/features/canvas/domain/entities/tools/tool_registry.dart';
 import 'package:y2notes2/features/canvas/presentation/bloc/canvas_bloc.dart';
 import 'package:y2notes2/features/documents/data/document_repository.dart';
+import 'package:y2notes2/features/library/data/library_repository.dart';
 import 'package:y2notes2/features/shapes/presentation/bloc/shape_bloc.dart';
 import 'package:y2notes2/features/stickers/presentation/bloc/sticker_bloc.dart';
 import 'package:y2notes2/features/workspace/presentation/bloc/workspace_bloc.dart';
@@ -20,6 +21,7 @@ void main() async {
 
   final prefs = await SharedPreferences.getInstance();
   final documentRepository = DocumentRepository(prefs);
+  final libraryRepository = LibraryRepository(prefs);
 
   // Register all plugin-based drawing tools.
   ToolRegistry.registerAll();
@@ -53,6 +55,7 @@ void main() async {
           child: Y2NotesApp(
             settingsService: settingsService,
             documentRepository: documentRepository,
+            libraryRepository: libraryRepository,
           ),
         ),
       ),
