@@ -187,6 +187,15 @@ class ShapeToolDeactivated extends CanvasEvent {
   const ShapeToolDeactivated();
 }
 
+/// Snapshot the current shapes list onto the undo stack before a committed
+/// shape mutation (add, delete, style/type change, or drag end).
+///
+/// Dispatched by [ShapeBloc] immediately before any destructive operation so
+/// that [CanvasBloc] can record the pre-change state for undo.
+class ShapeSnapshotRequested extends CanvasEvent {
+  const ShapeSnapshotRequested();
+}
+
 // ─── Stylus events ────────────────────────────────────────────────────────────
 
 /// Fired when a new stylus type is detected from an incoming [PointerEvent].

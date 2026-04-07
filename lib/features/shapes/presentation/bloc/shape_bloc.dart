@@ -57,6 +57,8 @@ class ShapeBloc extends Bloc<ShapeEvent, ShapeState> {
   void _onDragStarted(ShapeDragStarted event, Emitter<ShapeState> emit) {
     final shape = _findShape(event.shapeId);
     if (shape == null) return;
+    // Snapshot shapes BEFORE the drag so the operation can be undone.
+    _canvasBloc.add(const canvas_event.ShapeSnapshotRequested());
     _dragStart = event.startPoint;
     _dragStartBounds = shape.bounds;
     _dragShape = shape;
@@ -107,6 +109,8 @@ class ShapeBloc extends Bloc<ShapeEvent, ShapeState> {
       HandleDragStarted event, Emitter<ShapeState> emit) {
     final shape = _findShape(event.shapeId);
     if (shape == null) return;
+    // Snapshot shapes BEFORE the resize so the operation can be undone.
+    _canvasBloc.add(const canvas_event.ShapeSnapshotRequested());
     _dragStart = event.startPoint;
     _dragStartBounds = shape.bounds;
     _dragShape = shape;
@@ -149,6 +153,8 @@ class ShapeBloc extends Bloc<ShapeEvent, ShapeState> {
     if (id == null) return;
     final shape = _findShape(id);
     if (shape == null) return;
+    // Snapshot BEFORE the style change so it can be undone.
+    _canvasBloc.add(const canvas_event.ShapeSnapshotRequested());
     final updated = shape.copyWith(
       strokeColor: event.strokeColor,
       fillColor: event.fillColor,
@@ -166,6 +172,8 @@ class ShapeBloc extends Bloc<ShapeEvent, ShapeState> {
     if (id == null) return;
     final shape = _findShape(id);
     if (shape == null) return;
+    // Snapshot BEFORE the type change so it can be undone.
+    _canvasBloc.add(const canvas_event.ShapeSnapshotRequested());
     final updated = shape.copyWith(type: event.type);
     _canvasBloc.add(canvas_event.ShapeUpdated(updated));
   }
@@ -174,6 +182,8 @@ class ShapeBloc extends Bloc<ShapeEvent, ShapeState> {
       ShapeDeleteRequested event, Emitter<ShapeState> emit) {
     final id = state.selectedShapeId;
     if (id == null) return;
+    // Snapshot BEFORE delete so it can be undone.
+    _canvasBloc.add(const canvas_event.ShapeSnapshotRequested());
     _canvasBloc.add(canvas_event.ShapeDeleted(id));
     emit(state.copyWith(clearSelection: true, snapGuides: []));
   }
@@ -189,6 +199,8 @@ class ShapeBloc extends Bloc<ShapeEvent, ShapeState> {
       id: _uuid.v4(),
       bounds: shape.bounds.translate(offsetDelta.dx, offsetDelta.dy),
     );
+    // Snapshot BEFORE add so it can be undone.
+    _canvasBloc.add(const canvas_event.ShapeSnapshotRequested());
     _canvasBloc.add(canvas_event.ShapeAdded(duplicate));
     emit(state.copyWith(selectedShapeId: duplicate.id));
     _canvasBloc.add(canvas_event.ShapeSelected(duplicate.id));
