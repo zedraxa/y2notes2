@@ -10,7 +10,6 @@ import 'package:y2notes2/features/canvas/presentation/bloc/canvas_bloc.dart';
 import 'package:y2notes2/features/canvas/presentation/bloc/canvas_event.dart';
 import 'package:y2notes2/features/canvas/presentation/bloc/canvas_state.dart';
 import 'package:y2notes2/features/canvas/presentation/widgets/page_background.dart';
-import 'package:y2notes2/features/collaboration/domain/entities/participant.dart';
 import 'package:y2notes2/features/collaboration/presentation/bloc/collaboration_bloc.dart';
 import 'package:y2notes2/features/collaboration/presentation/widgets/offline_indicator.dart';
 import 'package:y2notes2/features/collaboration/presentation/widgets/remote_cursors.dart';

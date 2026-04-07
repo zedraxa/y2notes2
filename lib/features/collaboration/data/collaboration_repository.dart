@@ -2,7 +2,6 @@ import 'package:y2notes2/features/collaboration/domain/entities/participant.dart
 import 'package:y2notes2/features/collaboration/domain/entities/permission.dart';
 import 'package:y2notes2/features/collaboration/domain/entities/session.dart';
 import 'package:y2notes2/features/collaboration/engine/sync_client.dart';
-import 'package:y2notes2/features/collaboration/presentation/bloc/collaboration_state.dart';
 
 /// Abstract repository contract for the collaboration feature.
 ///
