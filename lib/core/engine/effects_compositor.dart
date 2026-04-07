@@ -4,6 +4,7 @@ import 'package:y2notes2/core/engine/stroke_renderer.dart';
 import 'package:y2notes2/features/canvas/domain/entities/stroke.dart';
 import 'package:y2notes2/features/canvas/domain/entities/tools/tool_settings.dart';
 import 'package:y2notes2/features/canvas/domain/models/canvas_config.dart';
+import 'package:y2notes2/features/effects/interaction/interaction_effects_engine.dart';
 import 'package:y2notes2/features/effects/writing/writing_effects_engine.dart';
 import 'package:y2notes2/features/handwriting/domain/entities/text_block.dart';
 import 'package:y2notes2/features/shapes/domain/entities/shape_element.dart';
@@ -21,23 +22,31 @@ import 'package:y2notes2/features/stickers/engine/sticker_renderer.dart';
 ///  5. Active stroke (live vector, drawn on top of shapes)
 ///  6. Stickers & stamps
 ///  7. Text blocks (converted handwriting)
-///  8. Remote cursors (collaboration layer — top-most)
+///  8. Interaction effects (touch ripple, snap glow, selection pulse, etc.)
 ///
-/// Future layers (handled by the effects engine and subsequent PRs):
-///  8. Interaction effects
-///  9. UI overlay (selection handles)
+/// Note: Remote cursors (collaboration layer) are rendered as Flutter widgets
+/// above the canvas, not through this compositor.
+///
+/// Future layers:
+///  9. UI overlay (selection handles — rendered as Flutter widgets above)
 class EffectsCompositor {
   EffectsCompositor({
     required this.strokeRenderer,
     required this.effectsEngine,
+    this.interactionEngine,
     StickerRenderer? stickerRenderer,
   })  : _shapeRenderer = ShapeRenderer(),
         _stickerRenderer = stickerRenderer ?? StickerRenderer();
 
   final StrokeRenderer strokeRenderer;
   final WritingEffectsEngine effectsEngine;
+
+  /// Optional interaction engine; when set, Layer 8 is rendered.
+  final InteractionEffectsEngine? interactionEngine;
+
   final ShapeRenderer _shapeRenderer;
   final StickerRenderer _stickerRenderer;
+
 
   void compose({
     required Canvas canvas,
@@ -89,6 +98,9 @@ class EffectsCompositor {
 
     // ── Layer 7: Text blocks (recognized handwriting) ────────────────────────
     _drawTextBlocks(canvas, textBlocks);
+
+    // ── Layer 8: Interaction effects (above all content) ─────────────────────
+    interactionEngine?.render(canvas, size);
   }
 
   void _drawBackground(Canvas canvas, Size size, CanvasConfig config) {

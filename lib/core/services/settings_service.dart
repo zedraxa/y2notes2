@@ -45,6 +45,14 @@ class SettingsService {
   /// Gesture→action mappings, stored as a JSON string.
   final Map<String, ValueNotifier<String>> gestureMappings = {};
 
+  // ─── Interaction-effect notifiers ─────────────────────────────────────────
+  final Map<String, ValueNotifier<bool>> interactionEffectToggles = {};
+  final Map<String, ValueNotifier<double>> interactionEffectIntensities = {};
+
+  /// Master toggle for all interaction effects.
+  final ValueNotifier<bool> interactionEffectsEnabledNotifier =
+      ValueNotifier(true);
+
   // Key constants
   static const _darkModeKey = 'dark_mode';
   static const _effectsEnabledKey = 'effects_enabled';
@@ -59,6 +67,9 @@ class SettingsService {
   static const _palmRejectionKey = 'stylus_palm_rejection';
   static const _leftHandModeKey = 'stylus_left_hand';
   static const _gestureMappingPrefix = 'stylus_gesture_';
+  static const _interactionEffectsEnabledKey = 'interaction_effects_enabled';
+  static const _interactionTogglePrefix = 'interaction_toggle_';
+  static const _interactionIntensityPrefix = 'interaction_intensity_';
   static const _recognitionLanguageKey = 'recognition_language';
   static const _recognitionRealTimeKey = 'recognition_real_time';
   static const _recognitionConfidenceKey = 'recognition_confidence';
@@ -74,6 +85,19 @@ class SettingsService {
     'trail_particles',
     'rainbow_ink',
     'chalk',
+  ];
+
+  static const List<String> interactionEffectNames = [
+    'touch_ripple',
+    'snap_glow',
+    'selection_pulse',
+    'delete_animation',
+    'drag_shadow',
+    'pinch_zoom',
+    'page_turn',
+    'undo_redo',
+    'tool_switch',
+    'edge_bounce',
   ];
 
   /// Initialize shared preferences and load persisted values.
@@ -120,6 +144,18 @@ class SettingsService {
       final key = '$_gestureMappingPrefix${gesture.name}';
       gestureMappings[gesture.name] = ValueNotifier(
         _prefs.getString(key) ?? _defaultGestureAction(gesture).name,
+      );
+    }
+
+    interactionEffectsEnabledNotifier.value =
+        _prefs.getBool(_interactionEffectsEnabledKey) ?? true;
+
+    for (final name in interactionEffectNames) {
+      interactionEffectToggles[name] = ValueNotifier(
+        _prefs.getBool('$_interactionTogglePrefix$name') ?? true,
+      );
+      interactionEffectIntensities[name] = ValueNotifier(
+        _prefs.getDouble('$_interactionIntensityPrefix$name') ?? 1.0,
       );
     }
   }
@@ -249,11 +285,34 @@ class SettingsService {
     }
   }
 
+  // ─── Interaction effect setters / getters ──────────────────────────────────
+
+  Future<void> setInteractionEffectsEnabled(bool value) async {
+    interactionEffectsEnabledNotifier.value = value;
+    await _prefs.setBool(_interactionEffectsEnabledKey, value);
+  }
+
+  Future<void> setInteractionEffectEnabled(String name, bool value) async {
+    interactionEffectToggles[name]?.value = value;
+    await _prefs.setBool('$_interactionTogglePrefix$name', value);
+  }
+
+  Future<void> setInteractionEffectIntensity(String name, double value) async {
+    interactionEffectIntensities[name]?.value = value;
+    await _prefs.setDouble('$_interactionIntensityPrefix$name', value);
+  }
+
+  bool isInteractionEffectEnabled(String name) =>
+      interactionEffectToggles[name]?.value ?? true;
+  double interactionEffectIntensity(String name) =>
+      interactionEffectIntensities[name]?.value ?? 1.0;
+
   void dispose() {
     darkModeNotifier.dispose();
     effectsEnabledNotifier.dispose();
     hapticsEnabledNotifier.dispose();
     pageTemplateNotifier.dispose();
+    interactionEffectsEnabledNotifier.dispose();
     recognitionLanguageNotifier.dispose();
     recognitionRealTimeNotifier.dispose();
     recognitionConfidenceNotifier.dispose();
@@ -269,6 +328,12 @@ class SettingsService {
     palmRejectionEnabledNotifier.dispose();
     leftHandModeNotifier.dispose();
     for (final n in gestureMappings.values) {
+      n.dispose();
+    }
+    for (final n in interactionEffectToggles.values) {
+      n.dispose();
+    }
+    for (final n in interactionEffectIntensities.values) {
       n.dispose();
     }
   }

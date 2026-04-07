@@ -7,6 +7,7 @@ import 'package:y2notes2/core/engine/stroke_renderer.dart';
 import 'package:y2notes2/features/canvas/domain/entities/stroke.dart';
 import 'package:y2notes2/features/canvas/domain/entities/tools/tool_settings.dart';
 import 'package:y2notes2/features/canvas/domain/models/canvas_config.dart';
+import 'package:y2notes2/features/effects/interaction/interaction_effects_engine.dart';
 import 'package:y2notes2/features/effects/writing/writing_effects_engine.dart';
 import 'package:y2notes2/features/handwriting/domain/entities/text_block.dart';
 import 'package:y2notes2/features/shapes/domain/entities/shape_element.dart';
@@ -20,17 +21,22 @@ class CanvasEngine with ChangeNotifier {
   CanvasEngine({
     required TickerProvider vsync,
     required this.effectsEngine,
+    this.interactionEngine,
   }) {
     _renderer = StrokeRenderer();
     _pipeline = RenderPipeline(renderer: _renderer);
     _compositor = EffectsCompositor(
       strokeRenderer: _renderer,
       effectsEngine: effectsEngine,
+      interactionEngine: interactionEngine,
     );
     _ticker = vsync.createTicker(_onTick)..start();
   }
 
   final WritingEffectsEngine effectsEngine;
+
+  /// Optional interaction effects engine — updated every tick.
+  final InteractionEffectsEngine? interactionEngine;
 
   late final StrokeRenderer _renderer;
   late final RenderPipeline _pipeline;
@@ -52,6 +58,7 @@ class CanvasEngine with ChangeNotifier {
         : (elapsed - _lastTickTime).inMicroseconds / 1e6;
     _lastTickTime = elapsed;
     effectsEngine.update(dt);
+    interactionEngine?.update(dt);
     notifyListeners();
   }
 
