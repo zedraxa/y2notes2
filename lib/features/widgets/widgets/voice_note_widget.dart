@@ -2,9 +2,14 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:y2notes2/core/services/audio_recording_service.dart';
 import 'package:y2notes2/features/widgets/domain/entities/smart_widget.dart';
 
-/// Voice note widget with simulated recording and playback.
+/// Voice note widget with real microphone recording and audio playback.
+///
+/// Uses [AudioRecordingService] for platform microphone capture and
+/// [audioplayers] for playback. Falls back to simulated recording when
+/// microphone permission is denied.
 class VoiceNoteWidget extends SmartWidget {
   VoiceNoteWidget({
     super.id,
@@ -74,6 +79,14 @@ class _VoiceNoteOverlayState
   double _playbackProgress = 0;
   Timer? _timer;
 
+  // Real audio backend
+  AudioRecordingService? _audioService;
+  String? _currentRecordingPath;
+  final List<double> _liveAmplitudes = [];
+  StreamSubscription<double>? _ampSub;
+  StreamSubscription<double>? _progressSub;
+  bool _useRealMic = false;
+
   @override
   void initState() {
     super.initState();
@@ -86,11 +99,45 @@ class _VoiceNoteOverlayState
             )
             .toList() ??
         [];
+
+    _initAudioService();
+  }
+
+  Future<void> _initAudioService() async {
+    try {
+      final service = AudioRecordingService();
+      final hasPermission = await service.hasPermission();
+      if (!mounted) {
+        await service.dispose();
+        return;
+      }
+      setState(() {
+        _audioService = service;
+        _useRealMic = hasPermission;
+      });
+
+      // Listen to playback progress from the real player.
+      _progressSub = service.playbackProgress.listen((progress) {
+        if (!mounted) return;
+        setState(() => _playbackProgress = progress);
+        if (progress <= 0 && _playingIndex >= 0) {
+          setState(() {
+            _playingIndex = -1;
+            _playbackProgress = 0;
+          });
+        }
+      });
+    } catch (_) {
+      // Platform doesn't support recording — keep simulation mode.
+    }
   }
 
   @override
   void dispose() {
     _timer?.cancel();
+    _ampSub?.cancel();
+    _progressSub?.cancel();
+    _audioService?.dispose();
     super.dispose();
   }
 
@@ -101,8 +148,57 @@ class _VoiceNoteOverlayState
     });
   }
 
-  void _startRecording() {
+  // --------------- Recording ---------------
+
+  Future<void> _startRecording() async {
     _timer?.cancel();
+
+    if (_useRealMic && _audioService != null) {
+      await _startRealRecording();
+    } else {
+      _startSimulatedRecording();
+    }
+  }
+
+  Future<void> _startRealRecording() async {
+    try {
+      final path = await _audioService!.startRecording();
+      if (!mounted) return;
+
+      _currentRecordingPath = path;
+      _liveAmplitudes.clear();
+
+      setState(() {
+        _isRecording = true;
+        _recordingSeconds = 0;
+      });
+
+      // Tick seconds counter.
+      _timer = Timer.periodic(
+        const Duration(seconds: 1),
+        (_) {
+          if (!mounted) return;
+          setState(() => _recordingSeconds++);
+          if (_recordingSeconds >= 120) {
+            _stopRecording();
+          }
+        },
+      );
+
+      // Collect amplitude samples for waveform visualisation.
+      _ampSub?.cancel();
+      _ampSub = _audioService!.amplitudeStream.listen((amp) {
+        if (!mounted) return;
+        _liveAmplitudes.add(amp);
+      });
+    } catch (_) {
+      // Fall back to simulated recording on any error.
+      _useRealMic = false;
+      _startSimulatedRecording();
+    }
+  }
+
+  void _startSimulatedRecording() {
     setState(() {
       _isRecording = true;
       _recordingSeconds = 0;
@@ -110,6 +206,7 @@ class _VoiceNoteOverlayState
     _timer = Timer.periodic(
       const Duration(seconds: 1),
       (_) {
+        if (!mounted) return;
         setState(() => _recordingSeconds++);
         if (_recordingSeconds >= 60) {
           _stopRecording();
@@ -118,35 +215,118 @@ class _VoiceNoteOverlayState
     );
   }
 
-  void _stopRecording() {
+  Future<void> _stopRecording() async {
     _timer?.cancel();
-    if (_recordingSeconds > 0) {
-      // Generate random waveform data
-      final rng = Random(DateTime.now().millisecond);
-      final waveform = List.generate(
-        20,
-        (_) => (rng.nextDouble() * 0.8 + 0.2),
-      );
+    _ampSub?.cancel();
+
+    if (_recordingSeconds <= 0) {
+      if (_isRecording && _audioService != null && _useRealMic) {
+        await _audioService!.stopRecording();
+      }
       setState(() {
-        _recordings.add({
-          'duration': _recordingSeconds,
-          'waveform': waveform,
-          'label': 'Note ${_recordings.length + 1}',
-        });
         _isRecording = false;
         _recordingSeconds = 0;
       });
-      _notify();
+      return;
+    }
+
+    if (_useRealMic && _audioService != null) {
+      await _stopRealRecording();
     } else {
-      setState(() {
-        _isRecording = false;
-        _recordingSeconds = 0;
-      });
+      _stopSimulatedRecording();
     }
   }
 
-  void _play(int index) {
+  Future<void> _stopRealRecording() async {
+    final path = await _audioService!.stopRecording();
+
+    // Downsample live amplitudes to 20 bars for the waveform display.
+    final waveform = _downsampleAmplitudes(_liveAmplitudes, 20);
+
+    setState(() {
+      _recordings.add({
+        'duration': _recordingSeconds,
+        'waveform': waveform,
+        'label': 'Note ${_recordings.length + 1}',
+        'filePath': path ?? _currentRecordingPath,
+      });
+      _isRecording = false;
+      _recordingSeconds = 0;
+      _currentRecordingPath = null;
+    });
+    _notify();
+  }
+
+  void _stopSimulatedRecording() {
+    // Generate random waveform data for simulated mode.
+    final rng = Random(DateTime.now().millisecond);
+    final waveform = List.generate(
+      20,
+      (_) => (rng.nextDouble() * 0.8 + 0.2),
+    );
+    setState(() {
+      _recordings.add({
+        'duration': _recordingSeconds,
+        'waveform': waveform,
+        'label': 'Note ${_recordings.length + 1}',
+      });
+      _isRecording = false;
+      _recordingSeconds = 0;
+    });
+    _notify();
+  }
+
+  /// Downsamples a list of amplitude values to [targetCount] bars.
+  List<double> _downsampleAmplitudes(
+    List<double> samples,
+    int targetCount,
+  ) {
+    if (samples.isEmpty) {
+      return List.generate(targetCount, (_) => 0.2);
+    }
+    if (samples.length <= targetCount) {
+      return List<double>.from(samples);
+    }
+    final chunkSize = samples.length / targetCount;
+    return List.generate(targetCount, (i) {
+      final start = (i * chunkSize).floor();
+      final end = ((i + 1) * chunkSize).floor().clamp(start + 1, samples.length);
+      final chunk = samples.sublist(start, end);
+      final avg = chunk.reduce((a, b) => a + b) / chunk.length;
+      // Ensure a minimum bar height.
+      return avg.clamp(0.1, 1.0);
+    });
+  }
+
+  // --------------- Playback ---------------
+
+  Future<void> _play(int index) async {
     _timer?.cancel();
+
+    final rec = _recordings[index];
+    final filePath = rec['filePath'] as String?;
+
+    if (filePath != null && _audioService != null) {
+      await _playReal(index, filePath);
+    } else {
+      _playSimulated(index);
+    }
+  }
+
+  Future<void> _playReal(int index, String filePath) async {
+    try {
+      setState(() {
+        _playingIndex = index;
+        _playbackProgress = 0;
+      });
+      await _audioService!.play(filePath);
+    } catch (_) {
+      // Fall back to simulated playback on error.
+      _playSimulated(index);
+    }
+  }
+
+  void _playSimulated(int index) {
     final dur =
         _recordings[index]['duration'] as int? ?? 5;
     setState(() {
@@ -173,17 +353,25 @@ class _VoiceNoteOverlayState
     );
   }
 
-  void _stopPlayback() {
+  Future<void> _stopPlayback() async {
     _timer?.cancel();
+    if (_audioService != null) {
+      await _audioService!.stopPlayback();
+    }
     setState(() {
       _playingIndex = -1;
       _playbackProgress = 0;
     });
   }
 
-  void _deleteRecording(int index) {
+  Future<void> _deleteRecording(int index) async {
     if (_playingIndex == index) {
-      _stopPlayback();
+      await _stopPlayback();
+    }
+    final rec = _recordings[index];
+    final filePath = rec['filePath'] as String?;
+    if (filePath != null && _audioService != null) {
+      await _audioService!.deleteFile(filePath);
     }
     setState(() => _recordings.removeAt(index));
     _notify();
@@ -233,7 +421,9 @@ class _VoiceNoteOverlayState
                         !_isRecording
                     ? Center(
                         child: Text(
-                          'Tap record to start',
+                          _useRealMic
+                              ? 'Tap record to start'
+                              : 'Tap record to start (simulated)',
                           style: TextStyle(
                             fontSize: 12,
                             color:
@@ -261,9 +451,9 @@ class _VoiceNoteOverlayState
               const SizedBox(height: 4),
               // Record button
               GestureDetector(
-                onTap: _isRecording
-                    ? _stopRecording
-                    : _startRecording,
+                onTap: () => _isRecording
+                    ? _stopRecording()
+                    : _startRecording(),
                 child: Container(
                   width: 36,
                   height: 36,
