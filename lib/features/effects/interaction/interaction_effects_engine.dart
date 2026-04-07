@@ -155,7 +155,7 @@ class InteractionEffectsEngine {
 
   /// Shape/sticker snapped to an alignment guide from [lineStart] to [lineEnd].
   void onSnap(Offset lineStart, Offset lineEnd, {Color? color}) =>
-      snapGlow.trigger(lineStart, lineEnd, color: color);
+      snapGlow.trigger(lineStart, lineEnd, color: color ?? const Color(0xFF4A90D9));
 
   /// Element with [elementId] was selected, occupying [bounds].
   void onElementSelected(String elementId, Rect bounds, {Color? color}) =>

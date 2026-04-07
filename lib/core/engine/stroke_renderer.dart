@@ -55,7 +55,7 @@ class StrokeRenderer {
   ) {
     if (points.isEmpty) return;
     final freehandPoints = _toFreehandPoints(points);
-    final options = _buildOptionsFromParams(baseWidth, tool, isLast: false);
+    final options = _buildOptionsFromParams(baseWidth, tool);
     final outlinePoints = getStroke(freehandPoints, options: options);
     final path = _buildPathFromOutline(outlinePoints);
     final paint = _buildPaintFromParams(color, tool);
@@ -95,9 +95,8 @@ class StrokeRenderer {
 
   StrokeOptions _buildOptionsFromParams(
     double baseWidth,
-    StrokeTool tool, {
-    bool isLast = true,
-  }) {
+    StrokeTool tool,
+  ) {
     switch (tool) {
       case StrokeTool.highlighter:
         return StrokeOptions(
@@ -106,7 +105,6 @@ class StrokeRenderer {
           smoothing: 0.4,
           streamline: 0.5,
           simulatePressure: false,
-          last: isLast,
         );
       case StrokeTool.eraser:
         return StrokeOptions(
@@ -115,7 +113,6 @@ class StrokeRenderer {
           smoothing: 0.2,
           streamline: 0.4,
           simulatePressure: false,
-          last: isLast,
         );
       case StrokeTool.fountainPen:
         return StrokeOptions(
@@ -124,7 +121,6 @@ class StrokeRenderer {
           smoothing: 0.5,
           streamline: 0.5,
           simulatePressure: true,
-          last: isLast,
         );
       case StrokeTool.ballpoint:
         return StrokeOptions(
@@ -133,7 +129,6 @@ class StrokeRenderer {
           smoothing: 0.5,
           streamline: 0.5,
           simulatePressure: true,
-          last: isLast,
         );
     }
   }
@@ -160,12 +155,12 @@ class StrokeRenderer {
     return paint;
   }
 
-  Path _buildPathFromOutline(List<PointVector> outlinePoints) {
+  Path _buildPathFromOutline(List<Offset> outlinePoints) {
     if (outlinePoints.isEmpty) return Path();
     final path = Path()
-      ..moveTo(outlinePoints[0].x, outlinePoints[0].y);
+      ..moveTo(outlinePoints[0].dx, outlinePoints[0].dy);
     for (int i = 1; i < outlinePoints.length; i++) {
-      path.lineTo(outlinePoints[i].x, outlinePoints[i].y);
+      path.lineTo(outlinePoints[i].dx, outlinePoints[i].dy);
     }
     path.close();
     return path;

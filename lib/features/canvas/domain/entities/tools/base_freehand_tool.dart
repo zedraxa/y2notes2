@@ -24,14 +24,13 @@ abstract class BaseFreehandTool implements DrawingTool {
         smoothing: smoothing,
         streamline: streamline,
         simulatePressure: simulatePressure,
-        last: true,
       ),
     );
     if (outlinePoints.isEmpty) return Path();
     final path = Path()
-      ..moveTo(outlinePoints[0].x, outlinePoints[0].y);
+      ..moveTo(outlinePoints[0].dx, outlinePoints[0].dy);
     for (int i = 1; i < outlinePoints.length; i++) {
-      path.lineTo(outlinePoints[i].x, outlinePoints[i].y);
+      path.lineTo(outlinePoints[i].dx, outlinePoints[i].dy);
     }
     path.close();
     return path;

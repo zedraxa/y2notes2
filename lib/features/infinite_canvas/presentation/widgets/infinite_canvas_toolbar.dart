@@ -30,7 +30,7 @@ class InfiniteCanvasToolbar extends StatelessWidget {
                   children: [
                     // ── Tool buttons ─────────────────────────────────────────
                     _ToolBtn(
-                      icon: Icons.arrow_selector_tool,
+                      icon: Icons.near_me,
                       label: 'Select',
                       isActive:
                           state.activeTool == InfiniteCanvasTool.select,
