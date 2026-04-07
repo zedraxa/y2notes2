@@ -62,7 +62,7 @@ class Participant {
         'userId': userId,
         'displayName': displayName,
         'avatarUrl': avatarUrl,
-        'cursorColor': cursorColor.toARGB32(),
+        'cursorColor': cursorColor.value,
         'cursorPositionX': cursorPosition?.dx,
         'cursorPositionY': cursorPosition?.dy,
         'activeNodeId': activeNodeId,

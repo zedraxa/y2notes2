@@ -123,7 +123,7 @@ class PresenceManager {
       'userId': localUserId,
       'displayName': localDisplayName,
       'avatarUrl': _localAvatarUrl,
-      'cursorColor': color.toARGB32(),
+      'cursorColor': color.value,
       'cursorPositionX': _lastCursorPosition?.dx,
       'cursorPositionY': _lastCursorPosition?.dy,
       'activeNodeId': _activeNodeId,
