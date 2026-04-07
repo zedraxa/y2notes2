@@ -1,21 +1,23 @@
+import 'dart:async';
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:y2notes2/features/widgets/domain/entities/smart_widget.dart';
 
-/// Record/play audio note marker (stub for audio, visual waveform).
+/// Voice note widget with simulated recording and playback.
 class VoiceNoteWidget extends SmartWidget {
   VoiceNoteWidget({
     super.id,
     super.position = Offset.zero,
-    super.size = const Size(220, 80),
+    super.size = const Size(240, 140),
     super.config,
     Map<String, dynamic>? state,
   }) : super(
           type: SmartWidgetType.voiceNote,
           state: state ??
               const {
-                'hasRecording': false,
-                'isPlaying': false,
-                'durationSeconds': 0,
+                'recordings': <Map<String, dynamic>>[],
+                'activeIndex': -1,
               },
         );
 
@@ -40,41 +42,156 @@ class VoiceNoteWidget extends SmartWidget {
       );
 
   @override
-  Widget buildInteractiveOverlay(BuildContext context,
-          {required ValueChanged<Map<String, dynamic>> onStateChanged}) =>
-      _VoiceNoteOverlay(widget: this, onStateChanged: onStateChanged);
+  Widget buildInteractiveOverlay(
+    BuildContext context, {
+    required ValueChanged<Map<String, dynamic>> onStateChanged,
+  }) =>
+      _VoiceNoteOverlay(
+        widget: this,
+        onStateChanged: onStateChanged,
+      );
 }
 
 class _VoiceNoteOverlay extends StatefulWidget {
-  const _VoiceNoteOverlay(
-      {required this.widget, required this.onStateChanged});
+  const _VoiceNoteOverlay({
+    required this.widget,
+    required this.onStateChanged,
+  });
   final VoiceNoteWidget widget;
   final ValueChanged<Map<String, dynamic>> onStateChanged;
 
   @override
-  State<_VoiceNoteOverlay> createState() => _VoiceNoteOverlayState();
+  State<_VoiceNoteOverlay> createState() =>
+      _VoiceNoteOverlayState();
 }
 
-class _VoiceNoteOverlayState extends State<_VoiceNoteOverlay> {
-  late bool _hasRecording;
-  late bool _isPlaying;
-  late int _duration;
+class _VoiceNoteOverlayState
+    extends State<_VoiceNoteOverlay> {
+  late List<Map<String, dynamic>> _recordings;
+  bool _isRecording = false;
+  int _recordingSeconds = 0;
+  int _playingIndex = -1;
+  double _playbackProgress = 0;
+  Timer? _timer;
 
   @override
   void initState() {
     super.initState();
-    _hasRecording = widget.widget.state['hasRecording'] as bool? ?? false;
-    _isPlaying = widget.widget.state['isPlaying'] as bool? ?? false;
-    _duration = widget.widget.state['durationSeconds'] as int? ?? 0;
+    final raw =
+        widget.widget.state['recordings'] as List?;
+    _recordings = raw
+            ?.map(
+              (e) =>
+                  Map<String, dynamic>.from(e as Map),
+            )
+            .toList() ??
+        [];
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
   }
 
   void _notify() {
     widget.onStateChanged({
-      'hasRecording': _hasRecording,
-      'isPlaying': _isPlaying,
-      'durationSeconds': _duration,
+      'recordings': _recordings,
+      'activeIndex': _playingIndex,
     });
   }
+
+  void _startRecording() {
+    _timer?.cancel();
+    setState(() {
+      _isRecording = true;
+      _recordingSeconds = 0;
+    });
+    _timer = Timer.periodic(
+      const Duration(seconds: 1),
+      (_) {
+        setState(() => _recordingSeconds++);
+        if (_recordingSeconds >= 60) {
+          _stopRecording();
+        }
+      },
+    );
+  }
+
+  void _stopRecording() {
+    _timer?.cancel();
+    if (_recordingSeconds > 0) {
+      // Generate random waveform data
+      final rng = Random(DateTime.now().millisecond);
+      final waveform = List.generate(
+        20,
+        (_) => (rng.nextDouble() * 0.8 + 0.2),
+      );
+      setState(() {
+        _recordings.add({
+          'duration': _recordingSeconds,
+          'waveform': waveform,
+          'label': 'Note ${_recordings.length + 1}',
+        });
+        _isRecording = false;
+        _recordingSeconds = 0;
+      });
+      _notify();
+    } else {
+      setState(() {
+        _isRecording = false;
+        _recordingSeconds = 0;
+      });
+    }
+  }
+
+  void _play(int index) {
+    _timer?.cancel();
+    final dur =
+        _recordings[index]['duration'] as int? ?? 5;
+    setState(() {
+      _playingIndex = index;
+      _playbackProgress = 0;
+    });
+    final steps = dur * 10;
+    int step = 0;
+    _timer = Timer.periodic(
+      const Duration(milliseconds: 100),
+      (_) {
+        step++;
+        setState(
+          () => _playbackProgress = step / steps,
+        );
+        if (step >= steps) {
+          _timer?.cancel();
+          setState(() {
+            _playingIndex = -1;
+            _playbackProgress = 0;
+          });
+        }
+      },
+    );
+  }
+
+  void _stopPlayback() {
+    _timer?.cancel();
+    setState(() {
+      _playingIndex = -1;
+      _playbackProgress = 0;
+    });
+  }
+
+  void _deleteRecording(int index) {
+    if (_playingIndex == index) {
+      _stopPlayback();
+    }
+    setState(() => _recordings.removeAt(index));
+    _notify();
+  }
+
+  String _formatDuration(int s) =>
+      '${(s ~/ 60).toString().padLeft(1, '0')}'
+      ':${(s % 60).toString().padLeft(2, '0')}';
 
   @override
   Widget build(BuildContext context) => Material(
@@ -86,93 +203,237 @@ class _VoiceNoteOverlayState extends State<_VoiceNoteOverlay> {
             color: Colors.white,
             borderRadius: BorderRadius.circular(12),
           ),
-          child: Row(
+          child: Column(
             children: [
-              IconButton(
-                icon: Icon(
-                  _hasRecording
-                      ? (_isPlaying
-                          ? Icons.pause_circle_filled
-                          : Icons.play_circle_fill)
-                      : Icons.mic,
-                  color: _hasRecording ? Colors.blue : Colors.red,
-                  size: 32,
-                ),
-                onPressed: () {
-                  setState(() {
-                    if (_hasRecording) {
-                      _isPlaying = !_isPlaying;
-                    } else {
-                      _hasRecording = true;
-                      _duration = 5; // Stub recording
-                    }
-                  });
-                  _notify();
-                },
-              ),
-              Expanded(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Stub waveform
-                    Container(
-                      height: 20,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: CustomPaint(
-                        painter: _WaveformPainter(
-                          hasRecording: _hasRecording,
-                        ),
-                        size: const Size(double.infinity, 20),
-                      ),
+              // Header
+              Row(
+                children: [
+                  const Text(
+                    '🎙️ Voice Notes',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 13,
                     ),
-                    if (_hasRecording)
-                      Text('${_duration}s',
+                  ),
+                  const Spacer(),
+                  Text(
+                    '${_recordings.length} clip'
+                    '${_recordings.length != 1 ? 's' : ''}',
+                    style: TextStyle(
+                      fontSize: 10,
+                      color: Colors.grey.shade500,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              // Recordings list
+              Expanded(
+                child: _recordings.isEmpty &&
+                        !_isRecording
+                    ? Center(
+                        child: Text(
+                          'Tap record to start',
                           style: TextStyle(
-                              fontSize: 10, color: Colors.grey.shade600)),
-                  ],
+                            fontSize: 12,
+                            color:
+                                Colors.grey.shade400,
+                          ),
+                        ),
+                      )
+                    : ListView(
+                        children: [
+                          if (_isRecording)
+                            _buildRecordingRow(),
+                          ..._recordings
+                              .asMap()
+                              .entries
+                              .map(
+                                (e) =>
+                                    _buildRecordingItem(
+                                  e.key,
+                                  e.value,
+                                ),
+                              ),
+                        ],
+                      ),
+              ),
+              const SizedBox(height: 4),
+              // Record button
+              GestureDetector(
+                onTap: _isRecording
+                    ? _stopRecording
+                    : _startRecording,
+                child: Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: _isRecording
+                        ? Colors.red
+                        : Colors.red.shade100,
+                    border: Border.all(
+                      color: Colors.red,
+                      width: 2,
+                    ),
+                  ),
+                  child: Icon(
+                    _isRecording
+                        ? Icons.stop
+                        : Icons.mic,
+                    color: _isRecording
+                        ? Colors.white
+                        : Colors.red,
+                    size: 20,
+                  ),
                 ),
               ),
-              if (_hasRecording)
-                IconButton(
-                  icon: const Icon(Icons.delete_outline,
-                      size: 20, color: Colors.red),
-                  onPressed: () {
-                    setState(() {
-                      _hasRecording = false;
-                      _isPlaying = false;
-                      _duration = 0;
-                    });
-                    _notify();
-                  },
-                ),
             ],
           ),
         ),
       );
+
+  Widget _buildRecordingRow() => Padding(
+        padding:
+            const EdgeInsets.symmetric(vertical: 4),
+        child: Row(
+          children: [
+            // Pulsing indicator
+            Container(
+              width: 10,
+              height: 10,
+              decoration: const BoxDecoration(
+                color: Colors.red,
+                shape: BoxShape.circle,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              'Recording... '
+              '${_formatDuration(_recordingSeconds)}',
+              style: const TextStyle(
+                fontSize: 12,
+                color: Colors.red,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      );
+
+  Widget _buildRecordingItem(
+    int index,
+    Map<String, dynamic> rec,
+  ) {
+    final dur = rec['duration'] as int? ?? 0;
+    final waveform =
+        (rec['waveform'] as List?)
+                ?.map(
+                  (e) => (e as num).toDouble(),
+                )
+                .toList() ??
+            [];
+    final isPlaying = _playingIndex == index;
+
+    return Padding(
+      padding:
+          const EdgeInsets.symmetric(vertical: 2),
+      child: Row(
+        children: [
+          // Play/pause button
+          GestureDetector(
+            onTap: () => isPlaying
+                ? _stopPlayback()
+                : _play(index),
+            child: Icon(
+              isPlaying
+                  ? Icons.pause_circle_filled
+                  : Icons.play_circle_fill,
+              color: Colors.blue,
+              size: 24,
+            ),
+          ),
+          const SizedBox(width: 6),
+          // Waveform
+          Expanded(
+            child: SizedBox(
+              height: 20,
+              child: CustomPaint(
+                painter: _WaveformPainter(
+                  waveform: waveform,
+                  progress: isPlaying
+                      ? _playbackProgress
+                      : 0,
+                  activeColor: Colors.blue,
+                  inactiveColor:
+                      Colors.grey.shade300,
+                ),
+                size: const Size(
+                  double.infinity,
+                  20,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 4),
+          // Duration
+          Text(
+            _formatDuration(dur),
+            style: TextStyle(
+              fontSize: 10,
+              color: Colors.grey.shade600,
+            ),
+          ),
+          // Delete
+          GestureDetector(
+            onTap: () => _deleteRecording(index),
+            child: Padding(
+              padding: const EdgeInsets.only(left: 4),
+              child: Icon(
+                Icons.close,
+                size: 14,
+                color: Colors.grey.shade400,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class _WaveformPainter extends CustomPainter {
-  _WaveformPainter({required this.hasRecording});
-  final bool hasRecording;
+  _WaveformPainter({
+    required this.waveform,
+    required this.progress,
+    required this.activeColor,
+    required this.inactiveColor,
+  });
+
+  final List<double> waveform;
+  final double progress;
+  final Color activeColor;
+  final Color inactiveColor;
 
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = hasRecording ? Colors.blue.shade300 : Colors.grey.shade300
-      ..strokeWidth = 2
-      ..strokeCap = StrokeCap.round;
-
+    if (waveform.isEmpty) return;
     final mid = size.height / 2;
-    const count = 20;
-    final step = size.width / count;
-    for (int i = 0; i < count; i++) {
-      final h = hasRecording ? (i % 3 + 1) * 3.0 : 2.0;
+    final step = size.width / waveform.length;
+    final progressX = progress * size.width;
+
+    for (int i = 0; i < waveform.length; i++) {
+      final x = i * step + step / 2;
+      final h = waveform[i] * (size.height / 2 - 1);
+      final isActive = x <= progressX;
+      final paint = Paint()
+        ..color =
+            isActive ? activeColor : inactiveColor
+        ..strokeWidth = 2.5
+        ..strokeCap = StrokeCap.round;
       canvas.drawLine(
-        Offset(i * step + step / 2, mid - h),
-        Offset(i * step + step / 2, mid + h),
+        Offset(x, mid - h),
+        Offset(x, mid + h),
         paint,
       );
     }
@@ -180,5 +441,6 @@ class _WaveformPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_WaveformPainter old) =>
-      old.hasRecording != hasRecording;
+      old.progress != progress ||
+      old.waveform != waveform;
 }
