@@ -50,6 +50,12 @@ class _PageGestureHandlerState extends State<PageGestureHandler>
   /// Maximum ratio of |dy| / |dx| allowed for a horizontal swipe.
   static const double _maxAngleRatio = 0.6;
 
+  /// Minimum absolute horizontal displacement before visual feedback starts.
+  static const double _minDragThreshold = 4.0;
+
+  /// Minimum horizontal displacement to classify a swipe (vs. a tap/noise).
+  static const double _minSwipeDistance = 10.0;
+
   // ── Multi-touch tracking ──────────────────────────────────────────────────
 
   /// Pointer IDs currently touching the screen.
@@ -234,7 +240,7 @@ class _PageGestureHandlerState extends State<PageGestureHandler>
 
   void _updateDragProgress(double dx, double dy) {
     // Only update visual feedback if horizontal movement dominates.
-    if (dx.abs() < 4.0) return;
+    if (dx.abs() < _minDragThreshold) return;
     if (dy.abs() / dx.abs() > _maxAngleRatio) return;
 
     final state = context.read<DocumentBloc>().state;
@@ -294,7 +300,8 @@ class _PageGestureHandlerState extends State<PageGestureHandler>
     final absDy = dy.abs();
 
     // Not a horizontal swipe – spring back.
-    if (absDx < 10.0 || (absDy / math.max(absDx, 1.0)) > _maxAngleRatio) {
+    if (absDx < _minSwipeDistance ||
+        (absDy / math.max(absDx, 1.0)) > _maxAngleRatio) {
       _animateBack();
       return;
     }
@@ -387,6 +394,9 @@ class _PageEdgeIndicator extends StatelessWidget {
   final IconData icon;
   final String label;
 
+  /// Minimum progress before the icon/label become visible.
+  static const double _iconVisibilityThreshold = 0.4;
+
   @override
   Widget build(BuildContext context) {
     final isLeft = alignment == Alignment.centerLeft;
@@ -417,7 +427,7 @@ class _PageEdgeIndicator extends StatelessWidget {
               ),
             ),
             alignment: Alignment.center,
-            child: progress >= 0.4
+            child: progress >= _iconVisibilityThreshold
                 ? Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
