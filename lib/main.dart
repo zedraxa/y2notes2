@@ -11,6 +11,7 @@ import 'package:y2notes2/features/documents/data/document_repository.dart';
 import 'package:y2notes2/features/handwriting/presentation/bloc/handwriting_bloc.dart';
 import 'package:y2notes2/features/infinite_canvas/presentation/bloc/infinite_canvas_bloc.dart';
 import 'package:y2notes2/features/library/data/library_repository.dart';
+import 'package:y2notes2/features/rich_text/presentation/bloc/rich_text_bloc.dart';
 import 'package:y2notes2/features/shapes/presentation/bloc/shape_bloc.dart';
 import 'package:y2notes2/features/stickers/presentation/bloc/sticker_bloc.dart';
 import 'package:y2notes2/features/templates/data/template_repository.dart';
@@ -81,6 +82,10 @@ void main() async {
             // their own scoped provider when needed.
             BlocProvider(
               create: (_) => InfiniteCanvasBloc(),
+            ),
+            // RichTextBloc manages rich text elements on the canvas.
+            BlocProvider(
+              create: (_) => RichTextBloc(),
             ),
           ],
           child: Y2NotesApp(
