@@ -23,14 +23,59 @@ class LibraryGrid extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.folder_open_outlined, size: 64, color: Colors.grey),
-                const SizedBox(height: 12),
-                Text(
-                  state.isSearching ? 'No results found' : 'No items here yet',
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        color: Colors.grey,
-                      ),
+                TweenAnimationBuilder<double>(
+                  tween: Tween(begin: 0.0, end: 1.0),
+                  duration: const Duration(milliseconds: 400),
+                  curve: Curves.easeOutCubic,
+                  builder: (_, value, child) => Opacity(
+                    opacity: value,
+                    child: Transform.translate(
+                      offset: Offset(0, 12 * (1 - value)),
+                      child: child,
+                    ),
+                  ),
+                  child: Icon(
+                    state.isSearching
+                        ? Icons.search_off_outlined
+                        : Icons.folder_open_outlined,
+                    size: 64,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.35),
+                  ),
                 ),
+                const SizedBox(height: 12),
+                TweenAnimationBuilder<double>(
+                  tween: Tween(begin: 0.0, end: 1.0),
+                  duration: const Duration(milliseconds: 500),
+                  curve: Curves.easeOutCubic,
+                  builder: (_, value, child) => Opacity(
+                    opacity: value,
+                    child: child,
+                  ),
+                  child: Text(
+                    state.isSearching ? 'No results found' : 'No items here yet',
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.5),
+                        ),
+                  ),
+                ),
+                if (!state.isSearching) ...[
+                  const SizedBox(height: 4),
+                  TweenAnimationBuilder<double>(
+                    tween: Tween(begin: 0.0, end: 1.0),
+                    duration: const Duration(milliseconds: 600),
+                    curve: Curves.easeOutCubic,
+                    builder: (_, value, child) => Opacity(
+                      opacity: value,
+                      child: child,
+                    ),
+                    child: Text(
+                      'Create a notebook to get started',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.4),
+                          ),
+                    ),
+                  ),
+                ],
               ],
             ),
           );

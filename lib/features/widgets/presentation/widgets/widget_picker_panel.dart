@@ -11,6 +11,7 @@ class WidgetPickerPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final prototypes = BuiltinWidgets.all();
+    final theme = Theme.of(context);
 
     return SizedBox(
       height: MediaQuery.of(context).size.height * 0.5,
@@ -22,7 +23,7 @@ class WidgetPickerPanel extends StatelessWidget {
             height: 4,
             margin: const EdgeInsets.symmetric(vertical: 12),
             decoration: BoxDecoration(
-              color: Colors.grey.shade300,
+              color: theme.colorScheme.outlineVariant,
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -32,7 +33,7 @@ class WidgetPickerPanel extends StatelessWidget {
               children: [
                 Text(
                   'Smart Widgets',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  style: theme.textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
                 ),
@@ -76,34 +77,61 @@ class WidgetPickerPanel extends StatelessWidget {
   }
 }
 
-class _WidgetCard extends StatelessWidget {
+class _WidgetCard extends StatefulWidget {
   const _WidgetCard({required this.proto, required this.onTap});
 
   final SmartWidget proto;
   final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) => GestureDetector(
-        onTap: onTap,
-        child: Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.grey.shade300),
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(proto.iconEmoji, style: const TextStyle(fontSize: 28)),
-              const SizedBox(height: 6),
-              Text(
-                proto.label,
-                style: const TextStyle(
-                    fontSize: 12, fontWeight: FontWeight.w500),
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
+  State<_WidgetCard> createState() => _WidgetCardState();
+}
+
+class _WidgetCardState extends State<_WidgetCard> {
+  bool _pressed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return GestureDetector(
+      onTap: widget.onTap,
+      onTapDown: (_) => setState(() => _pressed = true),
+      onTapUp: (_) => setState(() => _pressed = false),
+      onTapCancel: () => setState(() => _pressed = false),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        curve: Curves.easeOutCubic,
+        transform: _pressed
+            ? (Matrix4.identity()..scale(0.95))
+            : Matrix4.identity(),
+        transformAlignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: theme.cardColor,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: theme.dividerColor),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(_pressed ? 0.04 : 0.08),
+              blurRadius: _pressed ? 2 : 6,
+              offset: Offset(0, _pressed ? 1 : 3),
+            ),
+          ],
         ),
-      );
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(widget.proto.iconEmoji, style: const TextStyle(fontSize: 30)),
+            const SizedBox(height: 6),
+            Text(
+              widget.proto.label,
+              style: theme.textTheme.bodySmall?.copyWith(
+                fontWeight: FontWeight.w500,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }

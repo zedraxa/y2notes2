@@ -3,6 +3,7 @@ import 'package:y2notes2/features/canvas/domain/entities/stroke.dart';
 import 'package:y2notes2/features/canvas/domain/models/canvas_config.dart';
 import 'package:y2notes2/features/documents/domain/models/export_options.dart';
 import 'package:y2notes2/features/media/domain/entities/media_element.dart';
+import 'package:y2notes2/features/scanner/domain/entities/scanned_document.dart';
 
 /// Base class for all document-feature events.
 abstract class DocumentEvent extends Equatable {
@@ -159,6 +160,14 @@ class ImportImage extends DocumentEvent {
   List<Object?> get props => [maxWidth, maxHeight];
 }
 
+/// Import pages from a completed document scan session.
+class ImportScannedDocument extends DocumentEvent {
+  const ImportScannedDocument({required this.scanResult});
+  final ScanResult scanResult;
+  @override
+  List<Object?> get props => [scanResult];
+}
+
 // ── UI events ──────────────────────────────────────────────────────────────
 
 /// Dismiss any active error or progress state.
@@ -234,4 +243,18 @@ class UpdatePageMedia extends DocumentEvent {
   final List<MediaElement> mediaElements;
   @override
   List<Object?> get props => [pageIndex, mediaElements];
+}
+
+// ── Audio recordings ───────────────────────────────────────────────────────
+
+/// Update the audio recordings for a specific page.
+class UpdatePageAudioRecordings extends DocumentEvent {
+  const UpdatePageAudioRecordings({
+    required this.pageIndex,
+    required this.recordings,
+  });
+  final int pageIndex;
+  final List<dynamic> recordings;
+  @override
+  List<Object?> get props => [pageIndex, recordings];
 }
