@@ -11,6 +11,12 @@ import 'package:y2notes2/features/documents/domain/entities/notebook_page.dart';
 /// Images (PDF background images) are *not* serialised — they will be absent
 /// after a cold start.  Callers should re-import the source file if the
 /// background image is needed again.
+///
+/// **Storage limitation**: SharedPreferences is suitable for small notebooks.
+/// Heavy use (many pages, dense strokes) can exceed platform-specific
+/// SharedPreferences limits (~1–2 MB on some platforms).  For production use
+/// with large notebooks, consider migrating to a local database (e.g.
+/// sqflite or Hive).
 class DocumentRepository {
   DocumentRepository(this._prefs);
 

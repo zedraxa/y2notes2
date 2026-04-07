@@ -37,6 +37,13 @@ enum ExportQuality {
         ExportQuality.high => 300,
       };
 
+  /// Human-readable display label including DPI.
+  String get displayName => switch (this) {
+        ExportQuality.low => 'Low (72 DPI)',
+        ExportQuality.medium => 'Medium (150 DPI)',
+        ExportQuality.high => 'High (300 DPI)',
+      };
+
   /// Alias for [multiplier] — used by export engines.
   double get value => multiplier;
 }

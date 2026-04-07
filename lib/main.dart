@@ -35,7 +35,10 @@ void main() async {
               create: (_) => CanvasBloc(settingsService: settingsService),
             ),
           ],
-          child: Y2NotesApp(settingsService: settingsService),
+          child: Y2NotesApp(
+            settingsService: settingsService,
+            documentRepository: documentRepository,
+          ),
         ),
       ),
     ),

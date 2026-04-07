@@ -80,7 +80,10 @@ class PdfImportEngine {
     final title = fileName.replaceAll(RegExp(r'\.pdf$', caseSensitive: false), '');
 
     // Attempt to count pages (stub: defaults to 1 page).
-    // TODO: Use a PDF library to get the real page count.
+    // ⚠️ IMPORTANT: This is a placeholder. To support real multi-page PDFs,
+    // integrate a PDF rendering package (e.g. `pdfx`, `syncfusion_flutter_pdf`)
+    // that exposes a native page count.  Until then, only the first page of
+    // any imported PDF will be available.
     const pageCount = 1;
 
     final pages = <ImportedPage>[];

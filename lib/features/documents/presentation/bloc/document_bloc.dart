@@ -1,6 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uuid/uuid.dart';
 import 'package:y2notes2/features/canvas/domain/models/canvas_config.dart';
+import 'package:y2notes2/features/documents/data/document_repository.dart';
 import 'package:y2notes2/features/documents/domain/entities/notebook.dart';
 import 'package:y2notes2/features/documents/domain/entities/notebook_page.dart';
 import 'package:y2notes2/features/documents/domain/models/export_options.dart';
@@ -15,11 +16,13 @@ import 'package:y2notes2/features/documents/presentation/bloc/document_state.dar
 /// export/import operations.
 class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
   DocumentBloc({
+    DocumentRepository? repository,
     PdfExportEngine? pdfExportEngine,
     PdfImportEngine? pdfImportEngine,
     ImageExportEngine? imageExportEngine,
     ImageImportEngine? imageImportEngine,
-  })  : _pdfExport = pdfExportEngine ?? const PdfExportEngine(),
+  })  : _repository = repository,
+        _pdfExport = pdfExportEngine ?? const PdfExportEngine(),
         _pdfImport = pdfImportEngine ?? const PdfImportEngine(),
         _imageExport = imageExportEngine ?? const ImageExportEngine(),
         _imageImport = imageImportEngine ?? const ImageImportEngine(),
@@ -43,6 +46,8 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
     on<ClearDocumentStatus>(_onClearStatus);
   }
 
+  /// Optional repository for persisting/loading notebooks.
+  final DocumentRepository? _repository;
   final PdfExportEngine _pdfExport;
   final PdfImportEngine _pdfImport;
   final ImageExportEngine _imageExport;
@@ -66,12 +71,46 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
     emit(state.copyWith(notebook: notebook, currentPageIndex: 0));
   }
 
-  void _onOpenNotebook(
+  Future<void> _onOpenNotebook(
     OpenNotebook event,
     Emitter<DocumentState> emit,
-  ) {
-    // Actual persistence/loading is handled by DocumentRepository.
-    // This event transitions the UI state to the opened notebook.
+  ) async {
+    // If the requested notebook is already loaded, no-op.
+    if (state.notebook?.id == event.notebookId) return;
+
+    emit(state.copyWith(
+      status: DocumentOperationStatus.inProgress,
+    ));
+
+    try {
+      Notebook? loaded;
+      if (_repository != null) {
+        loaded = await _repository.loadNotebook();
+        // Verify the loaded notebook matches the requested ID.
+        if (loaded?.id != event.notebookId) {
+          loaded = null;
+        }
+      }
+
+      if (loaded != null) {
+        emit(state.copyWith(
+          notebook: loaded,
+          currentPageIndex: 0,
+          status: DocumentOperationStatus.idle,
+        ));
+      } else {
+        // Notebook not found in storage — emit an error state.
+        emit(state.copyWith(
+          status: DocumentOperationStatus.error,
+          errorMessage: 'Notebook "${event.notebookId}" not found.',
+        ));
+      }
+    } catch (e) {
+      emit(state.copyWith(
+        status: DocumentOperationStatus.error,
+        errorMessage: 'Failed to open notebook: $e',
+      ));
+    }
   }
 
   void _onCloseNotebook(
@@ -457,6 +496,15 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
         emit(state.copyWith(
           isImporting: false,
           status: DocumentOperationStatus.idle,
+        ));
+        return;
+      }
+
+      if (result.pages.isEmpty) {
+        emit(state.copyWith(
+          isImporting: false,
+          status: DocumentOperationStatus.error,
+          errorMessage: 'No pages found in the imported image.',
         ));
         return;
       }

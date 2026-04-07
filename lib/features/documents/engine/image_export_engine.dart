@@ -152,7 +152,9 @@ class ImageExportEngine {
           await finalImage.toByteData(format: ui.ImageByteFormat.png);
       outputBytes = byteData!.buffer.asUint8List();
     } else {
-      // For JPEG, get raw RGBA bytes and re-encode using the image package.
+      // dart:ui does not support JPEG encoding directly via toByteData().
+      // We extract raw RGBA pixels and re-encode them as JPEG using the
+      // `image` package, which provides full JPEG compression support.
       final rawData =
           await finalImage.toByteData(format: ui.ImageByteFormat.rawRgba);
       final rawBytes = rawData!.buffer.asUint8List();

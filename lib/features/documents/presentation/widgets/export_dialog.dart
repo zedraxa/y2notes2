@@ -205,7 +205,7 @@ class _ExportDialogState extends State<ExportDialog> {
                 items: ExportQuality.values
                     .map((q) => DropdownMenuItem(
                           value: q,
-                          child: Text('${q.name[0].toUpperCase()}${q.name.substring(1)} (${q.dpi} DPI)'),
+                          child: Text(q.displayName),
                         ))
                     .toList(),
                 onChanged: (v) =>
