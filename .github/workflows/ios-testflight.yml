@@ -310,10 +310,10 @@ jobs:
           ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
           API_PRIVATE_KEY: ${{ secrets.APP_STORE_CONNECT_API_PRIVATE_KEY }}
         run: |
-          # Write the private key to a temp file
-          mkdir -p ~/.appstoreconnect/private_keys
+          # Write the private key to the default location iTMSTransporter expects
+          mkdir -p ~/private_keys
           echo "$API_PRIVATE_KEY" \
-            > ~/.appstoreconnect/private_keys/AuthKey_${API_KEY_ID}.p8
+            > ~/private_keys/AuthKey_${API_KEY_ID}.p8
 
           # Find the built IPA
           IPA_PATH=$(find build/ios/ipa -name "*.ipa" | head -1)
@@ -326,7 +326,7 @@ jobs:
             -apiIssuer "$ISSUER_ID"
 
           # Remove the private key from disk immediately after use
-          rm -f ~/.appstoreconnect/private_keys/AuthKey_${API_KEY_ID}.p8
+          rm -f ~/private_keys/AuthKey_${API_KEY_ID}.p8
 
       # ----------------------------------------------------------
       # 14. Clean up temporary keychain (always runs)
