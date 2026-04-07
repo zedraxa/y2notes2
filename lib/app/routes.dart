@@ -14,6 +14,7 @@ import 'package:y2notes2/features/settings/presentation/effects_settings_page.da
 import 'package:y2notes2/features/settings/presentation/general_settings_page.dart';
 import 'package:y2notes2/features/settings/presentation/settings_home_page.dart';
 import 'package:y2notes2/features/settings/presentation/stylus_settings_page.dart';
+import 'package:y2notes2/features/math_graph/presentation/pages/graph_editor_page.dart';
 import 'package:y2notes2/features/workspace/presentation/pages/workspace_page.dart';
 
 /// Application router using GoRouter.
@@ -77,6 +78,11 @@ class AppRouter {
           // Canvas navigation is handled by WorkspacePage internally.
           return const WorkspacePage();
         },
+      ),
+      // ── Math Graph editor ────────────────────────────────────────────────
+      GoRoute(
+        path: '/graph',
+        builder: (context, state) => const GraphEditorPage(),
       ),
       // ── Settings ─────────────────────────────────────────────────────────
       GoRoute(

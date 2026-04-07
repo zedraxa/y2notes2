@@ -16,6 +16,7 @@ class NotebookPage extends Equatable {
     this.strokes = const [],
     this.shapes = const [],
     this.stickers = const [],
+    this.graphs = const [],
     this.config = const CanvasConfig(),
     this.backgroundImage,
     this.backgroundPdfPath,
@@ -33,6 +34,7 @@ class NotebookPage extends Equatable {
   final List<Stroke> strokes;
   final List<ShapeElement> shapes;
   final List<StickerElement> stickers;
+  final List<GraphElement> graphs;
   final CanvasConfig config;
 
   /// Rasterised background image (e.g. an imported PDF page).
@@ -55,6 +57,7 @@ class NotebookPage extends Equatable {
     List<Stroke>? strokes,
     List<ShapeElement>? shapes,
     List<StickerElement>? stickers,
+    List<GraphElement>? graphs,
     CanvasConfig? config,
     ui.Image? backgroundImage,
     String? backgroundPdfPath,
@@ -68,6 +71,7 @@ class NotebookPage extends Equatable {
         strokes: strokes ?? this.strokes,
         shapes: shapes ?? this.shapes,
         stickers: stickers ?? this.stickers,
+        graphs: graphs ?? this.graphs,
         config: config ?? this.config,
         backgroundImage:
             clearBackground ? null : (backgroundImage ?? this.backgroundImage),
@@ -85,6 +89,7 @@ class NotebookPage extends Equatable {
         strokes,
         shapes,
         stickers,
+        graphs,
         config,
         backgroundPdfPath,
       ];
