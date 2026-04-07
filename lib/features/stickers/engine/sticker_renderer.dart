@@ -30,6 +30,10 @@ class StickerRenderer {
       _renderSelectionHandles(canvas, sticker);
     }
 
+    if (sticker.isLocked) {
+      _renderLockIndicator(canvas, sticker);
+    }
+
     canvas.restore();
   }
 
@@ -154,6 +158,46 @@ class StickerRenderer {
           height: width,
         );
     }
+  }
+
+  /// Draws a small padlock icon at the bottom-right corner of locked stickers.
+  void _renderLockIndicator(Canvas canvas, StickerElement sticker) {
+    final bounds = _getLocalBounds(sticker);
+    const size = 14.0;
+    final center = Offset(bounds.right - size / 2, bounds.bottom - size / 2);
+
+    // Background circle
+    canvas.drawCircle(
+      center,
+      size * 0.7,
+      Paint()..color = Colors.black.withOpacity(0.5),
+    );
+
+    // Lock body (rounded rect)
+    final bodyRect = RRect.fromRectAndRadius(
+      Rect.fromCenter(center: center + const Offset(0, 2), width: 8, height: 6),
+      const Radius.circular(1),
+    );
+    canvas.drawRRect(
+      bodyRect,
+      Paint()
+        ..color = Colors.white
+        ..style = PaintingStyle.fill,
+    );
+
+    // Lock shackle (arc)
+    final shacklePaint = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.5
+      ..strokeCap = StrokeCap.round;
+    canvas.drawArc(
+      Rect.fromCenter(center: center + const Offset(0, -1), width: 6, height: 6),
+      3.14159, // pi
+      3.14159, // pi
+      false,
+      shacklePaint,
+    );
   }
 
   void _drawDashedRect(Canvas canvas, Rect rect, Paint paint) {

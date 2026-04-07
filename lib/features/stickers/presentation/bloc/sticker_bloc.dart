@@ -20,6 +20,9 @@ class StickerBloc extends Bloc<StickerEvent, StickerState> {
     on<StickerOpacityChanged>(_onOpacityChanged);
     on<StickerUndoRequested>(_onUndo);
     on<StickerRedoRequested>(_onRedo);
+    on<StampBrushActivated>(_onStampBrushActivated);
+    on<StampBrushDeactivated>(_onStampBrushDeactivated);
+    on<StampBrushTrailPlaced>(_onStampBrushTrailPlaced);
   }
 
   static const int _maxUndoStack = 50;
@@ -189,6 +192,31 @@ class StickerBloc extends Bloc<StickerEvent, StickerState> {
       undoStack: undoStack,
       redoStack: redoStack,
       selectedStickerId: null,
+    ));
+  }
+
+  // ─── Stamp Brush Handlers ─────────────────────────────────────────────────
+
+  void _onStampBrushActivated(
+      StampBrushActivated event, Emitter<StickerState> emit) {
+    emit(state.copyWith(
+      stampBrushId: event.stampId,
+      pendingPlacement: null,
+      selectedStickerId: null,
+    ));
+  }
+
+  void _onStampBrushDeactivated(
+      StampBrushDeactivated event, Emitter<StickerState> emit) {
+    emit(state.copyWith(stampBrushId: null));
+  }
+
+  void _onStampBrushTrailPlaced(
+      StampBrushTrailPlaced event, Emitter<StickerState> emit) {
+    if (event.stamps.isEmpty) return;
+    final newState = _pushUndo(state);
+    emit(newState.copyWith(
+      stickers: [...newState.stickers, ...event.stamps],
     ));
   }
 }
