@@ -9,6 +9,10 @@ import 'package:y2notes2/features/canvas/presentation/bloc/canvas_bloc.dart';
 import 'package:y2notes2/features/documents/data/document_repository.dart';
 import 'package:y2notes2/features/shapes/presentation/bloc/shape_bloc.dart';
 import 'package:y2notes2/features/stickers/presentation/bloc/sticker_bloc.dart';
+import 'package:y2notes2/features/templates/data/template_repository.dart';
+import 'package:y2notes2/features/templates/presentation/bloc/template_bloc.dart';
+import 'package:y2notes2/features/templates/presentation/bloc/template_event.dart';
+import 'package:y2notes2/features/widgets/presentation/bloc/widget_bloc.dart';
 import 'package:y2notes2/features/workspace/presentation/bloc/workspace_bloc.dart';
 import 'package:y2notes2/shared/widgets/service_provider.dart';
 
@@ -20,6 +24,7 @@ void main() async {
 
   final prefs = await SharedPreferences.getInstance();
   final documentRepository = DocumentRepository(prefs);
+  final templateRepository = TemplateRepository(prefs);
 
   // Register all plugin-based drawing tools.
   ToolRegistry.registerAll();
@@ -48,6 +53,14 @@ void main() async {
             ),
             BlocProvider(
               create: (_) => StickerBloc(),
+            ),
+            // Template & Widget blocs.
+            BlocProvider(
+              create: (_) => TemplateBloc(repository: templateRepository)
+                ..add(const TemplatesLoaded()),
+            ),
+            BlocProvider(
+              create: (_) => WidgetBloc(),
             ),
           ],
           child: Y2NotesApp(
