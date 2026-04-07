@@ -5,8 +5,8 @@ import '../../domain/entities/rich_text_element.dart';
 import '../bloc/rich_text_bloc.dart';
 import '../bloc/rich_text_event.dart';
 import '../bloc/rich_text_state.dart';
-import 'rich_text_node_widget.dart';
-import 'rich_text_toolbar.dart';
+import '../widgets/rich_text_node_widget.dart';
+import '../widgets/rich_text_toolbar.dart';
 
 /// Full-screen rich text editor page.
 ///
