@@ -512,39 +512,42 @@ class _ScannerView extends StatelessWidget {
       text: 'Scanned Document',
     );
 
-    final title = await showDialog<String>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Save Scanned Document'),
-        content: TextField(
-          controller: controller,
-          decoration: const InputDecoration(
-            labelText: 'Document Title',
-            border: OutlineInputBorder(),
+    try {
+      final title = await showDialog<String>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Text('Save Scanned Document'),
+          content: TextField(
+            controller: controller,
+            decoration: const InputDecoration(
+              labelText: 'Document Title',
+              border: OutlineInputBorder(),
+            ),
+            autofocus: true,
           ),
-          autofocus: true,
+          actions: [
+            TextButton(
+              onPressed: () =>
+                  Navigator.of(ctx).pop(),
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(ctx)
+                  .pop(controller.text),
+              child: const Text('Save'),
+            ),
+          ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () =>
-                Navigator.of(ctx).pop(),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(ctx)
-                .pop(controller.text),
-            child: const Text('Save'),
-          ),
-        ],
-      ),
-    );
+      );
 
-    if (title != null && context.mounted) {
-      context.read<ScannerBloc>().add(
-            ScannerSessionCompleted(title: title),
-          );
+      if (title != null && context.mounted) {
+        context.read<ScannerBloc>().add(
+              ScannerSessionCompleted(title: title),
+            );
+      }
+    } finally {
+      controller.dispose();
     }
-    controller.dispose();
   }
 }
 
