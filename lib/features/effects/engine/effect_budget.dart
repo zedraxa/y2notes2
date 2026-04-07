@@ -46,4 +46,12 @@ class EffectBudget {
   /// Scale [count] by the device density factor.
   int scaledParticleCount(int count) =>
       (count * particleDensityScale).round().clamp(1, maxParticles);
+
+  // ── Shared budget split ────────────────────────────────────────────────────
+
+  /// Maximum particles reserved for writing effects (60 % of total budget).
+  int get writingMaxParticles => (maxParticles * 0.6).round();
+
+  /// Maximum particles reserved for interaction effects (40 % of total budget).
+  int get interactionMaxParticles => (maxParticles * 0.4).round();
 }

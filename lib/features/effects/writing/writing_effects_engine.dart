@@ -34,7 +34,7 @@ class WritingEffectsEngine {
   bool enabled = true;
 
   void _init() {
-    particleSystem = ParticleSystem(maxParticles: budget.maxParticles);
+    particleSystem = ParticleSystem(maxParticles: budget.writingMaxParticles);
     _registry = EffectRegistry.instance;
 
     // Register all 10 effects

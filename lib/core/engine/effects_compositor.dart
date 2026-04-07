@@ -4,6 +4,7 @@ import 'package:y2notes2/core/engine/stroke_renderer.dart';
 import 'package:y2notes2/features/canvas/domain/entities/stroke.dart';
 import 'package:y2notes2/features/canvas/domain/entities/tools/tool_settings.dart';
 import 'package:y2notes2/features/canvas/domain/models/canvas_config.dart';
+import 'package:y2notes2/features/effects/interaction/interaction_effects_engine.dart';
 import 'package:y2notes2/features/effects/writing/writing_effects_engine.dart';
 import 'package:y2notes2/features/shapes/domain/entities/shape_element.dart';
 import 'package:y2notes2/features/shapes/engine/shape_renderer.dart';
@@ -16,19 +17,23 @@ import 'package:y2notes2/features/shapes/engine/shape_renderer.dart';
 ///  3. Writing effects on completed strokes
 ///  4. Placed shapes (ShapeElement list)
 ///  5. Active stroke (live vector, drawn on top of shapes)
+///  6. Interaction effects (touch ripple, snap glow, selection pulse, etc.)
 ///
-/// Future layers (handled by the effects engine and subsequent PRs):
-///  6. Active writing effects (trail particles, pressure bloom)
-///  7. Interaction effects
-///  8. UI overlay (selection handles)
+/// Future layers:
+///  7. UI overlay (selection handles — rendered as Flutter widgets above)
 class EffectsCompositor {
   EffectsCompositor({
     required this.strokeRenderer,
     required this.effectsEngine,
+    this.interactionEngine,
   }) : _shapeRenderer = ShapeRenderer();
 
   final StrokeRenderer strokeRenderer;
   final WritingEffectsEngine effectsEngine;
+
+  /// Optional interaction engine; when set, Layer 6 is rendered.
+  final InteractionEffectsEngine? interactionEngine;
+
   final ShapeRenderer _shapeRenderer;
 
   /// Render everything onto [canvas] given current [size].
@@ -67,7 +72,8 @@ class EffectsCompositor {
       strokeRenderer.renderStroke(canvas, activeStroke, activeToolSettings);
     }
 
-    // Layers 6–8 are handled by the effects engine and future PRs.
+    // ── Layer 6: Interaction effects (above shapes & active stroke) ──────────
+    interactionEngine?.render(canvas, size);
   }
 
   void _drawBackground(Canvas canvas, Size size, CanvasConfig config) {
