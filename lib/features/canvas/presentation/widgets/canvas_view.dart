@@ -10,6 +10,12 @@ import 'package:y2notes2/features/canvas/presentation/bloc/canvas_event.dart';
 import 'package:y2notes2/features/canvas/presentation/bloc/canvas_state.dart';
 import 'package:y2notes2/features/canvas/presentation/widgets/page_background.dart';
 import 'package:y2notes2/features/effects/writing/writing_effects_engine.dart';
+import 'package:y2notes2/features/shapes/domain/entities/shape_element.dart';
+import 'package:y2notes2/features/shapes/presentation/bloc/shape_bloc.dart';
+import 'package:y2notes2/features/shapes/presentation/bloc/shape_event.dart';
+import 'package:y2notes2/features/shapes/presentation/bloc/shape_state.dart';
+import 'package:y2notes2/features/shapes/presentation/widgets/shape_handles.dart';
+import 'package:y2notes2/features/shapes/presentation/widgets/snap_guides_overlay.dart';
 
 /// The actual drawing surface.
 ///
@@ -133,44 +139,96 @@ class _CanvasViewState extends State<CanvasView>
             prev.activeStroke != curr.activeStroke ||
             prev.config != curr.config ||
             prev.activeToolId != curr.activeToolId ||
-            prev.activeToolSettings != curr.activeToolSettings,
+            prev.activeToolSettings != curr.activeToolSettings ||
+            prev.shapes != curr.shapes ||
+            prev.shapeRecognitionProposal != curr.shapeRecognitionProposal ||
+            prev.selectedShapeId != curr.selectedShapeId,
         builder: (context, state) {
           // Trigger async cache update when strokes change
           final canvasSize = Size(state.config.width, state.config.height);
           _canvasEngine.updateStrokesCache(state.strokes, canvasSize);
 
-          return InteractiveViewer(
-            transformationController: _transformController,
-            minScale: 0.3,
-            maxScale: 5.0,
-            boundaryMargin: const EdgeInsets.all(200),
-            child: SizedBox(
-              width: state.config.width,
-              height: state.config.height,
-              child: Stack(
-                children: [
-                  // Layer 1: Page background
-                  PageBackground(config: state.config),
-                  // Layers 2–7: Canvas painter
-                  Listener(
-                    onPointerDown: _onPointerDown,
-                    onPointerMove: _onPointerMove,
-                    onPointerUp: _onPointerUp,
-                    onPointerCancel: _onPointerCancel,
-                    child: CustomPaint(
-                      painter: _CanvasPainter(
-                        engine: _canvasEngine,
-                        strokes: state.strokes,
-                        activeStroke: state.activeStroke,
-                        activeToolSettings: state.activeToolSettings,
-                        config: state.config,
+          return Stack(
+            children: [
+              InteractiveViewer(
+                transformationController: _transformController,
+                minScale: 0.3,
+                maxScale: 5.0,
+                boundaryMargin: const EdgeInsets.all(200),
+                child: SizedBox(
+                  width: state.config.width,
+                  height: state.config.height,
+                  child: Stack(
+                    children: [
+                      // Layer 1: Page background
+                      PageBackground(config: state.config),
+                      // Layers 2–8: Canvas painter (strokes + shapes + effects)
+                      Listener(
+                        onPointerDown: _onPointerDown,
+                        onPointerMove: _onPointerMove,
+                        onPointerUp: _onPointerUp,
+                        onPointerCancel: _onPointerCancel,
+                        child: CustomPaint(
+                          painter: _CanvasPainter(
+                            engine: _canvasEngine,
+                            strokes: state.strokes,
+                            activeStroke: state.activeStroke,
+                            activeToolSettings: state.activeToolSettings,
+                            config: state.config,
+                            shapes: state.shapes,
+                          ),
+                          size: canvasSize,
+                        ),
                       ),
-                      size: canvasSize,
-                    ),
+                      // Shape selection handles overlay
+                      if (state.selectedShapeId != null)
+                        BlocBuilder<ShapeBloc, ShapeState>(
+                          buildWhen: (p, c) =>
+                              p.selectedShapeId != c.selectedShapeId,
+                          builder: (ctx, shapeState) {
+                            final selectedId = state.selectedShapeId;
+                            if (selectedId == null) {
+                              return const SizedBox.shrink();
+                            }
+                            final sel = state.shapes
+                                .where((s) => s.id == selectedId)
+                                .firstOrNull;
+                            if (sel == null) return const SizedBox.shrink();
+                            return ShapeHandles(
+                              shape: sel,
+                              onDeleteTap: () {
+                                ctx.read<CanvasBloc>().add(
+                                    ShapeDeleted(sel.id));
+                                ctx.read<ShapeBloc>().add(
+                                    const ShapeDeselectedEvent());
+                              },
+                            );
+                          },
+                        ),
+                      // Snap guides overlay
+                      BlocBuilder<ShapeBloc, ShapeState>(
+                        buildWhen: (p, c) => p.snapGuides != c.snapGuides,
+                        builder: (_, shapeState) => SnapGuidesOverlay(
+                          guides: shapeState.snapGuides,
+                        ),
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
-            ),
+              // Shape recognition confirmation banner
+              if (state.shapeRecognitionProposal != null)
+                _ShapeRecognitionBanner(
+                  proposal: state.shapeRecognitionProposal!.type.name,
+                  confidence: state.shapeRecognitionProposal!.confidence,
+                  onAccept: () => context
+                      .read<CanvasBloc>()
+                      .add(const ShapeRecognitionAccepted()),
+                  onReject: () => context
+                      .read<CanvasBloc>()
+                      .add(const ShapeRecognitionRejected()),
+                ),
+            ],
           );
         },
       );
@@ -184,6 +242,7 @@ class _CanvasPainter extends CustomPainter {
     required this.activeStroke,
     required this.activeToolSettings,
     required this.config,
+    required this.shapes,
   });
 
   final CanvasEngine engine;
@@ -191,6 +250,7 @@ class _CanvasPainter extends CustomPainter {
   final Stroke? activeStroke;
   final ToolSettings activeToolSettings;
   final CanvasConfig config;
+  final List<ShapeElement> shapes;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -201,6 +261,7 @@ class _CanvasPainter extends CustomPainter {
       strokes: strokes,
       activeStroke: activeStroke,
       activeToolSettings: activeToolSettings,
+      shapes: shapes,
     );
   }
 
@@ -209,5 +270,82 @@ class _CanvasPainter extends CustomPainter {
       old.strokes != strokes ||
       old.activeStroke != activeStroke ||
       old.activeToolSettings != activeToolSettings ||
-      old.config != config;
+      old.config != config ||
+      old.shapes != shapes;
+}
+
+/// Brief overlay that asks the user to confirm a shape recognition result.
+class _ShapeRecognitionBanner extends StatelessWidget {
+  const _ShapeRecognitionBanner({
+    required this.proposal,
+    required this.confidence,
+    required this.onAccept,
+    required this.onReject,
+  });
+
+  final String proposal;
+  final double confidence;
+  final VoidCallback onAccept;
+  final VoidCallback onReject;
+
+  @override
+  Widget build(BuildContext context) {
+    return Positioned(
+      bottom: 80,
+      left: 0,
+      right: 0,
+      child: Center(
+        child: Material(
+          elevation: 6,
+          borderRadius: BorderRadius.circular(24),
+          color: Theme.of(context).colorScheme.surfaceContainerHighest,
+          child: Padding(
+            padding:
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.auto_fix_high,
+                    size: 18,
+                    color: Theme.of(context).colorScheme.primary),
+                const SizedBox(width: 8),
+                Text(
+                  'Did you mean ${_capitalize(proposal)}?',
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
+                const SizedBox(width: 12),
+                GestureDetector(
+                  onTap: onAccept,
+                  child: const CircleAvatar(
+                    radius: 14,
+                    backgroundColor: Colors.green,
+                    child: Icon(Icons.check, size: 16, color: Colors.white),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                GestureDetector(
+                  onTap: onReject,
+                  child: const CircleAvatar(
+                    radius: 14,
+                    backgroundColor: Colors.red,
+                    child: Icon(Icons.close, size: 16, color: Colors.white),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  static String _capitalize(String s) =>
+      s.isEmpty ? s : '${s[0].toUpperCase()}${s.substring(1)}';
+}
+
+extension _FirstOrNull<T> on Iterable<T> {
+  T? get firstOrNull {
+    final it = iterator;
+    return it.moveNext() ? it.current : null;
+  }
 }

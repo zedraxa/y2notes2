@@ -101,6 +101,7 @@ class _CategoryTabBar extends StatelessWidget {
     ToolCategory.glow => 'Glow',
     ToolCategory.highlighter => 'Highlight',
     ToolCategory.utility => 'Utility',
+    ToolCategory.shape => 'Shape',
   };
 }
 
