@@ -70,6 +70,11 @@ class SettingsService {
   /// Default pen size used for new strokes.
   final ValueNotifier<double> defaultToolSizeNotifier = ValueNotifier(3.0);
 
+  // ─── Page gesture notifiers ───────────────────────────────────────────────
+
+  /// Whether two-finger / edge swipe page navigation is enabled.
+  final ValueNotifier<bool> pageGesturesEnabledNotifier = ValueNotifier(true);
+
   // Key constants
   static const _darkModeKey = 'dark_mode';
   static const _effectsEnabledKey = 'effects_enabled';
@@ -96,6 +101,8 @@ class SettingsService {
   static const _defaultExportFormatKey = 'default_export_format';
   // Default tool keys
   static const _defaultToolSizeKey = 'default_tool_size';
+  // Page gesture keys
+  static const _pageGesturesEnabledKey = 'page_gestures_enabled';
 
   static const List<String> effectNames = [
     'ink_flow',
@@ -193,6 +200,10 @@ class SettingsService {
     // Default tool settings
     defaultToolSizeNotifier.value =
         _prefs.getDouble(_defaultToolSizeKey) ?? 3.0;
+
+    // Page gesture settings
+    pageGesturesEnabledNotifier.value =
+        _prefs.getBool(_pageGesturesEnabledKey) ?? true;
   }
 
   // ─── Setters ──────────────────────────────────────────────────────────────
@@ -344,6 +355,13 @@ class SettingsService {
     await _prefs.setDouble(_defaultToolSizeKey, defaultToolSizeNotifier.value);
   }
 
+  // ─── Page gesture setters ─────────────────────────────────────────────────
+
+  Future<void> setPageGesturesEnabled(bool value) async {
+    pageGesturesEnabledNotifier.value = value;
+    await _prefs.setBool(_pageGesturesEnabledKey, value);
+  }
+
   // ─── Interaction effect setters / getters ──────────────────────────────────
 
   Future<void> setInteractionEffectsEnabled(bool value) async {
@@ -379,6 +397,7 @@ class SettingsService {
     autoSaveIntervalNotifier.dispose();
     defaultExportFormatNotifier.dispose();
     defaultToolSizeNotifier.dispose();
+    pageGesturesEnabledNotifier.dispose();
     for (final n in effectToggles.values) {
       n.dispose();
     }
