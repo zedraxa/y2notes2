@@ -13,6 +13,7 @@ class Stroke extends Equatable {
     required this.color,
     required this.baseWidth,
     this.effectData = const {},
+    this.toolId,
   }) : id = id ?? const Uuid().v4();
 
   final String id;
@@ -24,6 +25,9 @@ class Stroke extends Equatable {
   /// Extensible metadata for effects (e.g., rainbow ink distances, dry timing).
   final Map<String, dynamic> effectData;
 
+  /// Optional ID of the plugin-based DrawingTool used to render this stroke.
+  final String? toolId;
+
   bool get isEmpty => points.isEmpty;
   bool get hasPoints => points.isNotEmpty;
 
@@ -33,6 +37,7 @@ class Stroke extends Equatable {
     Color? color,
     double? baseWidth,
     Map<String, dynamic>? effectData,
+    String? toolId,
   }) =>
       Stroke(
         id: id,
@@ -41,6 +46,7 @@ class Stroke extends Equatable {
         color: color ?? this.color,
         baseWidth: baseWidth ?? this.baseWidth,
         effectData: effectData ?? this.effectData,
+        toolId: toolId ?? this.toolId,
       );
 
   Map<String, dynamic> toJson() => {
@@ -50,6 +56,7 @@ class Stroke extends Equatable {
         'color': color.value,
         'baseWidth': baseWidth,
         'effectData': effectData,
+        if (toolId != null) 'toolId': toolId,
       };
 
   factory Stroke.fromJson(Map<String, dynamic> json) => Stroke(
@@ -61,8 +68,9 @@ class Stroke extends Equatable {
         color: Color(json['color'] as int),
         baseWidth: (json['baseWidth'] as num).toDouble(),
         effectData: json['effectData'] as Map<String, dynamic>? ?? {},
+        toolId: json['toolId'] as String?,
       );
 
   @override
-  List<Object?> get props => [id, points, tool, color, baseWidth, effectData];
+  List<Object?> get props => [id, points, tool, color, baseWidth, effectData, toolId];
 }

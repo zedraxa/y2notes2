@@ -5,6 +5,7 @@ import 'package:y2notes2/core/engine/effects_compositor.dart';
 import 'package:y2notes2/core/engine/render_pipeline.dart';
 import 'package:y2notes2/core/engine/stroke_renderer.dart';
 import 'package:y2notes2/features/canvas/domain/entities/stroke.dart';
+import 'package:y2notes2/features/canvas/domain/entities/tools/tool_settings.dart';
 import 'package:y2notes2/features/canvas/domain/models/canvas_config.dart';
 import 'package:y2notes2/features/effects/writing/writing_effects_engine.dart';
 
@@ -70,6 +71,7 @@ class CanvasEngine with ChangeNotifier {
     required CanvasConfig config,
     required List<Stroke> strokes,
     required Stroke? activeStroke,
+    ToolSettings? activeToolSettings,
   }) {
     _compositor.compose(
       canvas: canvas,
@@ -78,6 +80,7 @@ class CanvasEngine with ChangeNotifier {
       strokes: strokes,
       activeStroke: activeStroke,
       strokesCache: _strokesCache,
+      activeToolSettings: activeToolSettings,
     );
   }
 

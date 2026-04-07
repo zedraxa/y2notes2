@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:y2notes2/app/theme/colors.dart';
 import 'package:y2notes2/features/canvas/domain/entities/stroke.dart';
 import 'package:y2notes2/features/canvas/domain/entities/tool.dart';
+import 'package:y2notes2/features/canvas/domain/entities/tools/drawing_tool.dart';
+import 'package:y2notes2/features/canvas/domain/entities/tools/tool_registry.dart';
+import 'package:y2notes2/features/canvas/domain/entities/tools/tool_settings.dart';
 import 'package:y2notes2/features/canvas/domain/models/canvas_config.dart';
 import 'package:y2notes2/features/canvas/domain/models/viewport.dart';
 
@@ -18,6 +21,8 @@ class CanvasState extends Equatable {
     this.config = const CanvasConfig(),
     this.viewport = const Viewport(),
     this.effectsEnabled = true,
+    this.activeToolId = 'fountain_pen',
+    this.activeToolSettings = const ToolSettings(),
   });
 
   /// All committed strokes in order.
@@ -36,6 +41,15 @@ class CanvasState extends Equatable {
   final Viewport viewport;
   final bool effectsEnabled;
 
+  /// ID of the active plugin-based DrawingTool.
+  final String activeToolId;
+
+  /// Settings for the active plugin-based DrawingTool.
+  final ToolSettings activeToolSettings;
+
+  /// Returns the active plugin-based DrawingTool if registered.
+  DrawingTool? get activeDrawingTool => ToolRegistry.get(activeToolId);
+
   bool get canUndo => strokes.isNotEmpty;
   bool get canRedo => redoStack.isNotEmpty;
   bool get isDrawing => activeStroke != null;
@@ -51,6 +65,8 @@ class CanvasState extends Equatable {
     CanvasConfig? config,
     Viewport? viewport,
     bool? effectsEnabled,
+    String? activeToolId,
+    ToolSettings? activeToolSettings,
   }) =>
       CanvasState(
         strokes: strokes ?? this.strokes,
@@ -63,6 +79,8 @@ class CanvasState extends Equatable {
         config: config ?? this.config,
         viewport: viewport ?? this.viewport,
         effectsEnabled: effectsEnabled ?? this.effectsEnabled,
+        activeToolId: activeToolId ?? this.activeToolId,
+        activeToolSettings: activeToolSettings ?? this.activeToolSettings,
       );
 
   @override
@@ -76,5 +94,7 @@ class CanvasState extends Equatable {
         config,
         viewport,
         effectsEnabled,
+        activeToolId,
+        activeToolSettings,
       ];
 }

@@ -11,6 +11,7 @@ import 'package:y2notes2/features/canvas/presentation/widgets/toolbar/color_pick
 import 'package:y2notes2/features/canvas/presentation/widgets/toolbar/effects_toggle.dart';
 import 'package:y2notes2/features/canvas/presentation/widgets/toolbar/pen_picker.dart';
 import 'package:y2notes2/features/canvas/presentation/widgets/toolbar/thickness_slider.dart';
+import 'package:y2notes2/features/canvas/presentation/widgets/toolbar/tool_picker_panel.dart';
 
 /// GoodNotes-style thin top toolbar.
 class MainToolbar extends StatelessWidget {
@@ -71,6 +72,9 @@ class MainToolbar extends StatelessWidget {
                     bloc.add(EffectsToggled(enabled: v));
                   },
                 ),
+                const _Divider(),
+                // ── Plugin tool picker ─────────────────────────────────────
+                _ToolPickerButton(state: state),
                 const _Divider(),
                 // ── Undo / Redo ────────────────────────────────────────────
                 _UndoRedoButtons(state: state, bloc: bloc),
@@ -133,6 +137,32 @@ class _UndoRedoButtons extends StatelessWidget {
           ),
         ],
       );
+}
+
+class _ToolPickerButton extends StatelessWidget {
+  const _ToolPickerButton({required this.state});
+
+  final CanvasState state;
+
+  @override
+  Widget build(BuildContext context) {
+    final activeTool = state.activeDrawingTool;
+    return IconButton(
+      icon: Icon(activeTool?.icon ?? Icons.brush_outlined),
+      iconSize: AppConstants.toolbarIconSize,
+      tooltip: activeTool?.name ?? 'Tools',
+      onPressed: () {
+        HapticController.light();
+        showModalBottomSheet<void>(
+          context: context,
+          builder: (_) => BlocProvider.value(
+            value: context.read<CanvasBloc>(),
+            child: const ToolPickerPanel(),
+          ),
+        );
+      },
+    );
+  }
 }
 
 class _Divider extends StatelessWidget {

@@ -4,6 +4,7 @@ import 'package:uuid/uuid.dart';
 import 'package:y2notes2/core/constants/app_constants.dart';
 import 'package:y2notes2/core/services/settings_service.dart';
 import 'package:y2notes2/features/canvas/domain/entities/stroke.dart';
+import 'package:y2notes2/features/canvas/domain/entities/tools/tool_registry.dart';
 import 'package:y2notes2/features/canvas/domain/models/viewport.dart';
 import 'package:y2notes2/features/canvas/presentation/bloc/canvas_event.dart';
 import 'package:y2notes2/features/canvas/presentation/bloc/canvas_state.dart';
@@ -27,6 +28,8 @@ class CanvasBloc extends Bloc<CanvasEvent, CanvasState> {
     on<CanvasConfigUpdated>(_onConfigUpdated);
     on<CanvasCleared>(_onCanvasCleared);
     on<ViewportChanged>(_onViewportChanged);
+    on<DrawingToolChanged>(_onDrawingToolChanged);
+    on<ToolSettingsChanged>(_onToolSettingsChanged);
   }
 
   final SettingsService _settings;
@@ -39,6 +42,7 @@ class CanvasBloc extends Bloc<CanvasEvent, CanvasState> {
       tool: state.activeTool.type,
       color: state.activeColor,
       baseWidth: state.activeWidth,
+      toolId: state.activeToolId,
     );
     emit(state.copyWith(activeStroke: stroke, redoStack: []));
   }
@@ -92,11 +96,21 @@ class CanvasBloc extends Bloc<CanvasEvent, CanvasState> {
   void _onToolChanged(ToolChanged event, Emitter<CanvasState> emit) =>
       emit(state.copyWith(activeTool: event.tool));
 
-  void _onColorChanged(ColorChanged event, Emitter<CanvasState> emit) =>
-      emit(state.copyWith(activeColor: event.color));
+  void _onColorChanged(ColorChanged event, Emitter<CanvasState> emit) => emit(
+        state.copyWith(
+          activeColor: event.color,
+          activeToolSettings:
+              state.activeToolSettings.copyWith(color: event.color),
+        ),
+      );
 
-  void _onWidthChanged(WidthChanged event, Emitter<CanvasState> emit) =>
-      emit(state.copyWith(activeWidth: event.width));
+  void _onWidthChanged(WidthChanged event, Emitter<CanvasState> emit) => emit(
+        state.copyWith(
+          activeWidth: event.width,
+          activeToolSettings:
+              state.activeToolSettings.copyWith(size: event.width),
+        ),
+      );
 
   void _onEffectsToggled(EffectsToggled event, Emitter<CanvasState> emit) {
     _settings.setEffectsEnabled(event.enabled);
@@ -113,4 +127,22 @@ class CanvasBloc extends Bloc<CanvasEvent, CanvasState> {
       emit(state.copyWith(
         viewport: Viewport(zoom: event.zoom, panOffset: event.panOffset),
       ));
+
+  void _onDrawingToolChanged(DrawingToolChanged event, Emitter<CanvasState> emit) {
+    final newTool = ToolRegistry.get(event.toolId);
+    // When switching tools, load the new tool's default settings while
+    // preserving the current color and size chosen by the user.
+    final newSettings = newTool?.defaultSettings.copyWith(
+          color: state.activeColor,
+          size: state.activeWidth,
+        ) ??
+        state.activeToolSettings;
+    emit(state.copyWith(
+      activeToolId: event.toolId,
+      activeToolSettings: newSettings,
+    ));
+  }
+
+  void _onToolSettingsChanged(ToolSettingsChanged event, Emitter<CanvasState> emit) =>
+      emit(state.copyWith(activeToolSettings: event.settings));
 }
