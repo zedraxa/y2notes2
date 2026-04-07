@@ -12,8 +12,8 @@ class _EdgeGlow {
   final EdgeDirection direction;
   double age = 0.0;
 
-  // 0.35 s (350 ms) duration
-  static const double duration = 0.35;
+  // 0.45 s (450 ms) duration — slightly longer for richer glow
+  static const double duration = 0.45;
   bool get isDead => age >= duration;
   double get progress => (age / duration).clamp(0.0, 1.0);
 
@@ -28,7 +28,8 @@ class _EdgeGlow {
 /// Canvas Edge Bounce Effect.
 ///
 /// When panning hits the canvas boundary:
-/// - Gradient edge glow flash along the hit edge
+/// - 2-layer gradient glow (wide soft + narrow bright highlight streak)
+/// - Fade-in/out easing curve for smooth entrance and exit
 /// - 150 ms subtle canvas shake (2 px amplitude)
 class EdgeBounceEffect implements InteractionEffect {
   @override
@@ -76,45 +77,96 @@ class EdgeBounceEffect implements InteractionEffect {
   }
 
   void _renderEdgeGlow(Canvas canvas, Size size, _EdgeGlow glow) {
-    final opacity = (1.0 - glow.progress) * intensity;
-    const accentColor = Color(0xFF4A90D9);
-    const glowWidth = 32.0;
+    // Fade-in/out easing: quick rise, smooth fall
+    final t = glow.progress;
+    final fadeIn = (t * 5.0).clamp(0.0, 1.0); // ramps to 1 in first 20%
+    final fadeOut = 1.0 - math.pow(t, 2); // quadratic decay
+    final envelope = fadeIn * fadeOut * intensity;
 
-    Rect rect;
+    const accentColor = Color(0xFF4A90D9);
+    const glowWidthWide = 48.0;
+    const glowWidthNarrow = 16.0;
+
+    Rect wideRect;
+    Rect narrowRect;
     Alignment begin;
     Alignment end;
 
     switch (glow.direction) {
       case EdgeDirection.left:
-        rect = Rect.fromLTWH(0, 0, glowWidth, size.height);
+        wideRect = Rect.fromLTWH(0, 0, glowWidthWide, size.height);
+        narrowRect = Rect.fromLTWH(0, 0, glowWidthNarrow, size.height);
         begin = Alignment.centerLeft;
         end = Alignment.centerRight;
       case EdgeDirection.right:
-        rect =
-            Rect.fromLTWH(size.width - glowWidth, 0, glowWidth, size.height);
+        wideRect = Rect.fromLTWH(
+            size.width - glowWidthWide, 0, glowWidthWide, size.height);
+        narrowRect = Rect.fromLTWH(
+            size.width - glowWidthNarrow, 0, glowWidthNarrow, size.height);
         begin = Alignment.centerRight;
         end = Alignment.centerLeft;
       case EdgeDirection.top:
-        rect = Rect.fromLTWH(0, 0, size.width, glowWidth);
+        wideRect = Rect.fromLTWH(0, 0, size.width, glowWidthWide);
+        narrowRect = Rect.fromLTWH(0, 0, size.width, glowWidthNarrow);
         begin = Alignment.topCenter;
         end = Alignment.bottomCenter;
       case EdgeDirection.bottom:
-        rect = Rect.fromLTWH(
-            0, size.height - glowWidth, size.width, glowWidth);
+        wideRect = Rect.fromLTWH(
+            0, size.height - glowWidthWide, size.width, glowWidthWide);
+        narrowRect = Rect.fromLTWH(
+            0, size.height - glowWidthNarrow, size.width, glowWidthNarrow);
         begin = Alignment.bottomCenter;
         end = Alignment.topCenter;
     }
 
-    final paint = Paint()
+    // Layer 1 — wide soft outer glow
+    final wideOpacity = (envelope * 0.35).clamp(0.0, 1.0);
+    final widePaint = Paint()
       ..shader = LinearGradient(
         begin: begin,
         end: end,
         colors: [
-          accentColor.withOpacity((opacity * 0.5).clamp(0.0, 1.0)),
+          accentColor.withOpacity(wideOpacity),
+          accentColor.withOpacity(wideOpacity * 0.15),
           Colors.transparent,
         ],
-      ).createShader(rect);
-    canvas.drawRect(rect, paint);
+        stops: const [0.0, 0.5, 1.0],
+      ).createShader(wideRect);
+    canvas.drawRect(wideRect, widePaint);
+
+    // Layer 2 — narrow bright inner highlight streak
+    final narrowOpacity = (envelope * 0.6).clamp(0.0, 1.0);
+    final narrowPaint = Paint()
+      ..shader = LinearGradient(
+        begin: begin,
+        end: end,
+        colors: [
+          Colors.white.withOpacity(narrowOpacity * 0.7),
+          accentColor.withOpacity(narrowOpacity),
+          Colors.transparent,
+        ],
+        stops: const [0.0, 0.3, 1.0],
+      ).createShader(narrowRect);
+    canvas.drawRect(narrowRect, narrowPaint);
+
+    // Layer 3 — edge line accent
+    final lineOpacity = (envelope * 0.5).clamp(0.0, 1.0);
+    final linePaint = Paint()
+      ..color = accentColor.withOpacity(lineOpacity)
+      ..strokeWidth = 1.5
+      ..style = PaintingStyle.stroke;
+    switch (glow.direction) {
+      case EdgeDirection.left:
+        canvas.drawLine(Offset.zero, Offset(0, size.height), linePaint);
+      case EdgeDirection.right:
+        canvas.drawLine(
+            Offset(size.width, 0), Offset(size.width, size.height), linePaint);
+      case EdgeDirection.top:
+        canvas.drawLine(Offset.zero, Offset(size.width, 0), linePaint);
+      case EdgeDirection.bottom:
+        canvas.drawLine(
+            Offset(0, size.height), Offset(size.width, size.height), linePaint);
+    }
   }
 
   @override
