@@ -26,26 +26,41 @@ class ExportProgressOverlay extends StatelessWidget {
               state.isExporting ? state.exportProgress : state.importProgress;
 
           return Container(
-            color: Colors.black54,
+            color: Colors.black38,
             child: Center(
               child: Card(
+                elevation: 8,
                 margin: const EdgeInsets.symmetric(horizontal: 40),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
                 child: Padding(
-                  padding: const EdgeInsets.all(24),
+                  padding: const EdgeInsets.all(28),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(label,
                           style: Theme.of(context).textTheme.titleMedium),
                       const SizedBox(height: 16),
-                      LinearProgressIndicator(
-                        value: progress > 0 ? progress : null,
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(4),
+                        child: LinearProgressIndicator(
+                          value: progress > 0 ? progress : null,
+                          minHeight: 6,
+                          color: Theme.of(context).colorScheme.primary,
+                          backgroundColor: Theme.of(context)
+                              .colorScheme
+                              .surfaceContainerHighest,
+                        ),
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 12),
                       if (progress > 0)
                         Text(
                           '${(progress * 100).round()}%',
-                          style: Theme.of(context).textTheme.bodySmall,
+                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            fontWeight: FontWeight.w600,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
                         ),
                     ],
                   ),

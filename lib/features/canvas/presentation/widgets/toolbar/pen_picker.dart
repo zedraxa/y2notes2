@@ -4,7 +4,7 @@ import 'package:y2notes2/core/constants/app_constants.dart';
 import 'package:y2notes2/features/canvas/domain/entities/tool.dart';
 
 /// Displays pen-type selection buttons (fountain pen, ballpoint, highlighter,
-/// eraser) with an active indicator.
+/// eraser) with an active indicator and smooth animated transitions.
 class PenPicker extends StatelessWidget {
   const PenPicker({
     super.key,
@@ -64,27 +64,48 @@ class _ToolButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = isActive ? AppColors.accent : AppColors.textSecondary;
     return GestureDetector(
       onTap: onTap,
-      child: Container(
-        width: 42,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        curve: Curves.easeOutCubic,
+        width: 44,
         height: AppConstants.toolbarHeight,
         decoration: BoxDecoration(
-          border: isActive
-              ? const Border(
-                  bottom: BorderSide(color: AppColors.accent, width: 2),
-                )
-              : null,
+          color: isActive
+              ? AppColors.accent.withOpacity(0.06)
+              : Colors.transparent,
+          border: Border(
+            bottom: BorderSide(
+              color: isActive ? AppColors.accent : Colors.transparent,
+              width: 2,
+            ),
+          ),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 20, color: color),
+            TweenAnimationBuilder<Color?>(
+              tween: ColorTween(
+                end: isActive ? AppColors.accent : AppColors.textSecondary,
+              ),
+              duration: const Duration(milliseconds: 150),
+              builder: (_, color, __) => Icon(icon, size: 20, color: color),
+            ),
             const SizedBox(height: 2),
-            Text(
-              label,
-              style: TextStyle(fontSize: 8, color: color),
+            TweenAnimationBuilder<Color?>(
+              tween: ColorTween(
+                end: isActive ? AppColors.accent : AppColors.textSecondary,
+              ),
+              duration: const Duration(milliseconds: 150),
+              builder: (_, color, __) => Text(
+                label,
+                style: TextStyle(
+                  fontSize: 9,
+                  fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
+                  color: color,
+                ),
+              ),
             ),
           ],
         ),
