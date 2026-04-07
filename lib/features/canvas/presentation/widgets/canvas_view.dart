@@ -11,6 +11,9 @@ import 'package:y2notes2/features/canvas/presentation/bloc/canvas_event.dart';
 import 'package:y2notes2/features/canvas/presentation/bloc/canvas_state.dart';
 import 'package:y2notes2/features/canvas/presentation/widgets/page_background.dart';
 import 'package:y2notes2/features/effects/writing/writing_effects_engine.dart';
+import 'package:y2notes2/features/handwriting/domain/entities/text_block.dart';
+import 'package:y2notes2/features/handwriting/presentation/bloc/handwriting_bloc.dart';
+import 'package:y2notes2/features/handwriting/presentation/bloc/handwriting_state.dart';
 import 'package:y2notes2/features/shapes/domain/entities/shape_element.dart';
 import 'package:y2notes2/features/shapes/presentation/bloc/shape_bloc.dart';
 import 'package:y2notes2/features/shapes/presentation/bloc/shape_event.dart';
@@ -154,6 +157,15 @@ class _CanvasViewState extends State<CanvasView>
 
           return BlocBuilder<StickerBloc, StickerState>(
             builder: (context, stickerState) {
+              // Read text blocks from HandwritingBloc if available.
+              List<TextBlock> textBlocks = const [];
+              try {
+                textBlocks =
+                    context.watch<HandwritingBloc>().state.textBlocks;
+              } on Exception {
+                // HandwritingBloc not yet in tree — render without text blocks.
+              }
+
               return Stack(
                 children: [
                   InteractiveViewer(
@@ -169,7 +181,8 @@ class _CanvasViewState extends State<CanvasView>
                           children: [
                             // Layer 1: Page background
                             PageBackground(config: state.config),
-                            // Layers 2–8: Canvas painter (strokes + shapes + stickers + effects)
+                            // Layers 2–7: Canvas painter
+                            // (strokes + shapes + stickers + effects + text blocks)
                             Listener(
                               onPointerDown: _onPointerDown,
                               onPointerMove: _onPointerMove,
@@ -184,7 +197,9 @@ class _CanvasViewState extends State<CanvasView>
                                   config: state.config,
                                   shapes: state.shapes,
                                   stickers: stickerState.sortedByZIndex,
-                                  selectedStickerId: stickerState.selectedStickerId,
+                                  selectedStickerId:
+                                      stickerState.selectedStickerId,
+                                  textBlocks: textBlocks,
                                 ),
                                 size: canvasSize,
                               ),
@@ -202,7 +217,9 @@ class _CanvasViewState extends State<CanvasView>
                                   final sel = state.shapes
                                       .where((s) => s.id == selectedId)
                                       .firstOrNull;
-                                  if (sel == null) return const SizedBox.shrink();
+                                  if (sel == null) {
+                                    return const SizedBox.shrink();
+                                  }
                                   return ShapeHandles(
                                     shape: sel,
                                     onDeleteTap: () {
@@ -216,7 +233,8 @@ class _CanvasViewState extends State<CanvasView>
                               ),
                             // Snap guides overlay
                             BlocBuilder<ShapeBloc, ShapeState>(
-                              buildWhen: (p, c) => p.snapGuides != c.snapGuides,
+                              buildWhen: (p, c) =>
+                                  p.snapGuides != c.snapGuides,
                               builder: (_, shapeState) => SnapGuidesOverlay(
                                 guides: shapeState.snapGuides,
                               ),
@@ -257,6 +275,7 @@ class _CanvasPainter extends CustomPainter {
     required this.shapes,
     required this.stickers,
     this.selectedStickerId,
+    this.textBlocks = const [],
   });
 
   final CanvasEngine engine;
@@ -267,6 +286,7 @@ class _CanvasPainter extends CustomPainter {
   final List<ShapeElement> shapes;
   final List<StickerElement> stickers;
   final String? selectedStickerId;
+  final List<TextBlock> textBlocks;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -280,6 +300,7 @@ class _CanvasPainter extends CustomPainter {
       shapes: shapes,
       stickers: stickers,
       selectedStickerId: selectedStickerId,
+      textBlocks: textBlocks,
     );
   }
 
@@ -291,7 +312,8 @@ class _CanvasPainter extends CustomPainter {
       old.config != config ||
       old.shapes != shapes ||
       old.stickers != stickers ||
-      old.selectedStickerId != selectedStickerId;
+      old.selectedStickerId != selectedStickerId ||
+      old.textBlocks != textBlocks;
 }
 
 /// Brief overlay that asks the user to confirm a shape recognition result.

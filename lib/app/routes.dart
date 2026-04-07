@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:y2notes2/features/canvas/presentation/pages/canvas_page.dart';
 import 'package:y2notes2/features/documents/presentation/bloc/document_bloc.dart';
 import 'package:y2notes2/features/documents/presentation/bloc/document_event.dart';
+import 'package:y2notes2/features/handwriting/presentation/pages/recognition_settings_page.dart';
 import 'package:y2notes2/features/library/presentation/pages/library_page.dart';
 import 'package:y2notes2/features/settings/presentation/effects_settings_page.dart';
 import 'package:y2notes2/features/workspace/presentation/pages/workspace_page.dart';
@@ -73,6 +74,10 @@ class AppRouter {
             path: 'effects',
             builder: (context, state) =>
                 const EffectsSettingsPage(showEffectsOnly: true),
+          ),
+          GoRoute(
+            path: 'recognition',
+            builder: (context, state) => const RecognitionSettingsPage(),
           ),
         ],
       ),
