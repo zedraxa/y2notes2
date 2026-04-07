@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uuid/uuid.dart';
+import 'package:y2notes2/features/audio_sync/domain/entities/audio_recording.dart';
 import 'package:y2notes2/features/canvas/domain/models/canvas_config.dart';
 import 'package:y2notes2/features/documents/data/document_repository.dart';
 import 'package:y2notes2/features/documents/domain/entities/notebook.dart';
@@ -51,6 +52,9 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
     on<ToggleOutlinePanel>(_onToggleOutlinePanel);
     on<GoToNextPage>(_onGoToNextPage);
     on<GoToPreviousPage>(_onGoToPreviousPage);
+    on<UpdatePageAudioRecordings>(
+      _onUpdatePageAudioRecordings,
+    );
   }
 
   /// Optional repository for persisting/loading notebooks.
@@ -642,6 +646,25 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
   ) {
     if (!state.canGoBack) return;
     emit(state.copyWith(currentPageIndex: state.currentPageIndex - 1));
+  }
+
+  // ── Audio recordings ──────────────────────────────────────────────────────
+
+  void _onUpdatePageAudioRecordings(
+    UpdatePageAudioRecordings event,
+    Emitter<DocumentState> emit,
+  ) {
+    final nb = state.notebook;
+    if (nb == null) return;
+    final recordings = event.recordings
+        .whereType<AudioRecording>()
+        .toList();
+    final page = nb.pages[event.pageIndex].copyWith(
+      audioRecordings: recordings,
+    );
+    emit(state.copyWith(
+      notebook: nb.updatePage(event.pageIndex, page),
+    ));
   }
 
   List<NotebookPage> _renumber(List<NotebookPage> pages) => pages

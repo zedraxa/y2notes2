@@ -2,6 +2,7 @@ import 'dart:ui' as ui;
 
 import 'package:equatable/equatable.dart';
 import 'package:uuid/uuid.dart';
+import 'package:y2notes2/features/audio_sync/domain/entities/audio_recording.dart';
 import 'package:y2notes2/features/canvas/domain/entities/stroke.dart';
 import 'package:y2notes2/features/canvas/domain/models/canvas_config.dart';
 import 'package:y2notes2/features/documents/domain/entities/canvas_elements.dart';
@@ -21,6 +22,7 @@ class NotebookPage extends Equatable {
     this.config = const CanvasConfig(),
     this.backgroundImage,
     this.backgroundPdfPath,
+    this.audioRecordings = const [],
   }) : id = id ?? const Uuid().v4();
 
   final String id;
@@ -47,8 +49,15 @@ class NotebookPage extends Equatable {
   /// Path to the source PDF if this page was imported from a PDF file.
   final String? backgroundPdfPath;
 
+  /// Audio recordings with stroke synchronisation data.
+  final List<AudioRecording> audioRecordings;
+
   bool get hasBackground =>
       backgroundImage != null || backgroundPdfPath != null;
+
+  /// Whether this page has any audio recordings.
+  bool get hasAudioRecordings =>
+      audioRecordings.isNotEmpty;
 
   /// Display label: the user-assigned [title] if set, otherwise "Page N".
   String get displayTitle => title ?? 'Page $pageNumber';
@@ -66,6 +75,7 @@ class NotebookPage extends Equatable {
     ui.Image? backgroundImage,
     String? backgroundPdfPath,
     bool clearBackground = false,
+    List<AudioRecording>? audioRecordings,
   }) =>
       NotebookPage(
         id: id,
@@ -82,6 +92,8 @@ class NotebookPage extends Equatable {
         backgroundPdfPath: clearBackground
             ? null
             : (backgroundPdfPath ?? this.backgroundPdfPath),
+        audioRecordings:
+            audioRecordings ?? this.audioRecordings,
       );
 
   @override
@@ -96,5 +108,6 @@ class NotebookPage extends Equatable {
         richTexts,
         config,
         backgroundPdfPath,
+        audioRecordings,
       ];
 }
