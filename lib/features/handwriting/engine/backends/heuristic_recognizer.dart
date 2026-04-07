@@ -97,8 +97,11 @@ class HeuristicRecognizer implements RecognitionBackend {
         boundingBox: _allBounds(strokes),
       ));
 
-      // Add slight variants as additional candidates
-      if (candidates.first.confidence < (1.0 - minConfidence)) {
+      // Add alternative candidates when confidence is not near-perfect.
+      // alternativesThreshold is derived from minConfidence so that when
+      // minConfidence is high, we still offer alternatives unless very confident.
+      final alternativesThreshold = 1.0 - minConfidence;
+      if (candidates.first.confidence < alternativesThreshold) {
         final alt = _alternativeText(text);
         if (alt != text) {
           candidates.add(RecognitionCandidate(

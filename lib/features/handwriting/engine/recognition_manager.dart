@@ -118,7 +118,8 @@ class RecognitionManager {
   }
 
   Future<List<LanguageModel>> availableLanguages() async {
-    // In a real app, would query the backend for supported languages.
+    // Returns the built-in English model. When an ML Kit backend is active,
+    // this would query the backend for its full list of supported languages.
     return const [LanguageModel.builtIn];
   }
 

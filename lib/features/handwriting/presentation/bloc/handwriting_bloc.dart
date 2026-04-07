@@ -121,11 +121,8 @@ class HandwritingBloc extends Bloc<HandwritingEvent, HandwritingState> {
     // Index the new text for search
     _search.indexPage(RecognizedPage(
       pageId: 'current',
-      text: state.textBlocks
-              .map((b) => b.text)
-              .join(' ') +
-          ' ' +
-          finalBlock.text,
+      text: '${state.textBlocks.map((b) => b.text).join(' ')} '
+          '${finalBlock.text}',
       strokes: const [],
       strokeBounds: const [],
     ));

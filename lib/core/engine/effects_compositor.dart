@@ -64,8 +64,12 @@ class EffectsCompositor {
   }
 
   void _drawBackground(Canvas canvas, Size size, CanvasConfig config) {
-    // Delegate to PageBackground logic — drawn via CustomPainter below.
-    // Actual template drawing is in PageBackgroundPainter widget.
+    // Background rendering is handled by [PageBackgroundPainter] in the
+    // widget layer (PageBackground widget), which is drawn as the first
+    // child of the canvas Stack before this compositor runs.
+    //
+    // This hook is reserved for future compositor-level background effects
+    // such as gradient overlays or animated backgrounds driven by the engine.
   }
 
   void _drawTextBlocks(Canvas canvas, List<TextBlock> textBlocks) {

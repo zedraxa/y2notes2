@@ -80,6 +80,7 @@ class WritingAnalysisPanel extends StatelessWidget {
 }
 
 class _EmptyAnalyticsView extends StatelessWidget {
+  const _EmptyAnalyticsView({super.key});
   @override
   Widget build(BuildContext context) {
     return Center(

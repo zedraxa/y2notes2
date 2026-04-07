@@ -87,7 +87,7 @@ class MainToolbar extends StatelessWidget {
                 _UndoRedoButtons(state: state, bloc: bloc),
                 const Spacer(),
                 // ── Recognize (handwriting → text) ───────────────────────
-                _RecognizeButton(),
+                const _RecognizeButton(),
                 const _Divider(),
                 // ── Settings ──────────────────────────────────────────────
                 IconButton(
@@ -220,6 +220,7 @@ class _Divider extends StatelessWidget {
 
 /// Recognize button — taps to trigger handwriting recognition on all strokes.
 class _RecognizeButton extends StatelessWidget {
+  const _RecognizeButton({super.key});
   @override
   Widget build(BuildContext context) {
     // HandwritingBloc is provided at the app root (see main.dart).

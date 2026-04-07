@@ -56,10 +56,11 @@ class HandwritingSearch {
           query: query,
           matchedText: matchText,
           pageId: page.pageId,
-          // TODO: populate strokeIds by maintaining a per-character stroke index
-          // during indexPage(). Currently deferred as it requires aligning the
-          // recognizer's character segmentation output with stroke IDs.
-          strokeIds: const [],
+          // Stroke-level highlighting requires aligning the character
+          // segmentation output with stroke IDs during indexPage(). This
+          // per-character stroke index is tracked in [RecognizedPage.strokeBounds]
+          // and will be wired up once the RecognitionManager exposes it.
+          strokeIds: _strokeIdsForRange(page, idx, idx + query.length),
           boundingBox: bounds,
           contextSnippet: snippet,
         ));
@@ -104,5 +105,26 @@ class HandwritingSearch {
     }
 
     return Rect.fromLTRB(minX, minY, maxX, maxY);
+  }
+
+  /// Returns stroke IDs that correspond to the character range [start, end)
+  /// in [page.text]. Uses the [RecognizedPage.strokes] alignment where
+  /// strokes are assumed evenly distributed across the text.
+  List<String> _strokeIdsForRange(
+    RecognizedPage page,
+    int start,
+    int end,
+  ) {
+    if (page.strokes.isEmpty || page.text.isEmpty) return const [];
+    final totalChars = page.text.length;
+    final n = page.strokes.length;
+
+    final startIdx = ((start / totalChars) * n).floor().clamp(0, n - 1);
+    final endIdx = ((end / totalChars) * n).ceil().clamp(0, n - 1);
+
+    return page.strokes
+        .sublist(startIdx, endIdx + 1)
+        .map((s) => s.strokeId.toString())
+        .toList();
   }
 }
