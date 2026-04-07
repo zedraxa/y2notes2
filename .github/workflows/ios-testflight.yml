@@ -243,6 +243,7 @@ jobs:
       # ----------------------------------------------------------
       - name: Build IPA for App Store distribution
         run: |
+          set -o pipefail
           XCODE_LOGS_DIR=/tmp/xcodebuild_logs
           mkdir -p "$XCODE_LOGS_DIR"
 
