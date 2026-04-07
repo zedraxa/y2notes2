@@ -51,6 +51,7 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
     on<UpdatePageTitle>(_onUpdatePageTitle);
     on<TogglePageBookmark>(_onTogglePageBookmark);
     on<ToggleOutlinePanel>(_onToggleOutlinePanel);
+    on<UpdatePagePdfAnnotations>(_onUpdatePagePdfAnnotations);
     on<GoToNextPage>(_onGoToNextPage);
     on<GoToPreviousPage>(_onGoToPreviousPage);
     on<UpdatePageAudioRecordings>(
@@ -704,6 +705,23 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
     Emitter<DocumentState> emit,
   ) =>
       emit(state.copyWith(isOutlineOpen: !state.isOutlineOpen));
+
+  // ── PDF annotations ──────────────────────────────────────────────────────
+
+  void _onUpdatePagePdfAnnotations(
+    UpdatePagePdfAnnotations event,
+    Emitter<DocumentState> emit,
+  ) {
+    final nb = state.notebook;
+    if (nb == null) return;
+    if (event.pageIndex < 0 || event.pageIndex >= nb.pages.length) return;
+    final page = nb.pages[event.pageIndex].copyWith(
+      pdfAnnotations: event.annotations,
+    );
+    emit(state.copyWith(notebook: nb.updatePage(event.pageIndex, page)));
+  }
+
+  // ── Convenience navigation ─────────────────────────────────────────────
 
   void _onGoToNextPage(
     GoToNextPage event,

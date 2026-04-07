@@ -8,6 +8,7 @@ import 'package:y2notes2/features/audio_sync/presentation/bloc/audio_sync_bloc.d
 import 'package:y2notes2/features/canvas/domain/entities/tools/tool_preset.dart';
 import 'package:y2notes2/features/canvas/domain/entities/tools/tool_registry.dart';
 import 'package:y2notes2/features/canvas/presentation/bloc/canvas_bloc.dart';
+import 'package:y2notes2/features/cloud_sync/presentation/bloc/cloud_sync_bloc.dart';
 import 'package:y2notes2/features/collaboration/presentation/bloc/collaboration_bloc.dart';
 import 'package:y2notes2/features/documents/data/document_repository.dart';
 import 'package:y2notes2/features/handwriting/presentation/bloc/handwriting_bloc.dart';
@@ -101,6 +102,10 @@ void main() async {
             // RichTextBloc manages rich text elements on the canvas.
             BlocProvider(
               create: (_) => RichTextBloc(),
+            ),
+            // CloudSyncBloc manages cloud provider connections and syncing.
+            BlocProvider(
+              create: (_) => CloudSyncBloc(),
             ),
           ],
           child: Y2NotesApp(

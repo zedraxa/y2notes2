@@ -43,6 +43,12 @@ class SettingsHomePage extends StatelessWidget {
       route: '/settings/backup',
     ),
     _SettingsCategory(
+      icon: Icons.cloud_sync_outlined,
+      title: 'Cloud Sync',
+      subtitle: 'iCloud, Google Drive, OneDrive, Dropbox',
+      route: '/settings/cloud-sync',
+    ),
+    _SettingsCategory(
       icon: Icons.info_outline,
       title: 'About',
       subtitle: 'Version, licenses, and credits',

@@ -6,6 +6,7 @@ import 'package:y2notes2/features/audio_sync/domain/entities/audio_recording.dar
 import 'package:y2notes2/features/canvas/domain/entities/stroke.dart';
 import 'package:y2notes2/features/canvas/domain/models/canvas_config.dart';
 import 'package:y2notes2/features/documents/domain/entities/canvas_elements.dart';
+import 'package:y2notes2/features/pdf_annotation/domain/entities/pdf_annotation.dart';
 import 'package:y2notes2/features/rich_text/domain/entities/rich_text_element.dart';
 
 /// A single page in a [Notebook].
@@ -19,6 +20,7 @@ class NotebookPage extends Equatable {
     this.shapes = const [],
     this.stickers = const [],
     this.graphs = const [],
+    this.pdfAnnotations = const [],
     this.richTexts = const [],
     this.config = const CanvasConfig(),
     this.backgroundImage,
@@ -40,6 +42,10 @@ class NotebookPage extends Equatable {
   final List<StickerElement> stickers;
   final List<GraphElement> graphs;
 
+  /// PDF annotations (highlights, underlines, sticky notes, etc.)
+  /// for pages imported from a PDF.
+  final List<PdfAnnotation> pdfAnnotations;
+
   /// Rich text blocks placed on this page.
   final List<RichTextElement> richTexts;
 
@@ -57,6 +63,10 @@ class NotebookPage extends Equatable {
   bool get hasBackground =>
       backgroundImage != null || backgroundPdfPath != null;
 
+  /// Whether this page originated from a PDF import and therefore
+  /// supports PDF-specific annotations.
+  bool get isPdfPage => backgroundPdfPath != null;
+
   /// Whether this page has any audio recordings.
   bool get hasAudioRecordings =>
       audioRecordings.isNotEmpty;
@@ -73,6 +83,7 @@ class NotebookPage extends Equatable {
     List<ShapeElement>? shapes,
     List<StickerElement>? stickers,
     List<GraphElement>? graphs,
+    List<PdfAnnotation>? pdfAnnotations,
     List<RichTextElement>? richTexts,
     CanvasConfig? config,
     ui.Image? backgroundImage,
@@ -89,6 +100,7 @@ class NotebookPage extends Equatable {
         shapes: shapes ?? this.shapes,
         stickers: stickers ?? this.stickers,
         graphs: graphs ?? this.graphs,
+        pdfAnnotations: pdfAnnotations ?? this.pdfAnnotations,
         richTexts: richTexts ?? this.richTexts,
         config: config ?? this.config,
         backgroundImage:
@@ -110,6 +122,7 @@ class NotebookPage extends Equatable {
         shapes,
         stickers,
         graphs,
+        pdfAnnotations,
         richTexts,
         config,
         backgroundPdfPath,

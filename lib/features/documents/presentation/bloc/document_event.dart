@@ -2,6 +2,7 @@ import 'package:equatable/equatable.dart';
 import 'package:y2notes2/features/canvas/domain/entities/stroke.dart';
 import 'package:y2notes2/features/canvas/domain/models/canvas_config.dart';
 import 'package:y2notes2/features/documents/domain/models/export_options.dart';
+import 'package:y2notes2/features/pdf_annotation/domain/entities/pdf_annotation.dart';
 import 'package:y2notes2/features/scanner/domain/entities/scanned_document.dart';
 
 /// Base class for all document-feature events.
@@ -228,6 +229,20 @@ class GoToPreviousPage extends DocumentEvent {
 /// Toggle the outline/table-of-contents panel visibility.
 class ToggleOutlinePanel extends DocumentEvent {
   const ToggleOutlinePanel();
+}
+
+// ── PDF annotations ────────────────────────────────────────────────────────
+
+/// Update the list of PDF annotations for a specific page.
+class UpdatePagePdfAnnotations extends DocumentEvent {
+  const UpdatePagePdfAnnotations({
+    required this.pageIndex,
+    required this.annotations,
+  });
+  final int pageIndex;
+  final List<PdfAnnotation> annotations;
+  @override
+  List<Object?> get props => [pageIndex, annotations];
 }
 
 // ── Audio recordings ───────────────────────────────────────────────────────
