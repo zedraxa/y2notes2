@@ -2,6 +2,7 @@ import 'package:equatable/equatable.dart';
 import 'package:y2notes2/features/canvas/domain/entities/stroke.dart';
 import 'package:y2notes2/features/canvas/domain/models/canvas_config.dart';
 import 'package:y2notes2/features/documents/domain/models/export_options.dart';
+import 'package:y2notes2/features/media/domain/entities/media_element.dart';
 
 /// Base class for all document-feature events.
 abstract class DocumentEvent extends Equatable {
@@ -219,4 +220,18 @@ class GoToPreviousPage extends DocumentEvent {
 /// Toggle the outline/table-of-contents panel visibility.
 class ToggleOutlinePanel extends DocumentEvent {
   const ToggleOutlinePanel();
+}
+
+// ── Media elements ─────────────────────────────────────────────────────────
+
+/// Update the media elements for a specific page.
+class UpdatePageMedia extends DocumentEvent {
+  const UpdatePageMedia({
+    required this.pageIndex,
+    required this.mediaElements,
+  });
+  final int pageIndex;
+  final List<MediaElement> mediaElements;
+  @override
+  List<Object?> get props => [pageIndex, mediaElements];
 }

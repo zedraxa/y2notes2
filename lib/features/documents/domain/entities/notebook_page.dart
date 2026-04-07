@@ -5,6 +5,7 @@ import 'package:uuid/uuid.dart';
 import 'package:y2notes2/features/canvas/domain/entities/stroke.dart';
 import 'package:y2notes2/features/canvas/domain/models/canvas_config.dart';
 import 'package:y2notes2/features/documents/domain/entities/canvas_elements.dart';
+import 'package:y2notes2/features/media/domain/entities/media_element.dart';
 
 /// A single page in a [Notebook].
 class NotebookPage extends Equatable {
@@ -16,6 +17,7 @@ class NotebookPage extends Equatable {
     this.strokes = const [],
     this.shapes = const [],
     this.stickers = const [],
+    this.mediaElements = const [],
     this.config = const CanvasConfig(),
     this.backgroundImage,
     this.backgroundPdfPath,
@@ -33,6 +35,10 @@ class NotebookPage extends Equatable {
   final List<Stroke> strokes;
   final List<ShapeElement> shapes;
   final List<StickerElement> stickers;
+
+  /// Audio and video media elements embedded on this page.
+  final List<MediaElement> mediaElements;
+
   final CanvasConfig config;
 
   /// Rasterised background image (e.g. an imported PDF page).
@@ -43,6 +49,9 @@ class NotebookPage extends Equatable {
 
   bool get hasBackground =>
       backgroundImage != null || backgroundPdfPath != null;
+
+  /// Whether this page contains any media (audio/video).
+  bool get hasMedia => mediaElements.isNotEmpty;
 
   /// Display label: the user-assigned [title] if set, otherwise "Page N".
   String get displayTitle => title ?? 'Page $pageNumber';
@@ -55,6 +64,7 @@ class NotebookPage extends Equatable {
     List<Stroke>? strokes,
     List<ShapeElement>? shapes,
     List<StickerElement>? stickers,
+    List<MediaElement>? mediaElements,
     CanvasConfig? config,
     ui.Image? backgroundImage,
     String? backgroundPdfPath,
@@ -68,6 +78,7 @@ class NotebookPage extends Equatable {
         strokes: strokes ?? this.strokes,
         shapes: shapes ?? this.shapes,
         stickers: stickers ?? this.stickers,
+        mediaElements: mediaElements ?? this.mediaElements,
         config: config ?? this.config,
         backgroundImage:
             clearBackground ? null : (backgroundImage ?? this.backgroundImage),
@@ -85,6 +96,7 @@ class NotebookPage extends Equatable {
         strokes,
         shapes,
         stickers,
+        mediaElements,
         config,
         backgroundPdfPath,
       ];

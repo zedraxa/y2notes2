@@ -51,6 +51,7 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
     on<ToggleOutlinePanel>(_onToggleOutlinePanel);
     on<GoToNextPage>(_onGoToNextPage);
     on<GoToPreviousPage>(_onGoToPreviousPage);
+    on<UpdatePageMedia>(_onUpdatePageMedia);
   }
 
   /// Optional repository for persisting/loading notebooks.
@@ -191,6 +192,7 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
       strokes: List.of(source.strokes),
       shapes: List.of(source.shapes),
       stickers: List.of(source.stickers),
+      mediaElements: List.of(source.mediaElements),
       config: source.config,
     );
 
@@ -641,6 +643,22 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
   ) {
     if (!state.canGoBack) return;
     emit(state.copyWith(currentPageIndex: state.currentPageIndex - 1));
+  }
+
+  // ── Media elements ────────────────────────────────────────────────────────
+
+  void _onUpdatePageMedia(
+    UpdatePageMedia event,
+    Emitter<DocumentState> emit,
+  ) {
+    final nb = state.notebook;
+    if (nb == null) return;
+    final page = nb.pages[event.pageIndex].copyWith(
+      mediaElements: event.mediaElements,
+    );
+    emit(state.copyWith(
+      notebook: nb.updatePage(event.pageIndex, page),
+    ));
   }
 
   List<NotebookPage> _renumber(List<NotebookPage> pages) => pages
