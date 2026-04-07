@@ -434,6 +434,28 @@ class StickyNoteNode extends CanvasNode {
 
   @override
   CanvasNode copyWithBase({
+    Offset? worldPosition,
+    Size? worldSize,
+    double? rotation,
+    int? zIndex,
+    bool? isLocked,
+  }) =>
+      copyWith(
+        worldPosition: worldPosition,
+        worldSize: worldSize,
+        rotation: rotation,
+        zIndex: zIndex,
+        isLocked: isLocked,
+      );
+
+  @override
+  Map<String, dynamic> toJson() => {
+        ...super.toJson(),
+        'text': text,
+        'color': color.value,
+        'fontSize': fontSize,
+      };
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Group node
