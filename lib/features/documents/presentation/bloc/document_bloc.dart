@@ -191,6 +191,7 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
       strokes: List.of(source.strokes),
       shapes: List.of(source.shapes),
       stickers: List.of(source.stickers),
+      richTexts: List.of(source.richTexts),
       config: source.config,
     );
 

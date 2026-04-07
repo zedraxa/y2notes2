@@ -7,6 +7,9 @@ import 'package:y2notes2/features/documents/presentation/bloc/document_event.dar
 import 'package:y2notes2/features/handwriting/presentation/pages/recognition_settings_page.dart';
 import 'package:y2notes2/features/infinite_canvas/presentation/pages/infinite_canvas_page.dart';
 import 'package:y2notes2/features/library/presentation/pages/library_page.dart';
+import 'package:y2notes2/features/rich_text/presentation/bloc/rich_text_bloc.dart';
+import 'package:y2notes2/features/rich_text/presentation/bloc/rich_text_event.dart';
+import 'package:y2notes2/features/rich_text/presentation/pages/rich_text_editor_page.dart';
 import 'package:y2notes2/features/settings/presentation/about_page.dart';
 import 'package:y2notes2/features/settings/presentation/backup_settings_page.dart';
 import 'package:y2notes2/features/settings/presentation/canvas_settings_page.dart';
@@ -70,6 +73,18 @@ class AppRouter {
         builder: (context, state) => InfiniteCanvasPage(
           canvasId: state.pathParameters['id'],
         ),
+      ),
+      // ── Rich text editor ────────────────────────────────────────────────
+      GoRoute(
+        path: '/richtext/:elementId',
+        builder: (context, state) {
+          final elementId = state.pathParameters['elementId']!;
+          // Ensure the element is selected for editing.
+          context.read<RichTextBloc>().add(
+                SelectRichTextElement(elementId: elementId),
+              );
+          return RichTextEditorPage(elementId: elementId);
+        },
       ),
       GoRoute(
         path: '/canvas/:id',

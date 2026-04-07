@@ -5,6 +5,7 @@ import 'package:uuid/uuid.dart';
 import 'package:y2notes2/features/canvas/domain/entities/stroke.dart';
 import 'package:y2notes2/features/canvas/domain/models/canvas_config.dart';
 import 'package:y2notes2/features/documents/domain/entities/canvas_elements.dart';
+import 'package:y2notes2/features/rich_text/domain/entities/rich_text_element.dart';
 
 /// A single page in a [Notebook].
 class NotebookPage extends Equatable {
@@ -16,6 +17,7 @@ class NotebookPage extends Equatable {
     this.strokes = const [],
     this.shapes = const [],
     this.stickers = const [],
+    this.richTexts = const [],
     this.config = const CanvasConfig(),
     this.backgroundImage,
     this.backgroundPdfPath,
@@ -33,6 +35,10 @@ class NotebookPage extends Equatable {
   final List<Stroke> strokes;
   final List<ShapeElement> shapes;
   final List<StickerElement> stickers;
+
+  /// Rich text blocks placed on this page.
+  final List<RichTextElement> richTexts;
+
   final CanvasConfig config;
 
   /// Rasterised background image (e.g. an imported PDF page).
@@ -55,6 +61,7 @@ class NotebookPage extends Equatable {
     List<Stroke>? strokes,
     List<ShapeElement>? shapes,
     List<StickerElement>? stickers,
+    List<RichTextElement>? richTexts,
     CanvasConfig? config,
     ui.Image? backgroundImage,
     String? backgroundPdfPath,
@@ -68,6 +75,7 @@ class NotebookPage extends Equatable {
         strokes: strokes ?? this.strokes,
         shapes: shapes ?? this.shapes,
         stickers: stickers ?? this.stickers,
+        richTexts: richTexts ?? this.richTexts,
         config: config ?? this.config,
         backgroundImage:
             clearBackground ? null : (backgroundImage ?? this.backgroundImage),
@@ -85,6 +93,7 @@ class NotebookPage extends Equatable {
         strokes,
         shapes,
         stickers,
+        richTexts,
         config,
         backgroundPdfPath,
       ];
