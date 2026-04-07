@@ -208,3 +208,29 @@ class TogglePageBookmark extends DocumentEvent {
 class ToggleOutlinePanel extends DocumentEvent {
   const ToggleOutlinePanel();
 }
+
+// ── PDF annotations ────────────────────────────────────────────────────────
+
+/// Update the list of PDF annotations for a specific page.
+class UpdatePagePdfAnnotations extends DocumentEvent {
+  const UpdatePagePdfAnnotations({
+    required this.pageIndex,
+    required this.annotations,
+  });
+  final int pageIndex;
+  final List<dynamic> annotations;
+  @override
+  List<Object?> get props => [pageIndex, annotations];
+}
+
+// ── Page navigation with gesture support ───────────────────────────────────
+
+/// Navigate to the next page (convenience event).
+class GoToNextPage extends DocumentEvent {
+  const GoToNextPage();
+}
+
+/// Navigate to the previous page (convenience event).
+class GoToPreviousPage extends DocumentEvent {
+  const GoToPreviousPage();
+}

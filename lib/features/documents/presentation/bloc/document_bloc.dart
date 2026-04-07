@@ -11,6 +11,7 @@ import 'package:y2notes2/features/documents/engine/pdf_export_engine.dart';
 import 'package:y2notes2/features/documents/engine/pdf_import_engine.dart';
 import 'package:y2notes2/features/documents/presentation/bloc/document_event.dart';
 import 'package:y2notes2/features/documents/presentation/bloc/document_state.dart';
+import 'package:y2notes2/features/pdf_annotation/domain/entities/pdf_annotation.dart';
 
 /// BLoC that manages notebook lifecycle, page navigation, and
 /// export/import operations.
@@ -49,6 +50,9 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
     on<UpdatePageTitle>(_onUpdatePageTitle);
     on<TogglePageBookmark>(_onTogglePageBookmark);
     on<ToggleOutlinePanel>(_onToggleOutlinePanel);
+    on<UpdatePagePdfAnnotations>(_onUpdatePagePdfAnnotations);
+    on<GoToNextPage>(_onGoToNextPage);
+    on<GoToPreviousPage>(_onGoToPreviousPage);
   }
 
   /// Optional repository for persisting/loading notebooks.
@@ -624,6 +628,40 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
     Emitter<DocumentState> emit,
   ) =>
       emit(state.copyWith(isOutlineOpen: !state.isOutlineOpen));
+
+  // ── PDF annotations ──────────────────────────────────────────────────────
+
+  void _onUpdatePagePdfAnnotations(
+    UpdatePagePdfAnnotations event,
+    Emitter<DocumentState> emit,
+  ) {
+    final nb = state.notebook;
+    if (nb == null) return;
+    final page = nb.pages[event.pageIndex].copyWith(
+      pdfAnnotations: event.annotations.cast<PdfAnnotation>(),
+    );
+    emit(state.copyWith(notebook: nb.updatePage(event.pageIndex, page)));
+  }
+
+  // ── Convenience navigation ─────────────────────────────────────────────
+
+  void _onGoToNextPage(
+    GoToNextPage event,
+    Emitter<DocumentState> emit,
+  ) {
+    if (state.canGoForward) {
+      emit(state.copyWith(currentPageIndex: state.currentPageIndex + 1));
+    }
+  }
+
+  void _onGoToPreviousPage(
+    GoToPreviousPage event,
+    Emitter<DocumentState> emit,
+  ) {
+    if (state.canGoBack) {
+      emit(state.copyWith(currentPageIndex: state.currentPageIndex - 1));
+    }
+  }
 
   List<NotebookPage> _renumber(List<NotebookPage> pages) => pages
       .asMap()

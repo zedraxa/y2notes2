@@ -7,6 +7,7 @@ import 'package:y2notes2/features/documents/presentation/bloc/document_event.dar
 import 'package:y2notes2/features/handwriting/presentation/pages/recognition_settings_page.dart';
 import 'package:y2notes2/features/infinite_canvas/presentation/pages/infinite_canvas_page.dart';
 import 'package:y2notes2/features/library/presentation/pages/library_page.dart';
+import 'package:y2notes2/features/pdf_annotation/presentation/pages/pdf_annotation_page.dart';
 import 'package:y2notes2/features/settings/presentation/about_page.dart';
 import 'package:y2notes2/features/settings/presentation/backup_settings_page.dart';
 import 'package:y2notes2/features/settings/presentation/canvas_settings_page.dart';
@@ -76,6 +77,18 @@ class AppRouter {
         builder: (context, state) {
           // Canvas navigation is handled by WorkspacePage internally.
           return const WorkspacePage();
+        },
+      ),
+      // ── PDF annotation viewer ─────────────────────────────────────────────
+      GoRoute(
+        path: '/pdf/annotate',
+        builder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>? ?? {};
+          return PdfAnnotationPage(
+            filePath: extra['filePath'] as String? ?? '',
+            title: extra['title'] as String?,
+            initialPageCount: extra['pageCount'] as int? ?? 1,
+          );
         },
       ),
       // ── Settings ─────────────────────────────────────────────────────────
