@@ -1,3 +1,4 @@
+import 'package:uuid/uuid.dart';
 import 'package:y2notes2/features/canvas/domain/entities/tools/tool_settings.dart';
 
 class ToolPreset {
@@ -17,6 +18,7 @@ class ToolPreset {
 }
 
 class ToolPresetManager {
+  static const _uuid = Uuid();
   static final Map<String, List<ToolPreset>> _presets = {};
 
   static void registerBuiltIn(ToolPreset preset) {
@@ -27,7 +29,7 @@ class ToolPresetManager {
       _presets[toolId] ?? [];
 
   static void savePreset(String name, String toolId, ToolSettings settings) {
-    final id = '${toolId}_${DateTime.now().millisecondsSinceEpoch}';
+    final id = _uuid.v4();
     _presets.putIfAbsent(toolId, () => []).add(
           ToolPreset(id: id, name: name, toolId: toolId, settings: settings),
         );

@@ -1,6 +1,7 @@
+import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 
-class ToolSettings {
+class ToolSettings extends Equatable {
   const ToolSettings({
     this.color = const Color(0xFF2D2D2D),
     this.size = 3.0,
@@ -33,4 +34,7 @@ class ToolSettings {
         tiltSensitivity: tiltSensitivity ?? this.tiltSensitivity,
         custom: custom ?? this.custom,
       );
+
+  @override
+  List<Object?> get props => [color, size, opacity, pressureSensitivity, tiltSensitivity, custom];
 }
