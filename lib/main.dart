@@ -6,6 +6,7 @@ import 'package:y2notes2/core/services/settings_service.dart';
 import 'package:y2notes2/features/canvas/domain/entities/tools/tool_registry.dart';
 import 'package:y2notes2/features/canvas/presentation/bloc/canvas_bloc.dart';
 import 'package:y2notes2/features/shapes/presentation/bloc/shape_bloc.dart';
+import 'package:y2notes2/features/stickers/presentation/bloc/sticker_bloc.dart';
 import 'package:y2notes2/features/workspace/presentation/bloc/workspace_bloc.dart';
 import 'package:y2notes2/shared/widgets/service_provider.dart';
 
@@ -37,6 +38,9 @@ void main() async {
             create: (ctx) => ShapeBloc(
               canvasBloc: ctx.read<CanvasBloc>(),
             ),
+          ),
+          BlocProvider(
+            create: (_) => StickerBloc(),
           ),
         ],
         child: Y2NotesApp(settingsService: settingsService),

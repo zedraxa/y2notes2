@@ -7,6 +7,8 @@ import 'package:y2notes2/features/canvas/domain/models/canvas_config.dart';
 import 'package:y2notes2/features/effects/writing/writing_effects_engine.dart';
 import 'package:y2notes2/features/shapes/domain/entities/shape_element.dart';
 import 'package:y2notes2/features/shapes/engine/shape_renderer.dart';
+import 'package:y2notes2/features/stickers/domain/entities/sticker_element.dart';
+import 'package:y2notes2/features/stickers/engine/sticker_renderer.dart';
 
 /// Composites all rendering layers in the correct order.
 ///
@@ -16,22 +18,24 @@ import 'package:y2notes2/features/shapes/engine/shape_renderer.dart';
 ///  3. Writing effects on completed strokes
 ///  4. Placed shapes (ShapeElement list)
 ///  5. Active stroke (live vector, drawn on top of shapes)
+///  6. Stickers & stamps
 ///
 /// Future layers (handled by the effects engine and subsequent PRs):
-///  6. Active writing effects (trail particles, pressure bloom)
 ///  7. Interaction effects
 ///  8. UI overlay (selection handles)
 class EffectsCompositor {
   EffectsCompositor({
     required this.strokeRenderer,
     required this.effectsEngine,
-  }) : _shapeRenderer = ShapeRenderer();
+    StickerRenderer? stickerRenderer,
+  })  : _shapeRenderer = ShapeRenderer(),
+        _stickerRenderer = stickerRenderer ?? StickerRenderer();
 
   final StrokeRenderer strokeRenderer;
   final WritingEffectsEngine effectsEngine;
   final ShapeRenderer _shapeRenderer;
+  final StickerRenderer _stickerRenderer;
 
-  /// Render everything onto [canvas] given current [size].
   void compose({
     required Canvas canvas,
     required Size size,
@@ -41,6 +45,8 @@ class EffectsCompositor {
     ui.Image? strokesCache,
     ToolSettings? activeToolSettings,
     List<ShapeElement> shapes = const [],
+    List<StickerElement> stickers = const [],
+    String? selectedStickerId,
   }) {
     // ── Layer 1: Background ─────────────────────────────────────────────────
     _drawBackground(canvas, size, config);
@@ -67,7 +73,15 @@ class EffectsCompositor {
       strokeRenderer.renderStroke(canvas, activeStroke, activeToolSettings);
     }
 
-    // Layers 6–8 are handled by the effects engine and future PRs.
+    // ── Layer 6: Stickers & stamps ──────────────────────────────────────────
+    final sorted = [...stickers]..sort((a, b) => a.zIndex.compareTo(b.zIndex));
+    for (final sticker in sorted) {
+      _stickerRenderer.renderSticker(
+        canvas,
+        sticker,
+        isSelected: sticker.id == selectedStickerId,
+      );
+    }
   }
 
   void _drawBackground(Canvas canvas, Size size, CanvasConfig config) {
