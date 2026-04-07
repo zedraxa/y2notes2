@@ -10,6 +10,9 @@ import 'package:y2notes2/features/canvas/presentation/bloc/canvas_event.dart';
 import 'package:y2notes2/features/canvas/presentation/bloc/canvas_state.dart';
 import 'package:y2notes2/features/canvas/presentation/widgets/page_background.dart';
 import 'package:y2notes2/features/effects/writing/writing_effects_engine.dart';
+import 'package:y2notes2/features/handwriting/domain/entities/text_block.dart';
+import 'package:y2notes2/features/handwriting/presentation/bloc/handwriting_bloc.dart';
+import 'package:y2notes2/features/handwriting/presentation/bloc/handwriting_state.dart';
 
 /// The actual drawing surface.
 ///
@@ -151,21 +154,16 @@ class _CanvasViewState extends State<CanvasView>
                 children: [
                   // Layer 1: Page background
                   PageBackground(config: state.config),
-                  // Layers 2–7: Canvas painter
+                  // Layers 2–6: Canvas painter (strokes + text blocks)
                   Listener(
                     onPointerDown: _onPointerDown,
                     onPointerMove: _onPointerMove,
                     onPointerUp: _onPointerUp,
                     onPointerCancel: _onPointerCancel,
-                    child: CustomPaint(
-                      painter: _CanvasPainter(
-                        engine: _canvasEngine,
-                        strokes: state.strokes,
-                        activeStroke: state.activeStroke,
-                        activeToolSettings: state.activeToolSettings,
-                        config: state.config,
-                      ),
-                      size: canvasSize,
+                    child: _HandwritingAwareCanvas(
+                      engine: _canvasEngine,
+                      canvasState: state,
+                      canvasSize: canvasSize,
                     ),
                   ),
                 ],
@@ -176,6 +174,43 @@ class _CanvasViewState extends State<CanvasView>
       );
 }
 
+/// Wraps [CustomPaint] and reads text blocks from [HandwritingBloc] if available.
+class _HandwritingAwareCanvas extends StatelessWidget {
+  const _HandwritingAwareCanvas({
+    required this.engine,
+    required this.canvasState,
+    required this.canvasSize,
+  });
+
+  final CanvasEngine engine;
+  final CanvasState canvasState;
+  final Size canvasSize;
+
+  @override
+  Widget build(BuildContext context) {
+    // Read text blocks from HandwritingBloc.
+    // HandwritingBloc is always provided at the app root (see main.dart).
+    List<TextBlock> textBlocks = const [];
+    try {
+      textBlocks = context.watch<HandwritingBloc>().state.textBlocks;
+    } on Exception {
+      // HandwritingBloc not yet in tree — render without text blocks.
+    }
+
+    return CustomPaint(
+      painter: _CanvasPainter(
+        engine: engine,
+        strokes: canvasState.strokes,
+        activeStroke: canvasState.activeStroke,
+        activeToolSettings: canvasState.activeToolSettings,
+        config: canvasState.config,
+        textBlocks: textBlocks,
+      ),
+      size: canvasSize,
+    );
+  }
+}
+
 /// [CustomPainter] that delegates all rendering to the [CanvasEngine].
 class _CanvasPainter extends CustomPainter {
   _CanvasPainter({
@@ -184,6 +219,7 @@ class _CanvasPainter extends CustomPainter {
     required this.activeStroke,
     required this.activeToolSettings,
     required this.config,
+    this.textBlocks = const [],
   });
 
   final CanvasEngine engine;
@@ -191,6 +227,7 @@ class _CanvasPainter extends CustomPainter {
   final Stroke? activeStroke;
   final ToolSettings activeToolSettings;
   final CanvasConfig config;
+  final List<TextBlock> textBlocks;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -201,6 +238,7 @@ class _CanvasPainter extends CustomPainter {
       strokes: strokes,
       activeStroke: activeStroke,
       activeToolSettings: activeToolSettings,
+      textBlocks: textBlocks,
     );
   }
 
@@ -209,5 +247,6 @@ class _CanvasPainter extends CustomPainter {
       old.strokes != strokes ||
       old.activeStroke != activeStroke ||
       old.activeToolSettings != activeToolSettings ||
-      old.config != config;
+      old.config != config ||
+      old.textBlocks != textBlocks;
 }
