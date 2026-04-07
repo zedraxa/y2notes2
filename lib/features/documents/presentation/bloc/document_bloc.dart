@@ -11,7 +11,6 @@ import 'package:y2notes2/features/documents/engine/pdf_export_engine.dart';
 import 'package:y2notes2/features/documents/engine/pdf_import_engine.dart';
 import 'package:y2notes2/features/documents/presentation/bloc/document_event.dart';
 import 'package:y2notes2/features/documents/presentation/bloc/document_state.dart';
-import 'package:y2notes2/features/pdf_annotation/domain/entities/pdf_annotation.dart';
 
 /// BLoC that manages notebook lifecycle, page navigation, and
 /// export/import operations.
@@ -637,8 +636,9 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
   ) {
     final nb = state.notebook;
     if (nb == null) return;
+    if (event.pageIndex < 0 || event.pageIndex >= nb.pages.length) return;
     final page = nb.pages[event.pageIndex].copyWith(
-      pdfAnnotations: event.annotations.cast<PdfAnnotation>(),
+      pdfAnnotations: event.annotations,
     );
     emit(state.copyWith(notebook: nb.updatePage(event.pageIndex, page)));
   }

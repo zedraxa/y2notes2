@@ -20,6 +20,10 @@ class PdfAnnotationState extends Equatable {
     this.selectedStartSpanIndex,
     this.selectedEndSpanIndex,
     this.isBookmarkPanelOpen = false,
+    this.isAnnotationListOpen = false,
+    this.bookmarkSearchQuery = '',
+    this.undoStack = const [],
+    this.redoStack = const [],
   });
 
   /// Path to the currently opened PDF file.
@@ -57,6 +61,18 @@ class PdfAnnotationState extends Equatable {
   /// Whether the bookmark side-panel is visible.
   final bool isBookmarkPanelOpen;
 
+  /// Whether the annotation list / summary panel is visible.
+  final bool isAnnotationListOpen;
+
+  /// Current search query for filtering bookmarks.
+  final String bookmarkSearchQuery;
+
+  /// Stack of previous annotation states for undo.
+  final List<List<PdfAnnotation>> undoStack;
+
+  /// Stack of undone annotation states for redo.
+  final List<List<PdfAnnotation>> redoStack;
+
   // ── Derived getters ──────────────────────────────────────────
 
   bool get isOpen => filePath != null;
@@ -71,6 +87,15 @@ class PdfAnnotationState extends Equatable {
           .where((a) => a.pageIndex == currentPageIndex)
           .toList();
 
+  /// Number of annotations per page for efficient display.
+  Map<int, int> get annotationCountByPage {
+    final counts = <int, int>{};
+    for (final a in annotations) {
+      counts[a.pageIndex] = (counts[a.pageIndex] ?? 0) + 1;
+    }
+    return counts;
+  }
+
   /// Sorted bookmarks list.
   List<PdfBookmark> get sortedBookmarks {
     final sorted = List<PdfBookmark>.of(bookmarks);
@@ -78,9 +103,27 @@ class PdfAnnotationState extends Equatable {
     return sorted;
   }
 
+  /// Filtered bookmarks matching the current search query.
+  List<PdfBookmark> get filteredBookmarks {
+    final sorted = sortedBookmarks;
+    if (bookmarkSearchQuery.isEmpty) return sorted;
+    final q = bookmarkSearchQuery.toLowerCase();
+    return sorted.where((b) {
+      final label = b.displayLabel.toLowerCase();
+      final note = (b.note ?? '').toLowerCase();
+      return label.contains(q) || note.contains(q);
+    }).toList();
+  }
+
   /// Whether the current page has a bookmark.
   bool get isCurrentPageBookmarked =>
       bookmarks.any((b) => b.pageIndex == currentPageIndex);
+
+  /// Whether undo is available.
+  bool get canUndo => undoStack.isNotEmpty;
+
+  /// Whether redo is available.
+  bool get canRedo => redoStack.isNotEmpty;
 
   /// Text spans for the current page.
   List<PdfTextSpan> get currentPageTextSpans =>
@@ -140,6 +183,10 @@ class PdfAnnotationState extends Equatable {
     int? selectedEndSpanIndex,
     bool clearSelection = false,
     bool? isBookmarkPanelOpen,
+    bool? isAnnotationListOpen,
+    String? bookmarkSearchQuery,
+    List<List<PdfAnnotation>>? undoStack,
+    List<List<PdfAnnotation>>? redoStack,
   }) =>
       PdfAnnotationState(
         filePath: clearFilePath
@@ -165,6 +212,12 @@ class PdfAnnotationState extends Equatable {
                 this.selectedEndSpanIndex),
         isBookmarkPanelOpen:
             isBookmarkPanelOpen ?? this.isBookmarkPanelOpen,
+        isAnnotationListOpen:
+            isAnnotationListOpen ?? this.isAnnotationListOpen,
+        bookmarkSearchQuery:
+            bookmarkSearchQuery ?? this.bookmarkSearchQuery,
+        undoStack: undoStack ?? this.undoStack,
+        redoStack: redoStack ?? this.redoStack,
       );
 
   @override
@@ -181,5 +234,9 @@ class PdfAnnotationState extends Equatable {
         selectedStartSpanIndex,
         selectedEndSpanIndex,
         isBookmarkPanelOpen,
+        isAnnotationListOpen,
+        bookmarkSearchQuery,
+        undoStack,
+        redoStack,
       ];
 }

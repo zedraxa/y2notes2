@@ -178,3 +178,56 @@ class UpdatePdfBookmark extends PdfAnnotationEvent {
 class TogglePdfBookmarkPanel extends PdfAnnotationEvent {
   const TogglePdfBookmarkPanel();
 }
+
+// ── Undo / Redo ────────────────────────────────────────────────
+
+/// Undo the last annotation change.
+class UndoPdfAnnotation extends PdfAnnotationEvent {
+  const UndoPdfAnnotation();
+}
+
+/// Redo the last undone annotation change.
+class RedoPdfAnnotation extends PdfAnnotationEvent {
+  const RedoPdfAnnotation();
+}
+
+// ── Annotation list panel ──────────────────────────────────────
+
+/// Toggle the annotation list / summary panel.
+class ToggleAnnotationListPanel extends PdfAnnotationEvent {
+  const ToggleAnnotationListPanel();
+}
+
+// ── Bookmark search ────────────────────────────────────────────
+
+/// Filter bookmarks by a search query.
+class SearchPdfBookmarks extends PdfAnnotationEvent {
+  const SearchPdfBookmarks({required this.query});
+  final String query;
+  @override
+  List<Object?> get props => [query];
+}
+
+// ── Page jump ──────────────────────────────────────────────────
+
+/// Jump to a specific page by number (1-based).
+class JumpToPdfPage extends PdfAnnotationEvent {
+  const JumpToPdfPage({required this.pageNumber});
+  final int pageNumber;
+  @override
+  List<Object?> get props => [pageNumber];
+}
+
+// ── Annotation colour change ───────────────────────────────────
+
+/// Change the colour of an existing annotation.
+class ChangeAnnotationColor extends PdfAnnotationEvent {
+  const ChangeAnnotationColor({
+    required this.annotationId,
+    required this.color,
+  });
+  final String annotationId;
+  final Color color;
+  @override
+  List<Object?> get props => [annotationId, color];
+}

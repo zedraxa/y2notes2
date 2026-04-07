@@ -2,6 +2,7 @@ import 'package:equatable/equatable.dart';
 import 'package:y2notes2/features/canvas/domain/entities/stroke.dart';
 import 'package:y2notes2/features/canvas/domain/models/canvas_config.dart';
 import 'package:y2notes2/features/documents/domain/models/export_options.dart';
+import 'package:y2notes2/features/pdf_annotation/domain/entities/pdf_annotation.dart';
 
 /// Base class for all document-feature events.
 abstract class DocumentEvent extends Equatable {
@@ -218,7 +219,7 @@ class UpdatePagePdfAnnotations extends DocumentEvent {
     required this.annotations,
   });
   final int pageIndex;
-  final List<dynamic> annotations;
+  final List<PdfAnnotation> annotations;
   @override
   List<Object?> get props => [pageIndex, annotations];
 }

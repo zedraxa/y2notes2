@@ -1,6 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:y2notes2/features/pdf_annotation/domain/entities/pdf_annotation.dart';
 import 'package:y2notes2/features/pdf_annotation/domain/entities/pdf_bookmark.dart';
+import 'package:y2notes2/features/pdf_annotation/domain/entities/pdf_text_span.dart';
 import 'package:y2notes2/features/pdf_annotation/presentation/bloc/pdf_annotation_event.dart';
 import 'package:y2notes2/features/pdf_annotation/presentation/bloc/pdf_annotation_state.dart';
 
@@ -24,6 +25,12 @@ class PdfAnnotationBloc
     on<RemovePdfBookmark>(_onRemoveBookmark);
     on<UpdatePdfBookmark>(_onUpdateBookmark);
     on<TogglePdfBookmarkPanel>(_onToggleBookmarkPanel);
+    on<UndoPdfAnnotation>(_onUndo);
+    on<RedoPdfAnnotation>(_onRedo);
+    on<ToggleAnnotationListPanel>(_onToggleAnnotationList);
+    on<SearchPdfBookmarks>(_onSearchBookmarks);
+    on<JumpToPdfPage>(_onJumpToPage);
+    on<ChangeAnnotationColor>(_onChangeAnnotationColor);
   }
 
   // ── Lifecycle ────────────────────────────────────────────────
@@ -52,6 +59,7 @@ class PdfAnnotationBloc
     NavigateToPdfPage event,
     Emitter<PdfAnnotationState> emit,
   ) {
+    if (state.pageCount <= 0) return;
     final clamped =
         event.pageIndex.clamp(0, state.pageCount - 1);
     emit(state.copyWith(
@@ -66,11 +74,11 @@ class PdfAnnotationBloc
     PdfTextLayerLoaded event,
     Emitter<PdfAnnotationState> emit,
   ) {
-    final updated = Map<int, List<dynamic>>.of(
+    final updated = Map<int, List<PdfTextSpan>>.of(
       state.textSpansByPage,
     );
     updated[event.pageIndex] = event.spans;
-    emit(state.copyWith(textSpansByPage: Map.castFrom(updated)));
+    emit(state.copyWith(textSpansByPage: updated));
   }
 
   // ── Text selection ───────────────────────────────────────────
@@ -117,6 +125,8 @@ class PdfAnnotationBloc
     emit(state.copyWith(
       annotations: updated,
       clearSelection: true,
+      undoStack: [...state.undoStack, state.annotations],
+      redoStack: const [],
     ));
   }
 
@@ -128,7 +138,11 @@ class PdfAnnotationBloc
       if (a.id == event.annotation.id) return event.annotation;
       return a;
     }).toList();
-    emit(state.copyWith(annotations: updated));
+    emit(state.copyWith(
+      annotations: updated,
+      undoStack: [...state.undoStack, state.annotations],
+      redoStack: const [],
+    ));
   }
 
   void _onDeleteAnnotation(
@@ -138,7 +152,11 @@ class PdfAnnotationBloc
     final updated = state.annotations
         .where((a) => a.id != event.annotationId)
         .toList();
-    emit(state.copyWith(annotations: updated));
+    emit(state.copyWith(
+      annotations: updated,
+      undoStack: [...state.undoStack, state.annotations],
+      redoStack: const [],
+    ));
   }
 
   // ── Bookmarks ────────────────────────────────────────────────
@@ -185,4 +203,93 @@ class PdfAnnotationBloc
       emit(state.copyWith(
         isBookmarkPanelOpen: !state.isBookmarkPanelOpen,
       ));
+
+  // ── Undo / Redo ──────────────────────────────────────────────
+
+  void _onUndo(
+    UndoPdfAnnotation event,
+    Emitter<PdfAnnotationState> emit,
+  ) {
+    if (!state.canUndo) return;
+    final previousAnnotations = state.undoStack.last;
+    final newUndoStack = List<List<PdfAnnotation>>.of(
+      state.undoStack,
+    )..removeLast();
+    emit(state.copyWith(
+      annotations: previousAnnotations,
+      undoStack: newUndoStack,
+      redoStack: [...state.redoStack, state.annotations],
+    ));
+  }
+
+  void _onRedo(
+    RedoPdfAnnotation event,
+    Emitter<PdfAnnotationState> emit,
+  ) {
+    if (!state.canRedo) return;
+    final nextAnnotations = state.redoStack.last;
+    final newRedoStack = List<List<PdfAnnotation>>.of(
+      state.redoStack,
+    )..removeLast();
+    emit(state.copyWith(
+      annotations: nextAnnotations,
+      undoStack: [...state.undoStack, state.annotations],
+      redoStack: newRedoStack,
+    ));
+  }
+
+  // ── Annotation list panel ────────────────────────────────────
+
+  void _onToggleAnnotationList(
+    ToggleAnnotationListPanel event,
+    Emitter<PdfAnnotationState> emit,
+  ) =>
+      emit(state.copyWith(
+        isAnnotationListOpen: !state.isAnnotationListOpen,
+      ));
+
+  // ── Bookmark search ──────────────────────────────────────────
+
+  void _onSearchBookmarks(
+    SearchPdfBookmarks event,
+    Emitter<PdfAnnotationState> emit,
+  ) =>
+      emit(state.copyWith(
+        bookmarkSearchQuery: event.query,
+      ));
+
+  // ── Page jump ────────────────────────────────────────────────
+
+  void _onJumpToPage(
+    JumpToPdfPage event,
+    Emitter<PdfAnnotationState> emit,
+  ) {
+    if (state.pageCount <= 0) return;
+    // Convert from 1-based page number to 0-based index.
+    final index = (event.pageNumber - 1)
+        .clamp(0, state.pageCount - 1);
+    emit(state.copyWith(
+      currentPageIndex: index,
+      clearSelection: true,
+    ));
+  }
+
+  // ── Annotation colour change ─────────────────────────────────
+
+  void _onChangeAnnotationColor(
+    ChangeAnnotationColor event,
+    Emitter<PdfAnnotationState> emit,
+  ) {
+    final updated = state.annotations.map((a) {
+      if (a.id == event.annotationId) {
+        return a.copyWith(color: event.color);
+      }
+      return a;
+    }).toList();
+    emit(state.copyWith(
+      annotations: updated,
+      undoStack: [...state.undoStack, state.annotations],
+      redoStack: const [],
+    ));
+  }
 }
