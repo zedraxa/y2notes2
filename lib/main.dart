@@ -6,6 +6,7 @@ import 'package:y2notes2/core/engine/haptic_controller.dart';
 import 'package:y2notes2/core/services/settings_service.dart';
 import 'package:y2notes2/features/canvas/domain/entities/tools/tool_registry.dart';
 import 'package:y2notes2/features/canvas/presentation/bloc/canvas_bloc.dart';
+import 'package:y2notes2/features/collaboration/presentation/bloc/collaboration_bloc.dart';
 import 'package:y2notes2/features/documents/data/document_repository.dart';
 import 'package:y2notes2/features/handwriting/presentation/bloc/handwriting_bloc.dart';
 import 'package:y2notes2/features/library/data/library_repository.dart';
@@ -59,6 +60,14 @@ void main() async {
             ),
             // HandwritingBloc manages recognition state across the app.
             BlocProvider(create: (_) => HandwritingBloc()),
+            // CollaborationBloc manages real-time sync and presence.
+            BlocProvider(
+              create: (_) => CollaborationBloc(
+                // Use placeholder IDs — in a real app these come from auth.
+                localUserId: 'local_user',
+                localDisplayName: 'Me',
+              ),
+            ),
             // Template & Widget blocs.
             BlocProvider(
               create: (_) => TemplateBloc(repository: templateRepository)
