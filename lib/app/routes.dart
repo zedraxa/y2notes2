@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:y2notes2/features/canvas/presentation/pages/canvas_page.dart';
+import 'package:y2notes2/features/cloud_sync/presentation/pages/cloud_sync_settings_page.dart';
 import 'package:y2notes2/features/documents/presentation/bloc/document_bloc.dart';
 import 'package:y2notes2/features/documents/presentation/bloc/document_event.dart';
 import 'package:y2notes2/features/handwriting/presentation/pages/recognition_settings_page.dart';
@@ -107,6 +108,10 @@ class AppRouter {
           GoRoute(
             path: 'backup',
             builder: (context, state) => const BackupSettingsPage(),
+          ),
+          GoRoute(
+            path: 'cloud-sync',
+            builder: (context, state) => const CloudSyncSettingsPage(),
           ),
           GoRoute(
             path: 'about',

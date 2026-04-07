@@ -6,6 +6,7 @@ import 'package:y2notes2/core/engine/haptic_controller.dart';
 import 'package:y2notes2/core/services/settings_service.dart';
 import 'package:y2notes2/features/canvas/domain/entities/tools/tool_registry.dart';
 import 'package:y2notes2/features/canvas/presentation/bloc/canvas_bloc.dart';
+import 'package:y2notes2/features/cloud_sync/presentation/bloc/cloud_sync_bloc.dart';
 import 'package:y2notes2/features/collaboration/presentation/bloc/collaboration_bloc.dart';
 import 'package:y2notes2/features/documents/data/document_repository.dart';
 import 'package:y2notes2/features/handwriting/presentation/bloc/handwriting_bloc.dart';
@@ -81,6 +82,10 @@ void main() async {
             // their own scoped provider when needed.
             BlocProvider(
               create: (_) => InfiniteCanvasBloc(),
+            ),
+            // CloudSyncBloc manages cloud provider connections and syncing.
+            BlocProvider(
+              create: (_) => CloudSyncBloc(),
             ),
           ],
           child: Y2NotesApp(
