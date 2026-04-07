@@ -63,12 +63,12 @@ jobs:
 
       # ----------------------------------------------------------
       # 4. Bootstrap iOS platform
-      # If the ios/ directory doesn't exist yet (e.g. a fresh clone
-      # without the platform folder), create it via flutter create.
+      # If Runner.xcodeproj is missing (e.g. a fresh clone that is
+      # missing the Xcode project), regenerate it via flutter create.
       # ----------------------------------------------------------
       - name: Bootstrap iOS platform
         run: |
-          if [ ! -d "ios" ]; then
+          if [ ! -f "ios/Runner.xcodeproj/project.pbxproj" ]; then
             flutter create --platforms=ios \
               --org "$APP_ORG" \
               --project-name y2notes2 .
