@@ -26,8 +26,10 @@ class ClassicHighlighterTool extends BaseFreehandTool {
   }
 
   @override
-  List<ToolSettingDefinition> get settingsSchema => const [];
+  List<ToolSettingDefinition> get settingsSchema => const [
+    ToolSettingDefinition(key: 'straighten', label: 'Straighten', type: ToolSettingType.slider, defaultValue: 0.5, min: 0.0, max: 1.0),
+  ];
 
   @override
-  ToolSettings get defaultSettings => const ToolSettings(size: 20.0, opacity: 0.35);
+  ToolSettings get defaultSettings => const ToolSettings(size: 20.0, opacity: 0.35, custom: {'straighten': 0.5});
 }

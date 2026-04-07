@@ -25,8 +25,11 @@ class GouacheTool extends BaseFreehandTool {
   }
 
   @override
-  List<ToolSettingDefinition> get settingsSchema => const [];
+  List<ToolSettingDefinition> get settingsSchema => const [
+    ToolSettingDefinition(key: 'flatness', label: 'Flatness', type: ToolSettingType.slider, defaultValue: 0.7, min: 0.0, max: 1.0),
+    ToolSettingDefinition(key: 'coverage', label: 'Coverage', type: ToolSettingType.slider, defaultValue: 0.8, min: 0.0, max: 1.0),
+  ];
 
   @override
-  ToolSettings get defaultSettings => const ToolSettings(size: 10.0, opacity: 1.0);
+  ToolSettings get defaultSettings => const ToolSettings(size: 10.0, opacity: 1.0, custom: {'flatness': 0.7, 'coverage': 0.8});
 }

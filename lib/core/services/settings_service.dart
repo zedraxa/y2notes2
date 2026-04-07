@@ -20,6 +20,12 @@ class SettingsService {
   final ValueNotifier<double> recognitionConfidenceNotifier =
       ValueNotifier(0.3);
 
+  // ─── Canvas spacing notifiers ──────────────────────────────────────────────
+  final ValueNotifier<double> lineSpacingNotifier = ValueNotifier(32.0);
+  final ValueNotifier<double> gridSpacingNotifier = ValueNotifier(32.0);
+  final ValueNotifier<double> dotSpacingNotifier = ValueNotifier(32.0);
+  final ValueNotifier<bool> showMarginNotifier = ValueNotifier(true);
+
   // ─── Effect-specific notifiers ────────────────────────────────────────────
   final Map<String, ValueNotifier<bool>> effectToggles = {};
   final Map<String, ValueNotifier<double>> effectIntensities = {};
@@ -73,6 +79,11 @@ class SettingsService {
   static const _recognitionLanguageKey = 'recognition_language';
   static const _recognitionRealTimeKey = 'recognition_real_time';
   static const _recognitionConfidenceKey = 'recognition_confidence';
+  static const _lineSpacingKey = 'canvas_line_spacing';
+  static const _gridSpacingKey = 'canvas_grid_spacing';
+  static const _dotSpacingKey = 'canvas_dot_spacing';
+  static const _showMarginKey = 'canvas_show_margin';
+  static const _toolPresetPrefix = 'tool_preset_';
 
   static const List<String> effectNames = [
     'ink_flow',
@@ -118,6 +129,15 @@ class SettingsService {
         _prefs.getBool(_recognitionRealTimeKey) ?? false;
     recognitionConfidenceNotifier.value =
         _prefs.getDouble(_recognitionConfidenceKey) ?? 0.3;
+
+    lineSpacingNotifier.value =
+        _prefs.getDouble(_lineSpacingKey) ?? 32.0;
+    gridSpacingNotifier.value =
+        _prefs.getDouble(_gridSpacingKey) ?? 32.0;
+    dotSpacingNotifier.value =
+        _prefs.getDouble(_dotSpacingKey) ?? 32.0;
+    showMarginNotifier.value =
+        _prefs.getBool(_showMarginKey) ?? true;
 
     for (final name in effectNames) {
       effectToggles[name] = ValueNotifier(
@@ -307,6 +327,78 @@ class SettingsService {
   double interactionEffectIntensity(String name) =>
       interactionEffectIntensities[name]?.value ?? 1.0;
 
+  // ─── Canvas spacing setters ────────────────────────────────────────────────
+
+  Future<void> setLineSpacing(double value) async {
+    lineSpacingNotifier.value = value.clamp(16.0, 64.0);
+    await _prefs.setDouble(_lineSpacingKey, lineSpacingNotifier.value);
+  }
+
+  Future<void> setGridSpacing(double value) async {
+    gridSpacingNotifier.value = value.clamp(16.0, 64.0);
+    await _prefs.setDouble(_gridSpacingKey, gridSpacingNotifier.value);
+  }
+
+  Future<void> setDotSpacing(double value) async {
+    dotSpacingNotifier.value = value.clamp(16.0, 64.0);
+    await _prefs.setDouble(_dotSpacingKey, dotSpacingNotifier.value);
+  }
+
+  Future<void> setShowMargin(bool value) async {
+    showMarginNotifier.value = value;
+    await _prefs.setBool(_showMarginKey, value);
+  }
+
+  // ─── Tool preset persistence ───────────────────────────────────────────────
+
+  /// Saves a JSON-encoded list of preset data for the given tool.
+  Future<void> saveToolPresets(String toolId, String jsonString) async {
+    await _prefs.setString('$_toolPresetPrefix$toolId', jsonString);
+  }
+
+  /// Loads the raw JSON string of presets for the given tool.
+  String? loadToolPresets(String toolId) {
+    return _prefs.getString('$_toolPresetPrefix$toolId');
+  }
+
+  // ─── Reset to defaults ─────────────────────────────────────────────────────
+
+  /// Resets all persisted settings to their default values.
+  Future<void> resetAll() async {
+    await setDarkMode(false);
+    await setEffectsEnabled(true);
+    await setHapticsEnabled(true);
+    await setPageTemplate('lined');
+    await setRecognitionLanguage('en-US');
+    await setRecognitionRealTime(false);
+    await setRecognitionConfidence(0.3);
+    await setLineSpacing(32.0);
+    await setGridSpacing(32.0);
+    await setDotSpacing(32.0);
+    await setShowMargin(true);
+
+    for (final name in effectNames) {
+      await setEffectEnabled(name, true);
+      await setEffectIntensity(name, 1.0);
+    }
+
+    await setPressureCurvePreset(PressureCurvePreset.soft);
+    await setTiltSensitivity(1.0);
+    await setHoverPreviewEnabled(true);
+    await setPalmRejectionEnabled(true);
+    await setLeftHandMode(false);
+
+    for (final gesture in StylusGesture.values) {
+      await setGestureMapping(gesture, _defaultGestureAction(gesture));
+    }
+
+    await setInteractionEffectsEnabled(true);
+    for (final name in interactionEffectNames) {
+      await setInteractionEffectEnabled(name, true);
+      await setInteractionEffectIntensity(name, 1.0);
+    }
+  }
+
   void dispose() {
     darkModeNotifier.dispose();
     effectsEnabledNotifier.dispose();
@@ -316,6 +408,10 @@ class SettingsService {
     recognitionLanguageNotifier.dispose();
     recognitionRealTimeNotifier.dispose();
     recognitionConfidenceNotifier.dispose();
+    lineSpacingNotifier.dispose();
+    gridSpacingNotifier.dispose();
+    dotSpacingNotifier.dispose();
+    showMarginNotifier.dispose();
     for (final n in effectToggles.values) {
       n.dispose();
     }

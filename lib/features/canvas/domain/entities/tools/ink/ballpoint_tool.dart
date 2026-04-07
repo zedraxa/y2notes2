@@ -25,8 +25,11 @@ class BallpointTool extends BaseFreehandTool {
   }
 
   @override
-  List<ToolSettingDefinition> get settingsSchema => const [];
+  List<ToolSettingDefinition> get settingsSchema => const [
+    ToolSettingDefinition(key: 'smoothing', label: 'Smoothing', type: ToolSettingType.slider, defaultValue: 0.5, min: 0.0, max: 1.0),
+    ToolSettingDefinition(key: 'thinning', label: 'Thinning', type: ToolSettingType.slider, defaultValue: 0.3, min: 0.0, max: 1.0),
+  ];
 
   @override
-  ToolSettings get defaultSettings => const ToolSettings(size: 2.0, opacity: 1.0);
+  ToolSettings get defaultSettings => const ToolSettings(size: 2.0, opacity: 1.0, custom: {'smoothing': 0.5, 'thinning': 0.3});
 }
