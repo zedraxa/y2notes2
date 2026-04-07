@@ -275,10 +275,10 @@ class _SessionTile extends StatelessWidget {
       child: ListTile(
         leading: CircleAvatar(
           backgroundColor: accuracy >= 80
-              ? Colors.green.withAlpha(50)
+              ? Colors.green.withOpacity(0.20)
               : accuracy >= 50
-                  ? Colors.orange.withAlpha(50)
-                  : Colors.red.withAlpha(50),
+                  ? Colors.orange.withOpacity(0.20)
+                  : Colors.red.withOpacity(0.20),
           child: Text('$accuracy%',
               style: TextStyle(
                 fontSize: 12,

@@ -210,8 +210,8 @@ class _AnswerFeedback extends StatelessWidget {
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             color: isCorrect
-                ? Colors.green.withAlpha(25)
-                : Colors.red.withAlpha(25),
+                ? Colors.green.withOpacity(0.10)
+                : Colors.red.withOpacity(0.10),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
               color: isCorrect ? Colors.green : Colors.red,

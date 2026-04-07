@@ -81,8 +81,10 @@ class FlashCard extends Equatable {
   final int correctStreak;
 
   /// Whether this card is due for review right now.
-  bool get isDue => DateTime.now().isAfter(nextReviewAt) ||
-      DateTime.now().isAtSameMomentAs(nextReviewAt);
+  bool get isDue {
+    final now = DateTime.now();
+    return now.isAfter(nextReviewAt) || now.isAtSameMomentAs(nextReviewAt);
+  }
 
   /// Whether this card has never been reviewed.
   bool get isNew => totalReviews == 0;

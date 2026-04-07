@@ -110,9 +110,9 @@ class _DifficultyBar extends StatelessWidget {
     return Expanded(
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
-          backgroundColor: color.withAlpha(30),
+          backgroundColor: color.withOpacity(0.12),
           foregroundColor: color,
-          side: BorderSide(color: color.withAlpha(100)),
+          side: BorderSide(color: color.withOpacity(0.39)),
         ),
         onPressed: () {
           context.read<FlashCardBloc>().add(

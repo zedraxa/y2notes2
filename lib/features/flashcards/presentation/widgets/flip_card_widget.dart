@@ -130,7 +130,7 @@ class _CardFace extends StatelessWidget {
               Text(
                 label,
                 style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      color: textColor.withAlpha(150),
+                      color: textColor.withOpacity(0.59),
                       letterSpacing: 2,
                     ),
               ),
@@ -146,7 +146,7 @@ class _CardFace extends StatelessWidget {
               Text(
                 'Tap to flip',
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: textColor.withAlpha(100),
+                      color: textColor.withOpacity(0.39),
                     ),
               ),
             ],
