@@ -35,6 +35,10 @@ post_install do |installer|
   installer.pods_project.targets.each do |target|
     flutter_additional_ios_build_settings(target)
     target.build_configurations.each do |config|
+      # Ensure all pods target at least iOS 13.0 to match the Runner project
+      if config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'].to_f < 13.0
+        config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '13.0'
+      end
       # Pod targets are static libraries and do not support provisioning
       # profiles. Disabling code signing entirely prevents xcodebuild from
       # failing when PROVISIONING_PROFILE_SPECIFIER is passed as a global
