@@ -44,6 +44,7 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
     on<ExportCurrentPageAsImage>(_onExportCurrentPageAsImage);
     on<ImportPdf>(_onImportPdf);
     on<ImportImage>(_onImportImage);
+    on<ImportScannedDocument>(_onImportScannedDocument);
     on<ClearDocumentStatus>(_onClearStatus);
     on<RenameNotebook>(_onRenameNotebook);
     on<UpdateNotebookDescription>(_onUpdateNotebookDescription);
@@ -551,6 +552,78 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
         isImporting: false,
         status: DocumentOperationStatus.error,
         errorMessage: 'Image import failed: $e',
+      ));
+    }
+  }
+
+  Future<void> _onImportScannedDocument(
+    ImportScannedDocument event,
+    Emitter<DocumentState> emit,
+  ) async {
+    final scanResult = event.scanResult;
+    if (!scanResult.hasPages) {
+      emit(state.copyWith(
+        status: DocumentOperationStatus.error,
+        errorMessage: 'No pages in scanned document.',
+      ));
+      return;
+    }
+
+    emit(state.copyWith(
+      isImporting: true,
+      status: DocumentOperationStatus.inProgress,
+      importProgress: 0.0,
+    ));
+
+    try {
+      final pages = <NotebookPage>[];
+      for (var i = 0; i < scanResult.pages.length; i++) {
+        final scanned = scanResult.pages[i];
+        pages.add(NotebookPage(
+          pageNumber: (state.notebook?.pageCount ?? 0) +
+              i +
+              1,
+          backgroundImage: scanned.processedImage,
+          config: CanvasConfig(
+            width: scanned.width,
+            height: scanned.height,
+            template: PageTemplate.blank,
+          ),
+        ));
+
+        emit(state.copyWith(
+          importProgress:
+              (i + 1) / scanResult.pages.length,
+        ));
+      }
+
+      final nb = state.notebook;
+      Notebook updated;
+      if (nb != null) {
+        var result = nb;
+        for (final page in pages) {
+          result = result.addPage(page);
+        }
+        updated = result;
+      } else {
+        updated = Notebook(
+          title: scanResult.title ?? 'Scanned Document',
+          pages: pages,
+        );
+      }
+
+      emit(state.copyWith(
+        notebook: updated,
+        currentPageIndex: updated.pageCount - 1,
+        isImporting: false,
+        status: DocumentOperationStatus.success,
+        importProgress: 1.0,
+      ));
+    } catch (e) {
+      emit(state.copyWith(
+        isImporting: false,
+        status: DocumentOperationStatus.error,
+        errorMessage: 'Scan import failed: $e',
       ));
     }
   }
