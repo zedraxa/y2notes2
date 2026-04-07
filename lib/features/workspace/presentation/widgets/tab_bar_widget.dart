@@ -14,6 +14,10 @@ class TabItem extends StatelessWidget {
     required this.onRename,
     required this.onPin,
     required this.onDuplicate,
+    required this.onCloseOthers,
+    required this.onCloseToTheRight,
+    this.isOnly = false,
+    this.isLast = false,
   });
 
   final TabSession tab;
@@ -23,69 +27,101 @@ class TabItem extends StatelessWidget {
   final void Function(String newTitle) onRename;
   final VoidCallback onPin;
   final VoidCallback onDuplicate;
+  final VoidCallback onCloseOthers;
+  final VoidCallback onCloseToTheRight;
+
+  /// Whether this is the only tab (disables "Close Others").
+  final bool isOnly;
+
+  /// Whether this is the last tab in the list (disables "Close to the Right").
+  final bool isLast;
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return GestureDetector(
-      onTap: onTap,
-      onSecondaryTapUp: (details) => _showContextMenu(context, details.globalPosition),
-      onLongPressEnd: (details) => _showContextMenu(context, details.globalPosition),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
-        constraints: const BoxConstraints(minWidth: 80, maxWidth: 180),
-        margin: const EdgeInsets.only(top: 4, bottom: 0, right: 2),
-        decoration: BoxDecoration(
-          color: isActive
-              ? (isDark ? AppColors.darkSurface : AppColors.surface)
-              : (isDark ? AppColors.darkToolbarBg : AppColors.toolbarBg),
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
-          border: isActive
-              ? Border(
-                  top: BorderSide(color: AppColors.accent, width: 2),
-                  left: BorderSide(color: AppColors.toolbarBorder, width: 0.5),
-                  right: BorderSide(color: AppColors.toolbarBorder, width: 0.5),
-                )
-              : Border(
-                  top: BorderSide(color: Colors.transparent, width: 2),
-                  left: BorderSide(color: AppColors.toolbarBorder, width: 0.5),
-                  right: BorderSide(color: AppColors.toolbarBorder, width: 0.5),
-                ),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (tab.isPinned)
-                Padding(
-                  padding: const EdgeInsets.only(right: 4),
-                  child: Icon(
-                    Icons.push_pin,
-                    size: 10,
-                    color: AppColors.accent,
+    return Tooltip(
+      message: tab.title,
+      waitDuration: const Duration(milliseconds: 600),
+      child: GestureDetector(
+        onTap: onTap,
+        onDoubleTap: () => _showRenameDialog(context),
+        onSecondaryTapUp: (details) =>
+            _showContextMenu(context, details.globalPosition),
+        onLongPressEnd: (details) =>
+            _showContextMenu(context, details.globalPosition),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          constraints: const BoxConstraints(minWidth: 80, maxWidth: 180),
+          margin: const EdgeInsets.only(top: 4, bottom: 0, right: 2),
+          decoration: BoxDecoration(
+            color: isActive
+                ? (isDark ? AppColors.darkSurface : AppColors.surface)
+                : (isDark ? AppColors.darkToolbarBg : AppColors.toolbarBg),
+            borderRadius:
+                const BorderRadius.vertical(top: Radius.circular(8)),
+            border: isActive
+                ? Border(
+                    top: BorderSide(color: AppColors.accent, width: 2),
+                    left: BorderSide(
+                        color: AppColors.toolbarBorder, width: 0.5),
+                    right: BorderSide(
+                        color: AppColors.toolbarBorder, width: 0.5),
+                  )
+                : Border(
+                    top: BorderSide(color: Colors.transparent, width: 2),
+                    left: BorderSide(
+                        color: AppColors.toolbarBorder, width: 0.5),
+                    right: BorderSide(
+                        color: AppColors.toolbarBorder, width: 0.5),
+                  ),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (tab.isPinned)
+                  Padding(
+                    padding: const EdgeInsets.only(right: 4),
+                    child: Icon(
+                      Icons.push_pin,
+                      size: 10,
+                      color: AppColors.accent,
+                    ),
+                  ),
+                if (tab.isModified)
+                  Padding(
+                    padding: const EdgeInsets.only(right: 4),
+                    child: Container(
+                      width: 6,
+                      height: 6,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: AppColors.accent,
+                      ),
+                    ),
+                  ),
+                Flexible(
+                  child: Text(
+                    tab.title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight:
+                          isActive ? FontWeight.w600 : FontWeight.w400,
+                      color: isActive
+                          ? colorScheme.onSurface
+                          : colorScheme.onSurface.withAlpha(153),
+                    ),
                   ),
                 ),
-              Flexible(
-                child: Text(
-                  tab.title,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight:
-                        isActive ? FontWeight.w600 : FontWeight.w400,
-                    color: isActive
-                        ? colorScheme.onSurface
-                        : colorScheme.onSurface.withAlpha(153),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 4),
-              _CloseButton(onClose: onClose, isActive: isActive),
-            ],
+                const SizedBox(width: 4),
+                _CloseButton(onClose: onClose, isActive: isActive),
+              ],
+            ),
           ),
         ),
       ),
@@ -129,6 +165,26 @@ class TabItem extends StatelessWidget {
             dense: true,
           ),
         ),
+        const PopupMenuDivider(),
+        PopupMenuItem(
+          value: _ContextAction.closeOthers,
+          enabled: !isOnly,
+          child: const ListTile(
+            leading: Icon(Icons.tab_unselected, size: 18),
+            title: Text('Close Others'),
+            dense: true,
+          ),
+        ),
+        PopupMenuItem(
+          value: _ContextAction.closeToTheRight,
+          enabled: !isLast,
+          child: const ListTile(
+            leading: Icon(Icons.chevron_right, size: 18),
+            title: Text('Close Tabs to the Right'),
+            dense: true,
+          ),
+        ),
+        if (!tab.isPinned) const PopupMenuDivider(),
         if (!tab.isPinned)
           const PopupMenuItem(
             value: _ContextAction.close,
@@ -148,6 +204,10 @@ class TabItem extends StatelessWidget {
           onPin();
         case _ContextAction.duplicate:
           onDuplicate();
+        case _ContextAction.closeOthers:
+          onCloseOthers();
+        case _ContextAction.closeToTheRight:
+          onCloseToTheRight();
         case _ContextAction.close:
           onClose();
       }
@@ -194,7 +254,14 @@ class TabItem extends StatelessWidget {
   }
 }
 
-enum _ContextAction { rename, pin, duplicate, close }
+enum _ContextAction {
+  rename,
+  pin,
+  duplicate,
+  closeOthers,
+  closeToTheRight,
+  close,
+}
 
 class _CloseButton extends StatefulWidget {
   const _CloseButton({required this.onClose, required this.isActive});
@@ -233,7 +300,9 @@ class _CloseButtonState extends State<_CloseButton> {
           child: Icon(
             Icons.close,
             size: 10,
-            color: _hovered ? Colors.red : Theme.of(context).colorScheme.onSurface.withAlpha(153),
+            color: _hovered
+                ? Colors.red
+                : Theme.of(context).colorScheme.onSurface.withAlpha(153),
           ),
         ),
       ),
@@ -253,6 +322,8 @@ class TabBarWidget extends StatelessWidget {
     required this.onRenameTab,
     required this.onPinTab,
     required this.onDuplicateTab,
+    required this.onCloseOtherTabs,
+    required this.onCloseTabsToTheRight,
   });
 
   final WorkspaceState state;
@@ -263,6 +334,8 @@ class TabBarWidget extends StatelessWidget {
   final void Function(String tabId, String newTitle) onRenameTab;
   final void Function(String tabId) onPinTab;
   final void Function(String tabId) onDuplicateTab;
+  final void Function(String tabId) onCloseOtherTabs;
+  final void Function(String tabId) onCloseTabsToTheRight;
 
   @override
   Widget build(BuildContext context) {
@@ -302,11 +375,16 @@ class TabBarWidget extends StatelessWidget {
                   child: TabItem(
                     tab: tab,
                     isActive: isActive,
+                    isOnly: state.tabs.length == 1,
+                    isLast: index == state.tabs.length - 1,
                     onTap: () => onSwitchTab(tab.id),
                     onClose: () => onCloseTab(tab.id),
                     onRename: (title) => onRenameTab(tab.id, title),
                     onPin: () => onPinTab(tab.id),
                     onDuplicate: () => onDuplicateTab(tab.id),
+                    onCloseOthers: () => onCloseOtherTabs(tab.id),
+                    onCloseToTheRight: () =>
+                        onCloseTabsToTheRight(tab.id),
                   ),
                 );
               },
