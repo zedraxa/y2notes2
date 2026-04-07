@@ -18,7 +18,7 @@ class ToolPreset {
 }
 
 class ToolPresetManager {
-  static final _uuid = Uuid();
+  static final _idGenerator = const Uuid();
   static final Map<String, List<ToolPreset>> _presets = {};
 
   static void registerBuiltIn(ToolPreset preset) {
@@ -29,7 +29,7 @@ class ToolPresetManager {
       _presets[toolId] ?? [];
 
   static void savePreset(String name, String toolId, ToolSettings settings) {
-    final id = _uuid.v4();
+    final id = _idGenerator.v4();
     _presets.putIfAbsent(toolId, () => []).add(
           ToolPreset(id: id, name: name, toolId: toolId, settings: settings),
         );

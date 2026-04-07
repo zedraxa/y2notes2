@@ -10,7 +10,7 @@ class EraserTool extends BaseFreehandTool {
   @override String get name => 'Eraser';
   @override String get description => 'Erases strokes';
   @override ToolCategory get category => ToolCategory.utility;
-  @override IconData get icon => Icons.auto_fix_normal;
+  @override IconData get icon => Icons.backspace_outlined;
   @override BlendMode get blendMode => BlendMode.srcOver;
 
   @override
