@@ -1,11 +1,16 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
+import 'package:y2notes2/core/utils/math_utils.dart';
 import 'package:y2notes2/features/canvas/domain/entities/point_data.dart';
 import 'package:y2notes2/features/canvas/domain/entities/stroke.dart';
 import 'package:y2notes2/features/effects/engine/effect_config.dart';
 
 /// Ink Flow Effect — ink darkens/pools at stroke start and end points.
 ///
-/// Varies opacity based on velocity: low velocity = more ink pooling = darker.
+/// Multi-layer rendering with radial gradient pools, noise-based edge
+/// turbulence, and velocity-dependent spread. Slower strokes produce richer,
+/// darker pools with feathered edges.
 class InkFlowEffect implements WritingEffect {
   InkFlowEffect();
 
@@ -54,12 +59,17 @@ class InkFlowEffect implements WritingEffect {
 
   void _addPool(Offset position, double pressure, {required double alpha}) {
     final radius = (4 + pressure * 8) * intensity;
+    // Noise-based turbulence offsets for organic edge distortion
+    final noise1 = MathUtils.pseudoRandom(position.dx, position.dy, 0);
+    final noise2 = MathUtils.pseudoRandom(position.dx, position.dy, 1);
     _pools.add(_InkPool(
       position: position,
       radius: radius,
       alpha: (alpha * intensity).clamp(0.0, 1.0),
       age: 0.0,
       lifetime: 1.5,
+      turbulenceAngle: noise1 * math.pi * 2,
+      turbulenceOffset: noise2 * 3.0 * intensity,
     ));
   }
 
@@ -75,11 +85,44 @@ class InkFlowEffect implements WritingEffect {
   void render(Canvas canvas, Size size) {
     for (final pool in _pools) {
       final t = pool.age / pool.lifetime;
-      final opacity = (pool.alpha * (1.0 - t)).clamp(0.0, 1.0);
-      final paint = Paint()
-        ..color = Colors.black.withOpacity(opacity)
+      final fade = 1.0 - t;
+      final expandedRadius = pool.radius * (1.0 + t * 0.3);
+
+      // Turbulence shifts the pool center slightly for organic feel
+      final turbOffset = Offset(
+        math.cos(pool.turbulenceAngle) * pool.turbulenceOffset * t,
+        math.sin(pool.turbulenceAngle) * pool.turbulenceOffset * t,
+      );
+      final center = pool.position + turbOffset;
+
+      // Layer 1 — soft outer feathered edge (radial gradient)
+      final outerRadius = expandedRadius * 1.6;
+      final outerOpacity = (pool.alpha * 0.25 * fade).clamp(0.0, 1.0);
+      final gradientPaint = Paint()
+        ..shader = RadialGradient(
+          colors: [
+            Colors.black.withOpacity(outerOpacity),
+            Colors.black.withOpacity(outerOpacity * 0.3),
+            Colors.transparent,
+          ],
+          stops: const [0.0, 0.5, 1.0],
+        ).createShader(Rect.fromCircle(center: center, radius: outerRadius))
         ..style = PaintingStyle.fill;
-      canvas.drawCircle(pool.position, pool.radius * (1.0 + t * 0.3), paint);
+      canvas.drawCircle(center, outerRadius, gradientPaint);
+
+      // Layer 2 — dark concentrated core
+      final coreOpacity = (pool.alpha * fade).clamp(0.0, 1.0);
+      final corePaint = Paint()
+        ..color = Colors.black.withOpacity(coreOpacity)
+        ..style = PaintingStyle.fill;
+      canvas.drawCircle(center, expandedRadius * 0.6, corePaint);
+
+      // Layer 3 — mid-tone blended ring between core and edge
+      final midOpacity = (pool.alpha * 0.5 * fade).clamp(0.0, 1.0);
+      final midPaint = Paint()
+        ..color = Colors.black.withOpacity(midOpacity)
+        ..style = PaintingStyle.fill;
+      canvas.drawCircle(center, expandedRadius, midPaint);
     }
   }
 
@@ -94,6 +137,8 @@ class _InkPool {
     required this.alpha,
     required this.age,
     required this.lifetime,
+    required this.turbulenceAngle,
+    required this.turbulenceOffset,
   });
 
   final Offset position;
@@ -101,4 +146,6 @@ class _InkPool {
   final double alpha;
   double age;
   final double lifetime;
+  final double turbulenceAngle;
+  final double turbulenceOffset;
 }

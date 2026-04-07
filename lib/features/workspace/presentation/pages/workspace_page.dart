@@ -83,6 +83,20 @@ class _WorkspacePageState extends State<WorkspacePage> {
       return KeyEventResult.handled;
     }
 
+    // Cmd/Ctrl + Shift + ] → next tab
+    if (event.logicalKey == LogicalKeyboardKey.bracketRight &&
+        HardwareKeyboard.instance.isShiftPressed) {
+      bloc.add(const NextTabActivated());
+      return KeyEventResult.handled;
+    }
+
+    // Cmd/Ctrl + Shift + [ → previous tab
+    if (event.logicalKey == LogicalKeyboardKey.bracketLeft &&
+        HardwareKeyboard.instance.isShiftPressed) {
+      bloc.add(const PreviousTabActivated());
+      return KeyEventResult.handled;
+    }
+
     // Cmd/Ctrl + 1-8 → switch to tab by 1-based index
     final digitMap = {
       LogicalKeyboardKey.digit1: 0,
@@ -146,6 +160,10 @@ class _WorkspacePageState extends State<WorkspacePage> {
                   onPinTab: (id) => workspaceBloc.add(TabPinned(id)),
                   onDuplicateTab: (id) =>
                       workspaceBloc.add(TabDuplicated(id)),
+                  onCloseOtherTabs: (id) =>
+                      workspaceBloc.add(OtherTabsClosed(id)),
+                  onCloseTabsToTheRight: (id) =>
+                      workspaceBloc.add(TabsToTheRightClosed(id)),
                 ),
                 // ── Active canvas (toolbar + drawing surface) ────────────────
                 if (activeBloc != null)

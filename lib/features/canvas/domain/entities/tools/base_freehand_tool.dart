@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:perfect_freehand/perfect_freehand.dart';
 import 'package:y2notes2/features/canvas/domain/entities/point_data.dart';
@@ -5,6 +6,20 @@ import 'package:y2notes2/features/canvas/domain/entities/tools/drawing_tool.dart
 import 'package:y2notes2/features/canvas/domain/entities/tools/tool_settings.dart';
 
 abstract class BaseFreehandTool implements DrawingTool {
+  // ── Velocity-based streamline tuning constants ──────────────────────────
+  /// Maximum velocity value used for streamline adjustment.
+  static const double _maxVelocityForStreamline = 1.5;
+
+  /// How much velocity contributes to streamline increase.
+  static const double _velocityStreamlineScale = 0.15;
+
+  /// Hard ceiling for streamline to avoid over-smoothing.
+  static const double _maxStreamline = 0.95;
+
+  // ── Tilt thresholds ────────────────────────────────────────────────────
+  static const double _flatAngleRad = 0.5236; // 30°
+  static const double _normalAngleRad = 1.0472; // 60°
+
   Path buildFreehandPath(
     List<PointData> points,
     ToolSettings settings, {
@@ -14,15 +29,42 @@ abstract class BaseFreehandTool implements DrawingTool {
     bool simulatePressure = true,
   }) {
     if (points.isEmpty) return Path();
-    final freehandPoints =
-        points.map((p) => PointVector(p.x, p.y, p.pressure)).toList();
+
+    // ── Apply tiltSensitivity to modulate altitude-based width ────────────
+    // tiltSensitivity = 1.0 → full tilt range; 0.0 → tilt ignored.
+    final tiltSens = settings.tiltSensitivity.clamp(0.0, 2.0);
+    final freehandPoints = points.map((p) {
+      final rawTiltMultiplier = _tiltMultiplier(p.altitude);
+      // Blend toward 1.0 based on tiltSensitivity:
+      //   effective = 1.0 + (raw - 1.0) * tiltSens
+      final effective = 1.0 + (rawTiltMultiplier - 1.0) * tiltSens;
+      final modulatedPressure = (p.pressure * effective).clamp(0.0, 1.0);
+      return PointVector(p.x, p.y, modulatedPressure);
+    }).toList();
+
+    // ── Velocity-based dynamic streamline ─────────────────────────────────
+    // Faster strokes produce smoother paths (more streamline) to reduce
+    // jagged artifacts during quick writing.
+    double adjustedStreamline = streamline;
+    if (points.length >= 3) {
+      double avgVelocity = 0.0;
+      for (final p in points) {
+        avgVelocity += p.velocity;
+      }
+      avgVelocity /= points.length;
+      adjustedStreamline = (streamline +
+              avgVelocity.clamp(0.0, _maxVelocityForStreamline) *
+                  _velocityStreamlineScale)
+          .clamp(0.0, _maxStreamline);
+    }
+
     final outlinePoints = getStroke(
       freehandPoints,
       options: StrokeOptions(
         size: settings.size,
         thinning: thinning,
         smoothing: smoothing,
-        streamline: streamline,
+        streamline: adjustedStreamline,
         simulatePressure: simulatePressure,
       ),
     );
@@ -34,6 +76,14 @@ abstract class BaseFreehandTool implements DrawingTool {
     }
     path.close();
     return path;
+  }
+
+  /// Returns a width multiplier based on the pen altitude angle [radians].
+  static double _tiltMultiplier(double radians) {
+    if (radians < _flatAngleRad) return 2.0;
+    if (radians > _normalAngleRad) return 0.5;
+    final t = (radians - _flatAngleRad) / (_normalAngleRad - _flatAngleRad);
+    return 2.0 - 1.5 * t;
   }
 
   @override

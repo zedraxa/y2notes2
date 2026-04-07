@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:y2notes2/features/stickers/domain/entities/sticker_element.dart';
+import 'package:y2notes2/features/stickers/engine/stamp_brush_engine.dart';
 import 'package:y2notes2/features/stickers/engine/sticker_hit_tester.dart';
 import 'package:y2notes2/features/stickers/presentation/bloc/sticker_bloc.dart';
 import 'package:y2notes2/features/stickers/presentation/bloc/sticker_event.dart';
@@ -26,15 +27,17 @@ class _StickerInteractionHandlerState
   Offset? _dragStart;
   String? _draggingId;
   Offset? _dragStartStickerPosition;
+  StampBrushEngine? _brushEngine;
 
   @override
   Widget build(BuildContext context) =>
       BlocBuilder<StickerBloc, StickerState>(
         builder: (context, state) {
           final isPlacing = state.pendingPlacement != null;
+          final isBrushing = state.isStampBrushActive;
 
           return MouseRegion(
-            cursor: isPlacing
+            cursor: isPlacing || isBrushing
                 ? SystemMouseCursors.precise
                 : MouseCursor.defer,
             child: GestureDetector(
@@ -44,7 +47,7 @@ class _StickerInteractionHandlerState
                   _onLongPress(details, state, context),
               onPanStart: (details) => _onPanStart(details, state),
               onPanUpdate: (details) => _onPanUpdate(details, state),
-              onPanEnd: (_) => _onPanEnd(),
+              onPanEnd: (_) => _onPanEnd(state),
               child: widget.child,
             ),
           );
@@ -94,6 +97,13 @@ class _StickerInteractionHandlerState
   }
 
   void _onPanStart(DragStartDetails details, StickerState state) {
+    // Stamp brush mode: start painting trail
+    if (state.isStampBrushActive) {
+      _brushEngine = StampBrushEngine(stampId: state.stampBrushId!);
+      _brushEngine!.onDragStart(details.localPosition);
+      return;
+    }
+
     if (state.pendingPlacement != null) return;
     final hit =
         StickerHitTester.hitTest(state.stickers, details.localPosition);
@@ -106,6 +116,12 @@ class _StickerInteractionHandlerState
   }
 
   void _onPanUpdate(DragUpdateDetails details, StickerState state) {
+    // Stamp brush mode: continue painting trail
+    if (_brushEngine != null) {
+      _brushEngine!.onDragUpdate(details.localPosition);
+      return;
+    }
+
     if (_draggingId == null ||
         _dragStart == null ||
         _dragStartStickerPosition == null) {
@@ -116,7 +132,17 @@ class _StickerInteractionHandlerState
     context.read<StickerBloc>().add(StickerMoved(_draggingId!, newPos));
   }
 
-  void _onPanEnd() {
+  void _onPanEnd(StickerState state) {
+    // Stamp brush mode: finalize trail
+    if (_brushEngine != null) {
+      final trail = _brushEngine!.onDragEnd();
+      if (trail.isNotEmpty) {
+        context.read<StickerBloc>().add(StampBrushTrailPlaced(trail));
+      }
+      _brushEngine = null;
+      return;
+    }
+
     _draggingId = null;
     _dragStart = null;
     _dragStartStickerPosition = null;

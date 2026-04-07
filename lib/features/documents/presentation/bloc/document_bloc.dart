@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uuid/uuid.dart';
+import 'package:y2notes2/features/audio_sync/domain/entities/audio_recording.dart';
 import 'package:y2notes2/features/canvas/domain/models/canvas_config.dart';
 import 'package:y2notes2/features/documents/data/document_repository.dart';
 import 'package:y2notes2/features/documents/domain/entities/import_history_entry.dart';
@@ -52,7 +53,19 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
     on<ImportMultipleImages>(_onImportMultipleImages);
     on<ImportImageFromPath>(_onImportImageFromPath);
     on<ClearImportHistory>(_onClearImportHistory);
+    on<ImportScannedDocument>(_onImportScannedDocument);
     on<ClearDocumentStatus>(_onClearStatus);
+    on<RenameNotebook>(_onRenameNotebook);
+    on<UpdateNotebookDescription>(_onUpdateNotebookDescription);
+    on<UpdatePageTitle>(_onUpdatePageTitle);
+    on<TogglePageBookmark>(_onTogglePageBookmark);
+    on<ToggleOutlinePanel>(_onToggleOutlinePanel);
+    on<UpdatePagePdfAnnotations>(_onUpdatePagePdfAnnotations);
+    on<GoToNextPage>(_onGoToNextPage);
+    on<GoToPreviousPage>(_onGoToPreviousPage);
+    on<UpdatePageAudioRecordings>(
+      _onUpdatePageAudioRecordings,
+    );
   }
 
   /// Optional repository for persisting/loading notebooks.
@@ -189,9 +202,11 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
     final duplicate = NotebookPage(
       id: _uuid.v4(),
       pageNumber: source.pageNumber + 1,
+      title: source.title,
       strokes: List.of(source.strokes),
       shapes: List.of(source.shapes),
       stickers: List.of(source.stickers),
+      richTexts: List.of(source.richTexts),
       config: source.config,
     );
 
@@ -626,6 +641,80 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
   ) =>
       emit(state.copyWith(importHistory: []));
 
+  // ── Scanner import ────────────────────────────────────────────────────────
+
+  Future<void> _onImportScannedDocument(
+    ImportScannedDocument event,
+    Emitter<DocumentState> emit,
+  ) async {
+    final scanResult = event.scanResult;
+    if (!scanResult.hasPages) {
+      emit(state.copyWith(
+        status: DocumentOperationStatus.error,
+        errorMessage: 'No pages in scanned document.',
+      ));
+      return;
+    }
+
+    emit(state.copyWith(
+      isImporting: true,
+      status: DocumentOperationStatus.inProgress,
+      importProgress: 0.0,
+    ));
+
+    try {
+      final pages = <NotebookPage>[];
+      for (var i = 0; i < scanResult.pages.length; i++) {
+        final scanned = scanResult.pages[i];
+        pages.add(NotebookPage(
+          pageNumber: (state.notebook?.pageCount ?? 0) +
+              i +
+              1,
+          backgroundImage: scanned.processedImage,
+          config: CanvasConfig(
+            width: scanned.width,
+            height: scanned.height,
+            template: PageTemplate.blank,
+          ),
+        ));
+
+        emit(state.copyWith(
+          importProgress:
+              (i + 1) / scanResult.pages.length,
+        ));
+      }
+
+      final nb = state.notebook;
+      Notebook updated;
+      if (nb != null) {
+        var result = nb;
+        for (final page in pages) {
+          result = result.addPage(page);
+        }
+        updated = result;
+      } else {
+        updated = Notebook(
+          title: scanResult.title ?? 'Scanned Document',
+          pages: pages,
+        );
+      }
+
+      emit(state.copyWith(
+        notebook: updated,
+        currentPageIndex: updated.pageCount - 1,
+        isImporting: false,
+        status: DocumentOperationStatus.success,
+        importProgress: 1.0,
+      ));
+    } catch (e) {
+      emit(state.copyWith(
+        isImporting: false,
+        status: DocumentOperationStatus.error,
+        errorMessage: 'Scan import failed: $e',
+      ));
+    }
+  }
+
   // ── Shared import helper ──────────────────────────────────────────────────
 
   /// Converts an [ImportResult] into notebook pages and applies them
@@ -719,6 +808,122 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
         exportProgress: 0.0,
         importProgress: 0.0,
       ));
+
+  // ── Notebook metadata ─────────────────────────────────────────────────────
+
+  void _onRenameNotebook(
+    RenameNotebook event,
+    Emitter<DocumentState> emit,
+  ) {
+    final nb = state.notebook;
+    if (nb == null) return;
+    emit(state.copyWith(notebook: nb.copyWith(title: event.title)));
+  }
+
+  void _onUpdateNotebookDescription(
+    UpdateNotebookDescription event,
+    Emitter<DocumentState> emit,
+  ) {
+    final nb = state.notebook;
+    if (nb == null) return;
+    if (event.description == null) {
+      emit(state.copyWith(
+        notebook: nb.copyWith(clearDescription: true),
+      ));
+    } else {
+      emit(state.copyWith(
+        notebook: nb.copyWith(description: event.description),
+      ));
+    }
+  }
+
+  // ── Page metadata ─────────────────────────────────────────────────────────
+
+  void _onUpdatePageTitle(
+    UpdatePageTitle event,
+    Emitter<DocumentState> emit,
+  ) {
+    final nb = state.notebook;
+    if (nb == null) return;
+
+    final page = nb.pages[event.pageIndex];
+    final updated = event.title == null
+        ? page.copyWith(clearTitle: true)
+        : page.copyWith(title: event.title);
+    emit(state.copyWith(notebook: nb.updatePage(event.pageIndex, updated)));
+  }
+
+  void _onTogglePageBookmark(
+    TogglePageBookmark event,
+    Emitter<DocumentState> emit,
+  ) {
+    final nb = state.notebook;
+    if (nb == null) return;
+
+    final page = nb.pages[event.pageIndex];
+    final updated = page.copyWith(isBookmarked: !page.isBookmarked);
+    emit(state.copyWith(notebook: nb.updatePage(event.pageIndex, updated)));
+  }
+
+  // ── Outline panel ─────────────────────────────────────────────────────────
+
+  void _onToggleOutlinePanel(
+    ToggleOutlinePanel event,
+    Emitter<DocumentState> emit,
+  ) =>
+      emit(state.copyWith(isOutlineOpen: !state.isOutlineOpen));
+
+  // ── PDF annotations ──────────────────────────────────────────────────────
+
+  void _onUpdatePagePdfAnnotations(
+    UpdatePagePdfAnnotations event,
+    Emitter<DocumentState> emit,
+  ) {
+    final nb = state.notebook;
+    if (nb == null) return;
+    if (event.pageIndex < 0 || event.pageIndex >= nb.pages.length) return;
+    final page = nb.pages[event.pageIndex].copyWith(
+      pdfAnnotations: event.annotations,
+    );
+    emit(state.copyWith(notebook: nb.updatePage(event.pageIndex, page)));
+  }
+
+  // ── Convenience navigation ─────────────────────────────────────────────
+
+  void _onGoToNextPage(
+    GoToNextPage event,
+    Emitter<DocumentState> emit,
+  ) {
+    if (!state.canGoForward) return;
+    emit(state.copyWith(currentPageIndex: state.currentPageIndex + 1));
+  }
+
+  void _onGoToPreviousPage(
+    GoToPreviousPage event,
+    Emitter<DocumentState> emit,
+  ) {
+    if (!state.canGoBack) return;
+    emit(state.copyWith(currentPageIndex: state.currentPageIndex - 1));
+  }
+
+  // ── Audio recordings ──────────────────────────────────────────────────────
+
+  void _onUpdatePageAudioRecordings(
+    UpdatePageAudioRecordings event,
+    Emitter<DocumentState> emit,
+  ) {
+    final nb = state.notebook;
+    if (nb == null) return;
+    final recordings = event.recordings
+        .whereType<AudioRecording>()
+        .toList();
+    final page = nb.pages[event.pageIndex].copyWith(
+      audioRecordings: recordings,
+    );
+    emit(state.copyWith(
+      notebook: nb.updatePage(event.pageIndex, page),
+    ));
+  }
 
   List<NotebookPage> _renumber(List<NotebookPage> pages) => pages
       .asMap()

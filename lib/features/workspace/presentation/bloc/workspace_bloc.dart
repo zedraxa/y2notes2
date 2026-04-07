@@ -19,6 +19,12 @@ class WorkspaceBloc extends Bloc<WorkspaceEvent, WorkspaceState> {
     on<TabRenamed>(_onTabRenamed);
     on<TabPinned>(_onTabPinned);
     on<TabDuplicated>(_onTabDuplicated);
+    on<OtherTabsClosed>(_onOtherTabsClosed);
+    on<TabsToTheRightClosed>(_onTabsToTheRightClosed);
+    on<TabMarkedModified>(_onTabMarkedModified);
+    on<TabMarkedSaved>(_onTabMarkedSaved);
+    on<NextTabActivated>(_onNextTabActivated);
+    on<PreviousTabActivated>(_onPreviousTabActivated);
   }
 
   final _uuid = const Uuid();
@@ -129,5 +135,69 @@ class WorkspaceBloc extends Bloc<WorkspaceEvent, WorkspaceState> {
     final tabs = List<TabSession>.of(state.tabs)
       ..insert(sourceIndex + 1, duplicate);
     emit(state.copyWith(tabs: tabs, activeTabId: newId));
+  }
+
+  void _onOtherTabsClosed(
+      OtherTabsClosed event, Emitter<WorkspaceState> emit) {
+    final kept = state.tabs.where(
+      (t) => t.id == event.tabId || t.isPinned,
+    ).toList();
+    // Always keep at least the target tab.
+    if (kept.isEmpty) return;
+    emit(state.copyWith(tabs: kept, activeTabId: event.tabId));
+  }
+
+  void _onTabsToTheRightClosed(
+      TabsToTheRightClosed event, Emitter<WorkspaceState> emit) {
+    final targetIndex = state.tabs.indexWhere((t) => t.id == event.tabId);
+    if (targetIndex < 0) return;
+    final kept = <TabSession>[];
+    for (var i = 0; i < state.tabs.length; i++) {
+      // Keep tabs at or before the target, plus any pinned tabs after.
+      if (i <= targetIndex || state.tabs[i].isPinned) {
+        kept.add(state.tabs[i]);
+      }
+    }
+    // If active tab was among closed tabs, switch to the target.
+    final activeStillExists = kept.any((t) => t.id == state.activeTabId);
+    emit(state.copyWith(
+      tabs: kept,
+      activeTabId: activeStillExists ? state.activeTabId : event.tabId,
+    ));
+  }
+
+  void _onTabMarkedModified(
+      TabMarkedModified event, Emitter<WorkspaceState> emit) {
+    final tabs = state.tabs.map((t) {
+      if (t.id == event.tabId) return t.copyWith(isModified: true);
+      return t;
+    }).toList();
+    emit(state.copyWith(tabs: tabs));
+  }
+
+  void _onTabMarkedSaved(
+      TabMarkedSaved event, Emitter<WorkspaceState> emit) {
+    final tabs = state.tabs.map((t) {
+      if (t.id == event.tabId) return t.copyWith(isModified: false);
+      return t;
+    }).toList();
+    emit(state.copyWith(tabs: tabs));
+  }
+
+  void _onNextTabActivated(
+      NextTabActivated event, Emitter<WorkspaceState> emit) {
+    if (state.tabs.length <= 1) return;
+    final currentIndex = state.activeTabIndex;
+    final nextIndex = (currentIndex + 1) % state.tabs.length;
+    emit(state.copyWith(activeTabId: state.tabs[nextIndex].id));
+  }
+
+  void _onPreviousTabActivated(
+      PreviousTabActivated event, Emitter<WorkspaceState> emit) {
+    if (state.tabs.length <= 1) return;
+    final currentIndex = state.activeTabIndex;
+    final prevIndex =
+        (currentIndex - 1 + state.tabs.length) % state.tabs.length;
+    emit(state.copyWith(activeTabId: state.tabs[prevIndex].id));
   }
 }

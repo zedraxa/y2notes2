@@ -5,13 +5,22 @@ class RatingWidget extends SmartWidget {
   RatingWidget({
     super.id,
     super.position = Offset.zero,
-    super.size = const Size(200, 80),
+    super.size = const Size(220, 100),
     Map<String, dynamic>? config,
     Map<String, dynamic>? state,
   }) : super(
           type: SmartWidgetType.rating,
-          config: config ?? const {'maxStars': 5, 'useEmoji': false},
-          state: state ?? const {'rating': 0},
+          config: config ??
+              const {
+                'maxStars': 5,
+                'useEmoji': false,
+                'allowHalf': true,
+              },
+          state: state ??
+              const {
+                'rating': 0.0,
+                'label': '',
+              },
         );
 
   @override
@@ -35,69 +44,207 @@ class RatingWidget extends SmartWidget {
       );
 
   @override
-  Widget buildInteractiveOverlay(BuildContext context,
-          {required ValueChanged<Map<String, dynamic>> onStateChanged}) =>
-      _RatingOverlay(widget: this, onStateChanged: onStateChanged);
+  Widget buildInteractiveOverlay(
+    BuildContext context, {
+    required ValueChanged<Map<String, dynamic>> onStateChanged,
+  }) =>
+      _RatingOverlay(
+        widget: this,
+        onStateChanged: onStateChanged,
+      );
 }
 
 class _RatingOverlay extends StatefulWidget {
-  const _RatingOverlay(
-      {required this.widget, required this.onStateChanged});
+  const _RatingOverlay({
+    required this.widget,
+    required this.onStateChanged,
+  });
   final RatingWidget widget;
   final ValueChanged<Map<String, dynamic>> onStateChanged;
 
   @override
-  State<_RatingOverlay> createState() => _RatingOverlayState();
+  State<_RatingOverlay> createState() =>
+      _RatingOverlayState();
 }
 
-class _RatingOverlayState extends State<_RatingOverlay> {
-  late int _rating;
+class _RatingOverlayState
+    extends State<_RatingOverlay> {
+  late double _rating;
+  late String _label;
 
   @override
   void initState() {
     super.initState();
-    _rating = widget.widget.state['rating'] as int? ?? 0;
+    _rating = (widget.widget.state['rating'] as num?)
+            ?.toDouble() ??
+        0.0;
+    _label =
+        widget.widget.state['label'] as String? ?? '';
+  }
+
+  int get _maxStars =>
+      widget.widget.config['maxStars'] as int? ?? 5;
+  bool get _useEmoji =>
+      widget.widget.config['useEmoji'] as bool? ??
+      false;
+  bool get _allowHalf =>
+      widget.widget.config['allowHalf'] as bool? ??
+      true;
+
+  void _notify() {
+    widget.onStateChanged({
+      'rating': _rating,
+      'label': _label,
+    });
+  }
+
+  String get _ratingText {
+    if (_rating == 0) return 'Tap to rate';
+    if (_rating == _rating.roundToDouble()) {
+      return '${_rating.toInt()}/$_maxStars';
+    }
+    return '${_rating.toStringAsFixed(1)}/$_maxStars';
   }
 
   @override
-  Widget build(BuildContext context) {
-    final maxStars = widget.widget.config['maxStars'] as int? ?? 5;
-    final useEmoji = widget.widget.config['useEmoji'] as bool? ?? false;
-
-    return Material(
-      elevation: 2,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: List.generate(maxStars, (i) {
-            final filled = i < _rating;
-            return GestureDetector(
-              onTap: () {
-                setState(() => _rating = i + 1);
-                widget.onStateChanged({'rating': _rating});
-              },
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 2),
-                child: useEmoji
-                    ? Text(
-                        filled ? '😍' : '😶',
-                        style: const TextStyle(fontSize: 28),
-                      )
-                    : Icon(
-                        filled ? Icons.star_rounded : Icons.star_border_rounded,
-                        color: filled ? Colors.amber : Colors.grey.shade400,
-                        size: 32,
-                      ),
+  Widget build(BuildContext context) => Material(
+        elevation: 2,
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Column(
+            mainAxisAlignment:
+                MainAxisAlignment.center,
+            children: [
+              // Stars row
+              Row(
+                mainAxisAlignment:
+                    MainAxisAlignment.center,
+                children: List.generate(
+                  _maxStars,
+                  (i) => _buildStar(i),
+                ),
               ),
-            );
-          }),
+              const SizedBox(height: 4),
+              // Rating text
+              Row(
+                mainAxisAlignment:
+                    MainAxisAlignment.center,
+                children: [
+                  Text(
+                    _ratingText,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: _rating > 0
+                          ? Colors.amber.shade700
+                          : Colors.grey.shade400,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  if (_rating > 0) ...[
+                    const SizedBox(width: 6),
+                    GestureDetector(
+                      onTap: () {
+                        setState(
+                          () => _rating = 0,
+                        );
+                        _notify();
+                      },
+                      child: Icon(
+                        Icons.close,
+                        size: 14,
+                        color: Colors.grey.shade400,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+              // Optional label
+              if (_label.isNotEmpty)
+                Padding(
+                  padding:
+                      const EdgeInsets.only(top: 2),
+                  child: Text(
+                    _label,
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: Colors.grey.shade600,
+                    ),
+                  ),
+                ),
+            ],
+          ),
         ),
+      );
+
+  Widget _buildStar(int index) {
+    final starValue = index + 1.0;
+    final halfValue = index + 0.5;
+
+    if (_useEmoji) {
+      return GestureDetector(
+        onTap: () {
+          setState(() {
+            _rating = _rating == starValue
+                ? (_allowHalf ? halfValue : 0)
+                : starValue;
+          });
+          _notify();
+        },
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: 2,
+          ),
+          child: Text(
+            _rating >= starValue
+                ? '😍'
+                : _rating >= halfValue
+                    ? '🙂'
+                    : '😶',
+            style: const TextStyle(fontSize: 28),
+          ),
+        ),
+      );
+    }
+
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          if (_rating == starValue && _allowHalf) {
+            _rating = halfValue;
+          } else if (_rating == halfValue) {
+            _rating = 0;
+          } else {
+            _rating = starValue;
+          }
+        });
+        _notify();
+      },
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: 2,
+        ),
+        child: _rating >= starValue
+            ? Icon(
+                Icons.star_rounded,
+                color: Colors.amber,
+                size: 32,
+              )
+            : _rating >= halfValue
+                ? Icon(
+                    Icons.star_half_rounded,
+                    color: Colors.amber,
+                    size: 32,
+                  )
+                : Icon(
+                    Icons.star_border_rounded,
+                    color: Colors.grey.shade400,
+                    size: 32,
+                  ),
       ),
     );
   }

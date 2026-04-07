@@ -4,9 +4,11 @@ import 'package:y2notes2/features/documents/domain/models/import_options.dart';
 import 'package:y2notes2/features/documents/presentation/bloc/document_bloc.dart';
 import 'package:y2notes2/features/documents/presentation/bloc/document_event.dart';
 import 'package:y2notes2/features/documents/presentation/bloc/document_state.dart';
+import 'package:y2notes2/features/scanner/domain/entities/scanned_document.dart';
+import 'package:y2notes2/features/scanner/presentation/pages/document_scanner_page.dart';
 
 /// A toolbar button that triggers PDF or image imports. Shows a popup menu
-/// with options for PDF, single image, and multiple images. Displays an
+/// with options for scanning, PDF, single image, and multiple images. Displays an
 /// inline progress indicator while an import is in progress.
 class ImportButton extends StatelessWidget {
   const ImportButton({super.key});
@@ -26,6 +28,15 @@ class ImportButton extends StatelessWidget {
           icon: const Icon(Icons.file_upload_outlined),
           tooltip: 'Import',
           itemBuilder: (_) => [
+            const PopupMenuItem(
+              value: _ImportType.scan,
+              child: ListTile(
+                leading: Icon(Icons.document_scanner_outlined),
+                title: Text('Scan Document'),
+                contentPadding: EdgeInsets.zero,
+              ),
+            ),
+            const PopupMenuDivider(),
             const PopupMenuItem(
               value: _ImportType.pdf,
               child: ListTile(
@@ -104,6 +115,24 @@ class ImportButton extends StatelessWidget {
                 : ImportMode.newNotebook,
           ),
         ));
+      case _ImportType.scan:
+        _openScanner(context, bloc);
+    }
+  }
+
+  Future<void> _openScanner(
+    BuildContext context,
+    DocumentBloc bloc,
+  ) async {
+    final result = await Navigator.of(context).push<ScanResult>(
+      MaterialPageRoute(
+        fullscreenDialog: true,
+        builder: (_) => const DocumentScannerPage(),
+      ),
+    );
+
+    if (result != null) {
+      bloc.add(ImportScannedDocument(scanResult: result));
     }
   }
 }
@@ -141,4 +170,4 @@ class _ImportProgressIndicator extends StatelessWidget {
   }
 }
 
-enum _ImportType { pdf, pdfAppend, image, multipleImages }
+enum _ImportType { scan, pdf, pdfAppend, image, multipleImages }

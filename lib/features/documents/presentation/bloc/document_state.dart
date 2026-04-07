@@ -24,6 +24,7 @@ class DocumentState extends Equatable {
     this.isImporting = false,
     this.importHistory = const [],
     this.lastImportPageCount = 0,
+    this.isOutlineOpen = false,
   });
 
   /// The currently open notebook, or `null` when none is open.
@@ -56,6 +57,9 @@ class DocumentState extends Equatable {
   /// Number of pages created in the most recent import.
   final int lastImportPageCount;
 
+  /// Whether the outline/table-of-contents panel is visible.
+  final bool isOutlineOpen;
+
   bool get hasNotebook => notebook != null;
 
   int get pageCount => notebook?.pageCount ?? 0;
@@ -81,6 +85,7 @@ class DocumentState extends Equatable {
     bool? isImporting,
     List<ImportHistoryEntry>? importHistory,
     int? lastImportPageCount,
+    bool? isOutlineOpen,
   }) =>
       DocumentState(
         notebook: clearNotebook ? null : (notebook ?? this.notebook),
@@ -96,6 +101,7 @@ class DocumentState extends Equatable {
         isImporting: isImporting ?? this.isImporting,
         importHistory: importHistory ?? this.importHistory,
         lastImportPageCount: lastImportPageCount ?? this.lastImportPageCount,
+        isOutlineOpen: isOutlineOpen ?? this.isOutlineOpen,
       );
 
   @override
@@ -111,5 +117,6 @@ class DocumentState extends Equatable {
         isImporting,
         importHistory,
         lastImportPageCount,
+        isOutlineOpen,
       ];
 }
