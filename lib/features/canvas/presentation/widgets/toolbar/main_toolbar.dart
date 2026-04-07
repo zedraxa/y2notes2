@@ -12,6 +12,8 @@ import 'package:y2notes2/features/canvas/presentation/widgets/toolbar/effects_to
 import 'package:y2notes2/features/canvas/presentation/widgets/toolbar/pen_picker.dart';
 import 'package:y2notes2/features/canvas/presentation/widgets/toolbar/thickness_slider.dart';
 import 'package:y2notes2/features/canvas/presentation/widgets/toolbar/tool_picker_panel.dart';
+import 'package:y2notes2/features/documents/presentation/bloc/document_bloc.dart';
+import 'package:y2notes2/features/documents/presentation/pages/notebook_page_view.dart';
 
 /// GoodNotes-style thin top toolbar.
 class MainToolbar extends StatelessWidget {
@@ -79,6 +81,9 @@ class MainToolbar extends StatelessWidget {
                 // ── Undo / Redo ────────────────────────────────────────────
                 _UndoRedoButtons(state: state, bloc: bloc),
                 const Spacer(),
+                // ── Export / Import ────────────────────────────────────────
+                const DocumentToolbarActions(),
+                const _Divider(),
                 // ── Settings ──────────────────────────────────────────────
                 IconButton(
                   icon: const Icon(Icons.settings_outlined),
