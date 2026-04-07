@@ -5,6 +5,7 @@ import 'package:y2notes2/core/engine/haptic_controller.dart';
 import 'package:y2notes2/core/services/settings_service.dart';
 import 'package:y2notes2/features/canvas/domain/entities/tools/tool_registry.dart';
 import 'package:y2notes2/features/canvas/presentation/bloc/canvas_bloc.dart';
+import 'package:y2notes2/features/collaboration/presentation/bloc/collaboration_bloc.dart';
 import 'package:y2notes2/features/shapes/presentation/bloc/shape_bloc.dart';
 import 'package:y2notes2/features/stickers/presentation/bloc/sticker_bloc.dart';
 import 'package:y2notes2/features/workspace/presentation/bloc/workspace_bloc.dart';
@@ -41,6 +42,13 @@ void main() async {
           ),
           BlocProvider(
             create: (_) => StickerBloc(),
+          ),
+          BlocProvider(
+            create: (_) => CollaborationBloc(
+              // Use placeholder IDs — in a real app these come from auth.
+              localUserId: 'local_user',
+              localDisplayName: 'Me',
+            ),
           ),
         ],
         child: Y2NotesApp(settingsService: settingsService),

@@ -15,6 +15,7 @@ import 'package:y2notes2/features/canvas/presentation/widgets/toolbar/tool_picke
 import 'package:y2notes2/features/canvas/presentation/widgets/toolbar/tool_settings_panel.dart';
 import 'package:y2notes2/features/shapes/domain/entities/shape_type.dart';
 import 'package:y2notes2/features/shapes/presentation/widgets/shape_type_picker.dart';
+import 'package:y2notes2/features/collaboration/presentation/widgets/share_button.dart';
 import 'package:y2notes2/features/stickers/presentation/bloc/sticker_bloc.dart';
 import 'package:y2notes2/features/stickers/presentation/bloc/sticker_event.dart';
 import 'package:y2notes2/features/stickers/presentation/widgets/sticker_picker_panel.dart';
@@ -94,6 +95,9 @@ class MainToolbar extends StatelessWidget {
                 // ── Undo / Redo ────────────────────────────────────────────
                 _UndoRedoButtons(state: state, bloc: bloc),
                 const Spacer(),
+                // ── Collaboration / Share ───────────────────────────────────
+                const ShareButton(),
+                const _Divider(),
                 // ── Stickers ───────────────────────────────────────────────
                 IconButton(
                   icon: const Icon(Icons.emoji_emotions_outlined),

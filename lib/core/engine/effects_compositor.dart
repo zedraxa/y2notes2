@@ -19,10 +19,11 @@ import 'package:y2notes2/features/stickers/engine/sticker_renderer.dart';
 ///  4. Placed shapes (ShapeElement list)
 ///  5. Active stroke (live vector, drawn on top of shapes)
 ///  6. Stickers & stamps
+///  7. Remote cursors (collaboration layer — top-most)
 ///
 /// Future layers (handled by the effects engine and subsequent PRs):
-///  7. Interaction effects
-///  8. UI overlay (selection handles)
+///  8. Interaction effects
+///  9. UI overlay (selection handles)
 class EffectsCompositor {
   EffectsCompositor({
     required this.strokeRenderer,
