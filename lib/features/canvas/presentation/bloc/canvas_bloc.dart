@@ -8,6 +8,8 @@ import 'package:y2notes2/features/canvas/domain/entities/tools/tool_registry.dar
 import 'package:y2notes2/features/canvas/domain/models/viewport.dart';
 import 'package:y2notes2/features/canvas/presentation/bloc/canvas_event.dart';
 import 'package:y2notes2/features/canvas/presentation/bloc/canvas_state.dart';
+import 'package:y2notes2/features/shapes/domain/entities/shape_element.dart';
+import 'package:y2notes2/features/shapes/engine/shape_recognizer.dart';
 
 /// BLoC that manages all canvas state transitions.
 class CanvasBloc extends Bloc<CanvasEvent, CanvasState> {
@@ -30,6 +32,17 @@ class CanvasBloc extends Bloc<CanvasEvent, CanvasState> {
     on<ViewportChanged>(_onViewportChanged);
     on<DrawingToolChanged>(_onDrawingToolChanged);
     on<ToolSettingsChanged>(_onToolSettingsChanged);
+    // Shape events
+    on<ShapeAdded>(_onShapeAdded);
+    on<ShapeUpdated>(_onShapeUpdated);
+    on<ShapeDeleted>(_onShapeDeleted);
+    on<ShapeSelected>(_onShapeSelected);
+    on<ShapeDeselected>(_onShapeDeselected);
+    on<AutoShapeRecognitionToggled>(_onAutoShapeRecognitionToggled);
+    on<ShapeRecognitionAccepted>(_onShapeRecognitionAccepted);
+    on<ShapeRecognitionRejected>(_onShapeRecognitionRejected);
+    on<ShapeToolActivated>(_onShapeToolActivated);
+    on<ShapeToolDeactivated>(_onShapeToolDeactivated);
   }
 
   final SettingsService _settings;
@@ -71,6 +84,8 @@ class CanvasBloc extends Bloc<CanvasEvent, CanvasState> {
       strokes: capped,
       clearActiveStroke: true,
     ));
+    // Attempt shape recognition when enabled (pass stroke before it was cleared).
+    _tryRecognizeStroke(active, emit);
   }
 
   void _onUndo(UndoRequested event, Emitter<CanvasState> emit) {
@@ -145,4 +160,88 @@ class CanvasBloc extends Bloc<CanvasEvent, CanvasState> {
 
   void _onToolSettingsChanged(ToolSettingsChanged event, Emitter<CanvasState> emit) =>
       emit(state.copyWith(activeToolSettings: event.settings));
+
+  // ─── Shape event handlers ────────────────────────────────────────────────
+
+  void _onShapeAdded(ShapeAdded event, Emitter<CanvasState> emit) {
+    final shapes = [...state.shapes, event.shape];
+    emit(state.copyWith(shapes: shapes, shapeRedoStack: []));
+  }
+
+  void _onShapeUpdated(ShapeUpdated event, Emitter<CanvasState> emit) {
+    final shapes = state.shapes
+        .map((s) => s.id == event.shape.id ? event.shape : s)
+        .toList();
+    emit(state.copyWith(shapes: shapes));
+  }
+
+  void _onShapeDeleted(ShapeDeleted event, Emitter<CanvasState> emit) {
+    final shapes =
+        state.shapes.where((s) => s.id != event.shapeId).toList();
+    final wasSelected = state.selectedShapeId == event.shapeId;
+    emit(state.copyWith(
+      shapes: shapes,
+      clearShapeSelection: wasSelected,
+    ));
+  }
+
+  void _onShapeSelected(ShapeSelected event, Emitter<CanvasState> emit) =>
+      emit(state.copyWith(selectedShapeId: event.shapeId));
+
+  void _onShapeDeselected(ShapeDeselected event, Emitter<CanvasState> emit) =>
+      emit(state.copyWith(clearShapeSelection: true));
+
+  void _onAutoShapeRecognitionToggled(
+      AutoShapeRecognitionToggled event, Emitter<CanvasState> emit) =>
+      emit(state.copyWith(autoShapeRecognition: event.enabled));
+
+  /// Called after [_onStrokeEnded] — run recognition if enabled.
+  void _tryRecognizeStroke(Stroke stroke, Emitter<CanvasState> emit) {
+    if (!state.autoShapeRecognition) return;
+    final result = ShapeRecognizer.recognize(stroke.points);
+    if (result == null || result.confidence < ShapeRecognizer.autoConvertThreshold) return;
+    emit(state.copyWith(shapeRecognitionProposal: result));
+  }
+
+  void _onShapeRecognitionAccepted(
+      ShapeRecognitionAccepted event, Emitter<CanvasState> emit) {
+    final proposal = state.shapeRecognitionProposal;
+    if (proposal == null) return;
+
+    final shape = ShapeRecognizer.toShapeElement(
+      proposal,
+      strokeColor: state.activeColor,
+      strokeWidth: state.activeWidth,
+    );
+
+    // Remove the last committed stroke (the freehand that was recognised).
+    final strokes = state.strokes.isEmpty
+        ? state.strokes
+        : state.strokes.sublist(0, state.strokes.length - 1);
+
+    emit(state.copyWith(
+      shapes: [...state.shapes, shape],
+      strokes: strokes,
+      clearShapeProposal: true,
+    ));
+  }
+
+  void _onShapeRecognitionRejected(
+      ShapeRecognitionRejected event, Emitter<CanvasState> emit) =>
+      emit(state.copyWith(clearShapeProposal: true));
+
+  void _onShapeToolActivated(
+      ShapeToolActivated event, Emitter<CanvasState> emit) =>
+      emit(state.copyWith(
+        isShapeMode: true,
+        activeShapeType: event.type,
+      ));
+
+  void _onShapeToolDeactivated(
+      ShapeToolDeactivated event, Emitter<CanvasState> emit) =>
+      emit(state.copyWith(
+        isShapeMode: false,
+        clearActiveShapeType: true,
+        clearShapeSelection: true,
+      ));
 }
