@@ -28,6 +28,7 @@ class CanvasSettingsPage extends StatelessWidget {
               bloc: bloc,
               settings: settings,
               current: state.config.template,
+              config: state.config,
             ),
             const Divider(height: 24),
             _SectionHeader('Spacing'),
@@ -89,11 +90,13 @@ class _PageTemplateSelector extends StatelessWidget {
     required this.bloc,
     required this.settings,
     required this.current,
+    required this.config,
   });
 
   final CanvasBloc bloc;
   final SettingsService settings;
   final PageTemplate current;
+  final CanvasConfig config;
 
   static const _templates = [
     (PageTemplate.blank, 'Blank', Icons.crop_square_outlined),
@@ -118,7 +121,7 @@ class _PageTemplateSelector extends StatelessWidget {
             selected: isSelected,
             onSelected: (_) {
               bloc.add(CanvasConfigUpdated(
-                CanvasConfig(template: entry.$1),
+                config.copyWith(template: entry.$1),
               ));
               settings.setPageTemplate(entry.$1.name);
             },
