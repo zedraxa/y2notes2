@@ -10,15 +10,17 @@ import 'package:y2notes2/features/shapes/engine/shape_renderer.dart';
 
 /// Composites all rendering layers in the correct order.
 ///
-/// Layer order:
-///  1. Page background template
-///  2. Committed strokes bitmap cache
+/// Implemented layers:
+///  1. Page background template (drawn by PageBackgroundPainter)
+///  2. Committed strokes bitmap cache (or live stroke list if cache is absent)
 ///  3. Writing effects on completed strokes
-///  4. **Shape layer** (placed shapes)
-///  5. Active stroke (live vector)
+///  4. Placed shapes (ShapeElement list)
+///  5. Active stroke (live vector, drawn on top of shapes)
+///
+/// Future layers (handled by the effects engine and subsequent PRs):
 ///  6. Active writing effects (trail particles, pressure bloom)
-///  7. Interaction effects (stub)
-///  8. UI overlay (selection handles — stub)
+///  7. Interaction effects
+///  8. UI overlay (selection handles)
 class EffectsCompositor {
   EffectsCompositor({
     required this.strokeRenderer,
@@ -65,7 +67,7 @@ class EffectsCompositor {
       strokeRenderer.renderStroke(canvas, activeStroke, activeToolSettings);
     }
 
-    // Layers 6-8 are handled by the effects engine and future PRs.
+    // Layers 6–8 are handled by the effects engine and future PRs.
   }
 
   void _drawBackground(Canvas canvas, Size size, CanvasConfig config) {

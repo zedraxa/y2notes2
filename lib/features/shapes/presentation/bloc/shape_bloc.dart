@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uuid/uuid.dart';
+import 'package:y2notes2/core/extensions/iterable_extensions.dart';
 import 'package:y2notes2/features/canvas/presentation/bloc/canvas_bloc.dart';
 import 'package:y2notes2/features/canvas/presentation/bloc/canvas_event.dart' as canvas_event;
 import '../../domain/entities/shape_element.dart';
@@ -239,12 +240,5 @@ class ShapeBloc extends Bloc<ShapeEvent, ShapeState> {
       b = tmp;
     }
     return Rect.fromLTRB(l, t, r, b);
-  }
-}
-
-extension _FirstOrNull<T> on Iterable<T> {
-  T? get firstOrNull {
-    final it = iterator;
-    return it.moveNext() ? it.current : null;
   }
 }

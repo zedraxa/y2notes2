@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:y2notes2/core/engine/canvas_engine.dart';
+import 'package:y2notes2/core/extensions/iterable_extensions.dart';
 import 'package:y2notes2/features/canvas/domain/entities/point_data.dart';
 import 'package:y2notes2/features/canvas/domain/entities/stroke.dart';
 import 'package:y2notes2/features/canvas/domain/entities/tools/tool_settings.dart';
@@ -341,11 +342,4 @@ class _ShapeRecognitionBanner extends StatelessWidget {
 
   static String _capitalize(String s) =>
       s.isEmpty ? s : '${s[0].toUpperCase()}${s.substring(1)}';
-}
-
-extension _FirstOrNull<T> on Iterable<T> {
-  T? get firstOrNull {
-    final it = iterator;
-    return it.moveNext() ? it.current : null;
-  }
 }

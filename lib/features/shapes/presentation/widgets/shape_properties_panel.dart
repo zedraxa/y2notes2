@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:y2notes2/core/extensions/iterable_extensions.dart';
 import 'package:y2notes2/features/canvas/presentation/bloc/canvas_bloc.dart';
 import 'package:y2notes2/features/canvas/presentation/bloc/canvas_state.dart';
 import '../../domain/entities/shape_element.dart';
@@ -433,12 +434,5 @@ String _shapeLabel(ShapeType t) {
       return 'Hexagon';
     case ShapeType.freeform:
       return 'Free';
-  }
-}
-
-extension _FirstOrNull<T> on Iterable<T> {
-  T? get firstOrNull {
-    final it = iterator;
-    return it.moveNext() ? it.current : null;
   }
 }

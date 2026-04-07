@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:y2notes2/app/theme/colors.dart';
+import 'package:y2notes2/core/extensions/iterable_extensions.dart';
 import 'package:y2notes2/features/canvas/domain/entities/stroke.dart';
 import 'package:y2notes2/features/canvas/domain/entities/tool.dart';
 import 'package:y2notes2/features/canvas/domain/entities/tools/drawing_tool.dart';
@@ -170,11 +171,4 @@ class CanvasState extends Equatable {
         activeShapeType,
         isShapeMode,
       ];
-}
-
-extension _FirstOrNull<T> on Iterable<T> {
-  T? get firstOrNull {
-    final it = iterator;
-    return it.moveNext() ? it.current : null;
-  }
 }
