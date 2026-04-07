@@ -21,6 +21,7 @@ class DocumentState extends Equatable {
     this.errorMessage,
     this.isExporting = false,
     this.isImporting = false,
+    this.isOutlineOpen = false,
   });
 
   /// The currently open notebook, or `null` when none is open.
@@ -47,6 +48,9 @@ class DocumentState extends Equatable {
   final bool isExporting;
   final bool isImporting;
 
+  /// Whether the outline/table-of-contents panel is visible.
+  final bool isOutlineOpen;
+
   bool get hasNotebook => notebook != null;
 
   int get pageCount => notebook?.pageCount ?? 0;
@@ -67,6 +71,7 @@ class DocumentState extends Equatable {
     bool clearError = false,
     bool? isExporting,
     bool? isImporting,
+    bool? isOutlineOpen,
   }) =>
       DocumentState(
         notebook: clearNotebook ? null : (notebook ?? this.notebook),
@@ -80,6 +85,7 @@ class DocumentState extends Equatable {
         errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
         isExporting: isExporting ?? this.isExporting,
         isImporting: isImporting ?? this.isImporting,
+        isOutlineOpen: isOutlineOpen ?? this.isOutlineOpen,
       );
 
   @override
@@ -93,5 +99,6 @@ class DocumentState extends Equatable {
         errorMessage,
         isExporting,
         isImporting,
+        isOutlineOpen,
       ];
 }
