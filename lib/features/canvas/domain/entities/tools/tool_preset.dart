@@ -1,5 +1,5 @@
 import 'package:uuid/uuid.dart';
-import 'package:y2notes2/features/canvas/domain/entities/tools/tool_settings.dart';
+import 'package:biscuitse/features/canvas/domain/entities/tools/tool_settings.dart';
 
 class ToolPreset {
   const ToolPreset({

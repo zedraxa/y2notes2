@@ -1,4 +1,4 @@
-import 'package:y2notes2/features/canvas/domain/entities/stroke.dart';
+import 'package:biscuitse/features/canvas/domain/entities/stroke.dart';
 
 /// Repository interface for canvas data persistence.
 ///

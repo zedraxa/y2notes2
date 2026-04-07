@@ -1,8 +1,8 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
-import 'package:y2notes2/features/canvas/domain/models/canvas_config.dart';
-import 'package:y2notes2/features/templates/domain/entities/template_region.dart';
+import 'package:biscuitse/features/canvas/domain/models/canvas_config.dart';
+import 'package:biscuitse/features/templates/domain/entities/template_region.dart';
 
 /// A pre-configured page layout with placeholder regions.
 class NoteTemplate extends Equatable {

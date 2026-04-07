@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:y2notes2/app/theme/colors.dart';
-import 'package:y2notes2/features/workspace/domain/tab_session.dart';
-import 'package:y2notes2/features/workspace/presentation/bloc/workspace_state.dart';
+import 'package:biscuitse/app/theme/colors.dart';
+import 'package:biscuitse/features/workspace/domain/tab_session.dart';
+import 'package:biscuitse/features/workspace/presentation/bloc/workspace_state.dart';
 
 /// A single draggable tab in the tab bar.
 class TabItem extends StatelessWidget {

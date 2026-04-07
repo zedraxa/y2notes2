@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:y2notes2/features/library/domain/entities/library_item.dart';
-import 'package:y2notes2/features/library/presentation/bloc/library_bloc.dart';
-import 'package:y2notes2/features/library/presentation/bloc/library_event.dart';
-import 'package:y2notes2/features/library/presentation/bloc/library_state.dart';
-import 'package:y2notes2/features/library/presentation/widgets/item_context_menu.dart';
+import 'package:biscuitse/features/library/domain/entities/library_item.dart';
+import 'package:biscuitse/features/library/presentation/bloc/library_bloc.dart';
+import 'package:biscuitse/features/library/presentation/bloc/library_event.dart';
+import 'package:biscuitse/features/library/presentation/bloc/library_state.dart';
+import 'package:biscuitse/features/library/presentation/widgets/item_context_menu.dart';
 
 /// Displays library items in a responsive grid layout.
 class LibraryGrid extends StatelessWidget {

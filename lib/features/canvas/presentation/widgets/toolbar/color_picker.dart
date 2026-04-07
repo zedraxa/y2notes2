@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:y2notes2/app/theme/colors.dart';
-import 'package:y2notes2/core/constants/app_constants.dart';
+import 'package:biscuitse/app/theme/colors.dart';
+import 'package:biscuitse/core/constants/app_constants.dart';
 
 /// Row of 8 preset color swatches + a tap-for-custom-color button.
 class ColorPicker extends StatelessWidget {

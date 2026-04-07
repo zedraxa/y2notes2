@@ -1,11 +1,11 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
-import 'package:y2notes2/features/handwriting/data/character_templates.dart';
-import 'package:y2notes2/features/handwriting/data/common_dictionary.dart';
-import 'package:y2notes2/features/handwriting/domain/entities/recognition_result.dart';
-import 'package:y2notes2/features/handwriting/engine/character_segmenter.dart';
-import 'package:y2notes2/features/handwriting/engine/feature_extractor.dart';
-import 'package:y2notes2/features/handwriting/engine/recognition_engine.dart';
+import 'package:biscuitse/features/handwriting/data/character_templates.dart';
+import 'package:biscuitse/features/handwriting/data/common_dictionary.dart';
+import 'package:biscuitse/features/handwriting/domain/entities/recognition_result.dart';
+import 'package:biscuitse/features/handwriting/engine/character_segmenter.dart';
+import 'package:biscuitse/features/handwriting/engine/feature_extractor.dart';
+import 'package:biscuitse/features/handwriting/engine/recognition_engine.dart';
 
 /// Built-in, offline, heuristic stroke-based recognizer.
 ///

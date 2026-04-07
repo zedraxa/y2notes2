@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:y2notes2/features/documents/presentation/bloc/document_bloc.dart';
-import 'package:y2notes2/features/documents/presentation/bloc/document_event.dart';
-import 'package:y2notes2/features/documents/presentation/bloc/document_state.dart';
-import 'package:y2notes2/features/documents/presentation/widgets/export_dialog.dart';
-import 'package:y2notes2/features/documents/presentation/widgets/import_button.dart';
-import 'package:y2notes2/features/documents/presentation/widgets/page_navigator.dart';
+import 'package:biscuitse/features/documents/presentation/bloc/document_bloc.dart';
+import 'package:biscuitse/features/documents/presentation/bloc/document_event.dart';
+import 'package:biscuitse/features/documents/presentation/bloc/document_state.dart';
+import 'package:biscuitse/features/documents/presentation/widgets/export_dialog.dart';
+import 'package:biscuitse/features/documents/presentation/widgets/import_button.dart';
+import 'package:biscuitse/features/documents/presentation/widgets/page_navigator.dart';
 
 /// Full notebook view: the canvas (passed as [child]) surrounded by the
 /// page navigator strip and export/import affordances.

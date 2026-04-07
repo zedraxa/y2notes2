@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:y2notes2/features/widgets/data/builtin_widgets.dart';
-import 'package:y2notes2/features/widgets/domain/entities/smart_widget.dart';
+import 'package:biscuitse/features/widgets/data/builtin_widgets.dart';
+import 'package:biscuitse/features/widgets/domain/entities/smart_widget.dart';
 
 /// Bottom sheet that shows available smart widgets for adding to canvas.
 class WidgetPickerPanel extends StatelessWidget {

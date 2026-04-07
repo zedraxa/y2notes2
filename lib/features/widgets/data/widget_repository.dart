@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:y2notes2/features/widgets/domain/entities/smart_widget.dart';
+import 'package:biscuitse/features/widgets/domain/entities/smart_widget.dart';
 
 /// Persists widget state across sessions via SharedPreferences.
 class WidgetRepository {

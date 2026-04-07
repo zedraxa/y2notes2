@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
-import 'package:y2notes2/features/widgets/domain/entities/smart_widget.dart';
+import 'package:biscuitse/features/widgets/domain/entities/smart_widget.dart';
 
 abstract class WidgetEvent extends Equatable {
   const WidgetEvent();

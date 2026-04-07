@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:y2notes2/features/stickers/presentation/bloc/sticker_bloc.dart';
-import 'package:y2notes2/features/stickers/presentation/bloc/sticker_state.dart';
+import 'package:biscuitse/features/stickers/presentation/bloc/sticker_bloc.dart';
+import 'package:biscuitse/features/stickers/presentation/bloc/sticker_state.dart';
 
 /// Widget that renders selection handles for the selected sticker.
 /// The actual handle rendering logic lives in StickerRenderer.

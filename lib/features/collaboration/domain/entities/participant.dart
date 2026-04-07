@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:y2notes2/features/collaboration/domain/entities/permission.dart';
+import 'package:biscuitse/features/collaboration/domain/entities/permission.dart';
 
 /// Status of a participant in a collaboration session.
 enum PresenceStatus { active, idle, disconnected }

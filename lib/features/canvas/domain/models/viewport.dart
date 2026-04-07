@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
-import 'package:y2notes2/core/constants/app_constants.dart';
+import 'package:biscuitse/core/constants/app_constants.dart';
 
 /// Current viewport state (pan + zoom).
 class Viewport extends Equatable {

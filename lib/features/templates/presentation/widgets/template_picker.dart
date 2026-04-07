@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:y2notes2/features/templates/domain/entities/page_template.dart';
-import 'package:y2notes2/features/templates/presentation/bloc/template_bloc.dart';
-import 'package:y2notes2/features/templates/presentation/bloc/template_event.dart';
-import 'package:y2notes2/features/templates/presentation/bloc/template_state.dart';
-import 'package:y2notes2/features/templates/presentation/widgets/template_preview_card.dart';
+import 'package:biscuitse/features/templates/domain/entities/page_template.dart';
+import 'package:biscuitse/features/templates/presentation/bloc/template_bloc.dart';
+import 'package:biscuitse/features/templates/presentation/bloc/template_event.dart';
+import 'package:biscuitse/features/templates/presentation/bloc/template_state.dart';
+import 'package:biscuitse/features/templates/presentation/widgets/template_preview_card.dart';
 
 /// Full-screen modal template picker with category tabs, search, preview cards.
 class TemplatePicker extends StatefulWidget {

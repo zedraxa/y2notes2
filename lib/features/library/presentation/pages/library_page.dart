@@ -1,20 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:y2notes2/features/library/domain/entities/folder.dart';
-import 'package:y2notes2/features/library/domain/entities/library_item.dart';
-import 'package:y2notes2/features/library/domain/entities/tag.dart';
-import 'package:y2notes2/features/library/presentation/bloc/library_bloc.dart';
-import 'package:y2notes2/features/library/presentation/bloc/library_event.dart';
-import 'package:y2notes2/features/library/presentation/bloc/library_state.dart';
-import 'package:y2notes2/features/library/presentation/widgets/folder_breadcrumbs.dart';
-import 'package:y2notes2/features/library/presentation/widgets/library_grid.dart';
-import 'package:y2notes2/features/library/presentation/widgets/library_list.dart';
-import 'package:y2notes2/features/library/presentation/widgets/smart_collection_card.dart';
-import 'package:y2notes2/features/library/presentation/widgets/sort_filter_bar.dart';
-import 'package:y2notes2/features/library/presentation/widgets/spotlight_search.dart';
-import 'package:y2notes2/features/library/presentation/widgets/tag_cloud.dart';
-import 'package:y2notes2/features/library/presentation/widgets/trash_view.dart';
+import 'package:biscuitse/features/library/domain/entities/folder.dart';
+import 'package:biscuitse/features/library/domain/entities/library_item.dart';
+import 'package:biscuitse/features/library/domain/entities/tag.dart';
+import 'package:biscuitse/features/library/presentation/bloc/library_bloc.dart';
+import 'package:biscuitse/features/library/presentation/bloc/library_event.dart';
+import 'package:biscuitse/features/library/presentation/bloc/library_state.dart';
+import 'package:biscuitse/features/library/presentation/widgets/folder_breadcrumbs.dart';
+import 'package:biscuitse/features/library/presentation/widgets/library_grid.dart';
+import 'package:biscuitse/features/library/presentation/widgets/library_list.dart';
+import 'package:biscuitse/features/library/presentation/widgets/smart_collection_card.dart';
+import 'package:biscuitse/features/library/presentation/widgets/sort_filter_bar.dart';
+import 'package:biscuitse/features/library/presentation/widgets/spotlight_search.dart';
+import 'package:biscuitse/features/library/presentation/widgets/tag_cloud.dart';
+import 'package:biscuitse/features/library/presentation/widgets/trash_view.dart';
 
 /// The root screen of the app — the unified document library.
 ///
@@ -151,7 +151,7 @@ class _LibraryPageState extends State<LibraryPage> {
               color: Theme.of(context).colorScheme.primary,
             ),
             child: Text(
-              'Y2Notes',
+              'Biscuitsé',
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                     color: Colors.white,
                   ),

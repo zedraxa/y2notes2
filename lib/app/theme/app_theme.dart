@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:y2notes2/app/theme/colors.dart';
+import 'package:biscuitse/app/theme/colors.dart';
 
 /// GoodNotes-inspired clean, warm, minimal theme.
 class AppTheme {

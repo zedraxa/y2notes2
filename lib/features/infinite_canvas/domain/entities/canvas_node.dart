@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
-import 'package:y2notes2/features/canvas/domain/entities/stroke.dart';
+import 'package:biscuitse/features/canvas/domain/entities/stroke.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Base node

@@ -1,7 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:y2notes2/features/widgets/domain/entities/smart_widget.dart';
-import 'package:y2notes2/features/widgets/presentation/bloc/widget_event.dart';
-import 'package:y2notes2/features/widgets/presentation/bloc/widget_state.dart';
+import 'package:biscuitse/features/widgets/domain/entities/smart_widget.dart';
+import 'package:biscuitse/features/widgets/presentation/bloc/widget_event.dart';
+import 'package:biscuitse/features/widgets/presentation/bloc/widget_state.dart';
 
 class WidgetBloc extends Bloc<WidgetEvent, WidgetState> {
   WidgetBloc() : super(const WidgetState()) {

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:y2notes2/features/collaboration/domain/entities/participant.dart';
-import 'package:y2notes2/features/collaboration/presentation/bloc/collaboration_bloc.dart';
-import 'package:y2notes2/features/collaboration/presentation/widgets/remote_cursors.dart';
-import 'package:y2notes2/features/collaboration/presentation/widgets/permission_badge.dart';
+import 'package:biscuitse/features/collaboration/domain/entities/participant.dart';
+import 'package:biscuitse/features/collaboration/presentation/bloc/collaboration_bloc.dart';
+import 'package:biscuitse/features/collaboration/presentation/widgets/remote_cursors.dart';
+import 'package:biscuitse/features/collaboration/presentation/widgets/permission_badge.dart';
 
 /// Panel showing all current session participants with their status.
 ///

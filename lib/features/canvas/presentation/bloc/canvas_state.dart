@@ -1,18 +1,18 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart' hide Viewport;
-import 'package:y2notes2/app/theme/colors.dart';
-import 'package:y2notes2/core/engine/stylus/stylus_detector.dart';
-import 'package:y2notes2/core/extensions/iterable_extensions.dart';
-import 'package:y2notes2/features/canvas/domain/entities/stroke.dart';
-import 'package:y2notes2/features/canvas/domain/entities/tool.dart';
-import 'package:y2notes2/features/canvas/domain/entities/tools/drawing_tool.dart';
-import 'package:y2notes2/features/canvas/domain/entities/tools/tool_registry.dart';
-import 'package:y2notes2/features/canvas/domain/entities/tools/tool_settings.dart';
-import 'package:y2notes2/features/canvas/domain/models/canvas_config.dart';
-import 'package:y2notes2/features/canvas/domain/models/viewport.dart';
-import 'package:y2notes2/features/shapes/domain/entities/shape_element.dart';
-import 'package:y2notes2/features/shapes/domain/entities/shape_type.dart';
-import 'package:y2notes2/features/shapes/engine/shape_recognizer.dart';
+import 'package:biscuitse/app/theme/colors.dart';
+import 'package:biscuitse/core/engine/stylus/stylus_detector.dart';
+import 'package:biscuitse/core/extensions/iterable_extensions.dart';
+import 'package:biscuitse/features/canvas/domain/entities/stroke.dart';
+import 'package:biscuitse/features/canvas/domain/entities/tool.dart';
+import 'package:biscuitse/features/canvas/domain/entities/tools/drawing_tool.dart';
+import 'package:biscuitse/features/canvas/domain/entities/tools/tool_registry.dart';
+import 'package:biscuitse/features/canvas/domain/entities/tools/tool_settings.dart';
+import 'package:biscuitse/features/canvas/domain/models/canvas_config.dart';
+import 'package:biscuitse/features/canvas/domain/models/viewport.dart';
+import 'package:biscuitse/features/shapes/domain/entities/shape_element.dart';
+import 'package:biscuitse/features/shapes/domain/entities/shape_type.dart';
+import 'package:biscuitse/features/shapes/engine/shape_recognizer.dart';
 
 /// Immutable snapshot of canvas state.
 class CanvasState extends Equatable {

@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:uuid/uuid.dart';
-import 'package:y2notes2/features/documents/domain/entities/notebook_page.dart';
+import 'package:biscuitse/features/documents/domain/entities/notebook_page.dart';
 
 /// Cover style for a notebook.
 enum NotebookCover {

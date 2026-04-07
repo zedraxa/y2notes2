@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:y2notes2/features/widgets/domain/entities/smart_widget.dart';
+import 'package:biscuitse/features/widgets/domain/entities/smart_widget.dart';
 
 /// Renders widget placeholders on the canvas via CustomPainter.
 class WidgetRenderer extends CustomPainter {

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:y2notes2/features/documents/domain/entities/notebook_page.dart';
-import 'package:y2notes2/features/documents/presentation/bloc/document_bloc.dart';
-import 'package:y2notes2/features/documents/presentation/bloc/document_event.dart';
-import 'package:y2notes2/features/documents/presentation/bloc/document_state.dart';
+import 'package:biscuitse/features/documents/domain/entities/notebook_page.dart';
+import 'package:biscuitse/features/documents/presentation/bloc/document_bloc.dart';
+import 'package:biscuitse/features/documents/presentation/bloc/document_event.dart';
+import 'package:biscuitse/features/documents/presentation/bloc/document_state.dart';
 
 /// Thumbnail strip shown at the bottom of the canvas. Displays all notebook
 /// pages and lets the user navigate between them.

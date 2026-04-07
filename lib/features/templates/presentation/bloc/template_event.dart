@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:y2notes2/features/templates/domain/entities/page_template.dart';
+import 'package:biscuitse/features/templates/domain/entities/page_template.dart';
 
 abstract class TemplateEvent extends Equatable {
   const TemplateEvent();

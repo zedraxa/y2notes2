@@ -1,8 +1,8 @@
 import 'package:equatable/equatable.dart';
-import 'package:y2notes2/features/collaboration/domain/entities/permission.dart';
-import 'package:y2notes2/features/collaboration/domain/entities/session.dart';
-import 'package:y2notes2/features/collaboration/engine/crdt_engine.dart';
-import 'package:y2notes2/features/collaboration/engine/sync_client.dart';
+import 'package:biscuitse/features/collaboration/domain/entities/permission.dart';
+import 'package:biscuitse/features/collaboration/domain/entities/session.dart';
+import 'package:biscuitse/features/collaboration/engine/crdt_engine.dart';
+import 'package:biscuitse/features/collaboration/engine/sync_client.dart';
 
 /// All events that can be dispatched to [CollaborationBloc].
 abstract class CollaborationEvent extends Equatable {

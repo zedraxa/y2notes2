@@ -2,15 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:y2notes2/core/services/settings_service.dart';
-import 'package:y2notes2/features/canvas/presentation/bloc/canvas_bloc.dart';
-import 'package:y2notes2/features/canvas/presentation/widgets/canvas_view.dart';
-import 'package:y2notes2/features/canvas/presentation/widgets/toolbar/main_toolbar.dart';
-import 'package:y2notes2/features/workspace/presentation/bloc/workspace_bloc.dart';
-import 'package:y2notes2/features/workspace/presentation/bloc/workspace_event.dart';
-import 'package:y2notes2/features/workspace/presentation/bloc/workspace_state.dart';
-import 'package:y2notes2/features/workspace/presentation/widgets/tab_bar_widget.dart';
-import 'package:y2notes2/shared/widgets/service_provider.dart';
+import 'package:biscuitse/core/services/settings_service.dart';
+import 'package:biscuitse/features/canvas/presentation/bloc/canvas_bloc.dart';
+import 'package:biscuitse/features/canvas/presentation/widgets/canvas_view.dart';
+import 'package:biscuitse/features/canvas/presentation/widgets/toolbar/main_toolbar.dart';
+import 'package:biscuitse/features/workspace/presentation/bloc/workspace_bloc.dart';
+import 'package:biscuitse/features/workspace/presentation/bloc/workspace_event.dart';
+import 'package:biscuitse/features/workspace/presentation/bloc/workspace_state.dart';
+import 'package:biscuitse/features/workspace/presentation/widgets/tab_bar_widget.dart';
+import 'package:biscuitse/shared/widgets/service_provider.dart';
 
 /// Root workspace shell that hosts browser-like tabs.
 ///

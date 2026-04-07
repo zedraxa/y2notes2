@@ -1,5 +1,5 @@
 import 'package:flutter/services.dart';
-import 'package:y2notes2/core/services/settings_service.dart';
+import 'package:biscuitse/core/services/settings_service.dart';
 
 /// Centralised haptic feedback controller.
 ///

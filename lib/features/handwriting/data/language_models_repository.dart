@@ -1,4 +1,4 @@
-import 'package:y2notes2/features/handwriting/domain/models/language_model.dart';
+import 'package:biscuitse/features/handwriting/domain/models/language_model.dart';
 
 /// Manages available language models.
 class LanguageModelsRepository {

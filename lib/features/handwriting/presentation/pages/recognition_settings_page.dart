@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:y2notes2/features/handwriting/data/language_models_repository.dart';
-import 'package:y2notes2/features/handwriting/domain/models/language_model.dart';
-import 'package:y2notes2/features/handwriting/engine/recognition_engine.dart';
-import 'package:y2notes2/features/handwriting/presentation/bloc/handwriting_bloc.dart';
-import 'package:y2notes2/features/handwriting/presentation/bloc/handwriting_event.dart';
-import 'package:y2notes2/features/handwriting/presentation/bloc/handwriting_state.dart';
-import 'package:y2notes2/features/handwriting/presentation/widgets/writing_analysis_panel.dart';
+import 'package:biscuitse/features/handwriting/data/language_models_repository.dart';
+import 'package:biscuitse/features/handwriting/domain/models/language_model.dart';
+import 'package:biscuitse/features/handwriting/engine/recognition_engine.dart';
+import 'package:biscuitse/features/handwriting/presentation/bloc/handwriting_bloc.dart';
+import 'package:biscuitse/features/handwriting/presentation/bloc/handwriting_event.dart';
+import 'package:biscuitse/features/handwriting/presentation/bloc/handwriting_state.dart';
+import 'package:biscuitse/features/handwriting/presentation/widgets/writing_analysis_panel.dart';
 
 /// Settings page for recognition: language, mode, thresholds, backend.
 class RecognitionSettingsPage extends StatelessWidget {

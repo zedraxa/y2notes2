@@ -1,4 +1,4 @@
-# Y2Notes 2
+# Biscuitsé
 
 A cross-platform (iPad-priority) note-taking app built with Flutter & Dart, inspired by GoodNotes.
 

@@ -1,6 +1,6 @@
-import 'package:y2notes2/features/library/domain/entities/library_item.dart';
-import 'package:y2notes2/features/library/domain/entities/search_result.dart';
-import 'package:y2notes2/features/library/engine/content_indexer.dart';
+import 'package:biscuitse/features/library/domain/entities/library_item.dart';
+import 'package:biscuitse/features/library/domain/entities/search_result.dart';
+import 'package:biscuitse/features/library/engine/content_indexer.dart';
 
 /// Optional filters to narrow down search results.
 class SearchFilters {

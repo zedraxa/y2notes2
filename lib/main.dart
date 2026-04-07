@@ -1,24 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:y2notes2/app/app.dart';
-import 'package:y2notes2/core/engine/haptic_controller.dart';
-import 'package:y2notes2/core/services/settings_service.dart';
-import 'package:y2notes2/features/canvas/domain/entities/tools/tool_registry.dart';
-import 'package:y2notes2/features/canvas/presentation/bloc/canvas_bloc.dart';
-import 'package:y2notes2/features/collaboration/presentation/bloc/collaboration_bloc.dart';
-import 'package:y2notes2/features/documents/data/document_repository.dart';
-import 'package:y2notes2/features/handwriting/presentation/bloc/handwriting_bloc.dart';
-import 'package:y2notes2/features/infinite_canvas/presentation/bloc/infinite_canvas_bloc.dart';
-import 'package:y2notes2/features/library/data/library_repository.dart';
-import 'package:y2notes2/features/shapes/presentation/bloc/shape_bloc.dart';
-import 'package:y2notes2/features/stickers/presentation/bloc/sticker_bloc.dart';
-import 'package:y2notes2/features/templates/data/template_repository.dart';
-import 'package:y2notes2/features/templates/presentation/bloc/template_bloc.dart';
-import 'package:y2notes2/features/templates/presentation/bloc/template_event.dart';
-import 'package:y2notes2/features/widgets/presentation/bloc/widget_bloc.dart';
-import 'package:y2notes2/features/workspace/presentation/bloc/workspace_bloc.dart';
-import 'package:y2notes2/shared/widgets/service_provider.dart';
+import 'package:biscuitse/app/app.dart';
+import 'package:biscuitse/core/engine/haptic_controller.dart';
+import 'package:biscuitse/core/services/settings_service.dart';
+import 'package:biscuitse/features/canvas/domain/entities/tools/tool_registry.dart';
+import 'package:biscuitse/features/canvas/presentation/bloc/canvas_bloc.dart';
+import 'package:biscuitse/features/collaboration/presentation/bloc/collaboration_bloc.dart';
+import 'package:biscuitse/features/documents/data/document_repository.dart';
+import 'package:biscuitse/features/handwriting/presentation/bloc/handwriting_bloc.dart';
+import 'package:biscuitse/features/infinite_canvas/presentation/bloc/infinite_canvas_bloc.dart';
+import 'package:biscuitse/features/library/data/library_repository.dart';
+import 'package:biscuitse/features/shapes/presentation/bloc/shape_bloc.dart';
+import 'package:biscuitse/features/stickers/presentation/bloc/sticker_bloc.dart';
+import 'package:biscuitse/features/templates/data/template_repository.dart';
+import 'package:biscuitse/features/templates/presentation/bloc/template_bloc.dart';
+import 'package:biscuitse/features/templates/presentation/bloc/template_event.dart';
+import 'package:biscuitse/features/widgets/presentation/bloc/widget_bloc.dart';
+import 'package:biscuitse/features/workspace/presentation/bloc/workspace_bloc.dart';
+import 'package:biscuitse/shared/widgets/service_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -83,7 +83,7 @@ void main() async {
               create: (_) => InfiniteCanvasBloc(),
             ),
           ],
-          child: Y2NotesApp(
+          child: BiscuitseApp(
             settingsService: settingsService,
             documentRepository: documentRepository,
             libraryRepository: libraryRepository,

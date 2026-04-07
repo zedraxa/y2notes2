@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:y2notes2/features/stickers/data/stamp_paths.dart';
-import 'package:y2notes2/features/stickers/data/washi_patterns.dart';
-import 'package:y2notes2/features/stickers/domain/entities/sticker_element.dart';
-import 'package:y2notes2/features/stickers/domain/models/washi_pattern.dart';
-import 'package:y2notes2/features/stickers/data/sticker_packs.dart';
+import 'package:biscuitse/features/stickers/data/stamp_paths.dart';
+import 'package:biscuitse/features/stickers/data/washi_patterns.dart';
+import 'package:biscuitse/features/stickers/domain/entities/sticker_element.dart';
+import 'package:biscuitse/features/stickers/domain/models/washi_pattern.dart';
+import 'package:biscuitse/features/stickers/data/sticker_packs.dart';
 
 class StickerRenderer {
   void renderSticker(

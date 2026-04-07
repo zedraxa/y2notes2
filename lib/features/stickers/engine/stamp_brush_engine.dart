@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:y2notes2/features/stickers/domain/entities/sticker_element.dart';
+import 'package:biscuitse/features/stickers/domain/entities/sticker_element.dart';
 
 /// Generates a trail of stamp [StickerElement]s along a drag path.
 class StampBrushEngine {

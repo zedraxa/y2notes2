@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:y2notes2/features/stickers/domain/entities/sticker_element.dart';
+import 'package:biscuitse/features/stickers/domain/entities/sticker_element.dart';
 
 class StickerState extends Equatable {
   const StickerState({

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:y2notes2/features/canvas/domain/entities/point_data.dart';
-import 'package:y2notes2/features/canvas/domain/entities/stroke.dart';
-import 'package:y2notes2/features/effects/engine/effect_config.dart';
+import 'package:biscuitse/features/canvas/domain/entities/point_data.dart';
+import 'package:biscuitse/features/canvas/domain/entities/stroke.dart';
+import 'package:biscuitse/features/effects/engine/effect_config.dart';
 
 /// Ink Flow Effect — ink darkens/pools at stroke start and end points.
 ///

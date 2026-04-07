@@ -2,10 +2,10 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:y2notes2/features/library/domain/entities/folder.dart';
-import 'package:y2notes2/features/library/domain/entities/library_item.dart';
-import 'package:y2notes2/features/library/domain/entities/smart_collection.dart';
-import 'package:y2notes2/features/library/domain/entities/tag.dart';
+import 'package:biscuitse/features/library/domain/entities/folder.dart';
+import 'package:biscuitse/features/library/domain/entities/library_item.dart';
+import 'package:biscuitse/features/library/domain/entities/smart_collection.dart';
+import 'package:biscuitse/features/library/domain/entities/tag.dart';
 
 /// Persistence layer for the library feature.
 ///

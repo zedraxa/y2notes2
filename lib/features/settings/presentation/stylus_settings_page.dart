@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:y2notes2/core/engine/stylus/pressure_curve.dart';
-import 'package:y2notes2/core/engine/stylus/stylus_detector.dart';
-import 'package:y2notes2/core/engine/stylus/stylus_gesture_handler.dart';
-import 'package:y2notes2/core/services/settings_service.dart';
-import 'package:y2notes2/shared/widgets/service_provider.dart';
+import 'package:biscuitse/core/engine/stylus/pressure_curve.dart';
+import 'package:biscuitse/core/engine/stylus/stylus_detector.dart';
+import 'package:biscuitse/core/engine/stylus/stylus_gesture_handler.dart';
+import 'package:biscuitse/core/services/settings_service.dart';
+import 'package:biscuitse/shared/widgets/service_provider.dart';
 
 /// Full-featured stylus settings page.
 ///

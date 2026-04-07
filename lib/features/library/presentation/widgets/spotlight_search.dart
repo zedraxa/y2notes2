@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:y2notes2/features/library/domain/entities/library_item.dart';
-import 'package:y2notes2/features/library/domain/entities/search_result.dart';
-import 'package:y2notes2/features/library/presentation/bloc/library_bloc.dart';
-import 'package:y2notes2/features/library/presentation/bloc/library_event.dart';
-import 'package:y2notes2/features/library/presentation/bloc/library_state.dart';
+import 'package:biscuitse/features/library/domain/entities/library_item.dart';
+import 'package:biscuitse/features/library/domain/entities/search_result.dart';
+import 'package:biscuitse/features/library/presentation/bloc/library_bloc.dart';
+import 'package:biscuitse/features/library/presentation/bloc/library_event.dart';
+import 'package:biscuitse/features/library/presentation/bloc/library_state.dart';
 
 /// Spotlight-style quick search overlay, triggered by Cmd+K / Ctrl+K.
 ///

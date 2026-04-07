@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart' hide Viewport;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uuid/uuid.dart';
-import 'package:y2notes2/core/constants/app_constants.dart';
-import 'package:y2notes2/core/engine/stylus/stylus_detector.dart';
-import 'package:y2notes2/core/engine/stylus/stylus_gesture_handler.dart';
-import 'package:y2notes2/core/services/settings_service.dart';
-import 'package:y2notes2/features/canvas/domain/entities/stroke.dart';
-import 'package:y2notes2/features/canvas/domain/entities/tools/tool_registry.dart';
-import 'package:y2notes2/features/canvas/domain/entities/tool.dart';
-import 'package:y2notes2/features/canvas/domain/models/viewport.dart';
-import 'package:y2notes2/features/canvas/presentation/bloc/canvas_event.dart';
-import 'package:y2notes2/features/canvas/presentation/bloc/canvas_state.dart';
-import 'package:y2notes2/features/shapes/domain/entities/shape_element.dart';
-import 'package:y2notes2/features/shapes/engine/shape_recognizer.dart';
+import 'package:biscuitse/core/constants/app_constants.dart';
+import 'package:biscuitse/core/engine/stylus/stylus_detector.dart';
+import 'package:biscuitse/core/engine/stylus/stylus_gesture_handler.dart';
+import 'package:biscuitse/core/services/settings_service.dart';
+import 'package:biscuitse/features/canvas/domain/entities/stroke.dart';
+import 'package:biscuitse/features/canvas/domain/entities/tools/tool_registry.dart';
+import 'package:biscuitse/features/canvas/domain/entities/tool.dart';
+import 'package:biscuitse/features/canvas/domain/models/viewport.dart';
+import 'package:biscuitse/features/canvas/presentation/bloc/canvas_event.dart';
+import 'package:biscuitse/features/canvas/presentation/bloc/canvas_state.dart';
+import 'package:biscuitse/features/shapes/domain/entities/shape_element.dart';
+import 'package:biscuitse/features/shapes/engine/shape_recognizer.dart';
 
 /// BLoC that manages all canvas state transitions.
 class CanvasBloc extends Bloc<CanvasEvent, CanvasState> {

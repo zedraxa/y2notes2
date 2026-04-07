@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:y2notes2/features/workspace/domain/tab_session.dart';
+import 'package:biscuitse/features/workspace/domain/tab_session.dart';
 
 /// Immutable snapshot of workspace state.
 class WorkspaceState extends Equatable {

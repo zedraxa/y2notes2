@@ -1,12 +1,12 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:perfect_freehand/perfect_freehand.dart';
-import 'package:y2notes2/features/canvas/domain/entities/stroke.dart';
-import 'package:y2notes2/features/canvas/domain/entities/tool.dart';
-import 'package:y2notes2/features/canvas/domain/entities/point_data.dart';
-import 'package:y2notes2/features/canvas/domain/entities/tools/drawing_tool.dart';
-import 'package:y2notes2/features/canvas/domain/entities/tools/tool_registry.dart';
-import 'package:y2notes2/features/canvas/domain/entities/tools/tool_settings.dart';
+import 'package:biscuitse/features/canvas/domain/entities/stroke.dart';
+import 'package:biscuitse/features/canvas/domain/entities/tool.dart';
+import 'package:biscuitse/features/canvas/domain/entities/point_data.dart';
+import 'package:biscuitse/features/canvas/domain/entities/tools/drawing_tool.dart';
+import 'package:biscuitse/features/canvas/domain/entities/tools/tool_registry.dart';
+import 'package:biscuitse/features/canvas/domain/entities/tools/tool_settings.dart';
 
 /// Renders strokes using the `perfect_freehand` algorithm.
 class StrokeRenderer {

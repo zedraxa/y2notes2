@@ -1,16 +1,16 @@
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
-import 'package:y2notes2/core/engine/stroke_renderer.dart';
-import 'package:y2notes2/features/canvas/domain/entities/stroke.dart';
-import 'package:y2notes2/features/canvas/domain/entities/tools/tool_settings.dart';
-import 'package:y2notes2/features/canvas/domain/models/canvas_config.dart';
-import 'package:y2notes2/features/effects/interaction/interaction_effects_engine.dart';
-import 'package:y2notes2/features/effects/writing/writing_effects_engine.dart';
-import 'package:y2notes2/features/handwriting/domain/entities/text_block.dart';
-import 'package:y2notes2/features/shapes/domain/entities/shape_element.dart';
-import 'package:y2notes2/features/shapes/engine/shape_renderer.dart';
-import 'package:y2notes2/features/stickers/domain/entities/sticker_element.dart';
-import 'package:y2notes2/features/stickers/engine/sticker_renderer.dart';
+import 'package:biscuitse/core/engine/stroke_renderer.dart';
+import 'package:biscuitse/features/canvas/domain/entities/stroke.dart';
+import 'package:biscuitse/features/canvas/domain/entities/tools/tool_settings.dart';
+import 'package:biscuitse/features/canvas/domain/models/canvas_config.dart';
+import 'package:biscuitse/features/effects/interaction/interaction_effects_engine.dart';
+import 'package:biscuitse/features/effects/writing/writing_effects_engine.dart';
+import 'package:biscuitse/features/handwriting/domain/entities/text_block.dart';
+import 'package:biscuitse/features/shapes/domain/entities/shape_element.dart';
+import 'package:biscuitse/features/shapes/engine/shape_renderer.dart';
+import 'package:biscuitse/features/stickers/domain/entities/sticker_element.dart';
+import 'package:biscuitse/features/stickers/engine/sticker_renderer.dart';
 
 /// Composites all rendering layers in the correct order.
 ///

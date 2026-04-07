@@ -1,11 +1,11 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:y2notes2/features/canvas/domain/entities/stroke.dart';
-import 'package:y2notes2/features/handwriting/domain/entities/recognition_result.dart';
-import 'package:y2notes2/features/handwriting/domain/entities/text_block.dart';
-import 'package:y2notes2/features/handwriting/domain/models/language_model.dart';
-import 'package:y2notes2/features/handwriting/domain/models/recognition_options.dart';
-import 'package:y2notes2/features/handwriting/engine/recognition_engine.dart';
+import 'package:biscuitse/features/canvas/domain/entities/stroke.dart';
+import 'package:biscuitse/features/handwriting/domain/entities/recognition_result.dart';
+import 'package:biscuitse/features/handwriting/domain/entities/text_block.dart';
+import 'package:biscuitse/features/handwriting/domain/models/language_model.dart';
+import 'package:biscuitse/features/handwriting/domain/models/recognition_options.dart';
+import 'package:biscuitse/features/handwriting/engine/recognition_engine.dart';
 
 /// Converts app [Stroke]s to recognition strokes.
 List<RecognitionStroke> strokesToRecognition(List<Stroke> strokes) {

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:y2notes2/features/handwriting/domain/entities/text_block.dart';
-import 'package:y2notes2/features/handwriting/presentation/bloc/handwriting_bloc.dart';
-import 'package:y2notes2/features/handwriting/presentation/bloc/handwriting_event.dart';
+import 'package:biscuitse/features/handwriting/domain/entities/text_block.dart';
+import 'package:biscuitse/features/handwriting/presentation/bloc/handwriting_bloc.dart';
+import 'package:biscuitse/features/handwriting/presentation/bloc/handwriting_event.dart';
 
 /// Renders a [TextBlock] on the canvas with interaction (tap to edit, drag).
 class TextBlockWidget extends StatefulWidget {

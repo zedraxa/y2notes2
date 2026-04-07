@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:y2notes2/features/handwriting/domain/entities/recognition_result.dart';
-import 'package:y2notes2/features/handwriting/presentation/bloc/handwriting_bloc.dart';
-import 'package:y2notes2/features/handwriting/presentation/bloc/handwriting_event.dart';
-import 'package:y2notes2/features/handwriting/presentation/bloc/handwriting_state.dart';
-import 'package:y2notes2/features/handwriting/presentation/widgets/recognition_candidates_panel.dart';
+import 'package:biscuitse/features/handwriting/domain/entities/recognition_result.dart';
+import 'package:biscuitse/features/handwriting/presentation/bloc/handwriting_bloc.dart';
+import 'package:biscuitse/features/handwriting/presentation/bloc/handwriting_event.dart';
+import 'package:biscuitse/features/handwriting/presentation/bloc/handwriting_state.dart';
+import 'package:biscuitse/features/handwriting/presentation/widgets/recognition_candidates_panel.dart';
 
 /// Semi-transparent overlay that appears above handwriting after recognition.
 /// Shows recognized text, confidence indicator, and accept/reject buttons.

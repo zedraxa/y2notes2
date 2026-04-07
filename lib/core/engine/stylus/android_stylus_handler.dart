@@ -1,6 +1,6 @@
 import 'package:flutter/gestures.dart';
-import 'package:y2notes2/core/engine/stylus/stylus_adapter.dart';
-import 'package:y2notes2/core/engine/stylus/stylus_detector.dart';
+import 'package:biscuitse/core/engine/stylus/stylus_adapter.dart';
+import 'package:biscuitse/core/engine/stylus/stylus_detector.dart';
 
 /// Handles stylus input from Android tablet pens.
 ///

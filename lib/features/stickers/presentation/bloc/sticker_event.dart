@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
-import 'package:y2notes2/features/stickers/domain/entities/sticker_element.dart';
+import 'package:biscuitse/features/stickers/domain/entities/sticker_element.dart';
 
 enum LayerDirection { front, back, forward, backward }
 

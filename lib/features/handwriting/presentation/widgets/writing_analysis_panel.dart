@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:y2notes2/features/handwriting/domain/entities/writing_analytics.dart';
-import 'package:y2notes2/features/handwriting/presentation/bloc/handwriting_state.dart';
-import 'package:y2notes2/features/handwriting/presentation/bloc/handwriting_bloc.dart';
+import 'package:biscuitse/features/handwriting/domain/entities/writing_analytics.dart';
+import 'package:biscuitse/features/handwriting/presentation/bloc/handwriting_state.dart';
+import 'package:biscuitse/features/handwriting/presentation/bloc/handwriting_bloc.dart';
 
 /// Bottom sheet showing writing analytics statistics.
 class WritingAnalysisPanel extends StatelessWidget {

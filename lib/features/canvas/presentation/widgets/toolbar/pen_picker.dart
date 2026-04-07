@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:y2notes2/app/theme/colors.dart';
-import 'package:y2notes2/core/constants/app_constants.dart';
-import 'package:y2notes2/features/canvas/domain/entities/tool.dart';
+import 'package:biscuitse/app/theme/colors.dart';
+import 'package:biscuitse/core/constants/app_constants.dart';
+import 'package:biscuitse/features/canvas/domain/entities/tool.dart';
 
 /// Displays pen-type selection buttons (fountain pen, ballpoint, highlighter,
 /// eraser) with an active indicator.

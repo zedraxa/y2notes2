@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:y2notes2/features/library/domain/entities/library_item.dart';
+import 'package:biscuitse/features/library/domain/entities/library_item.dart';
 
 /// A single location within [item] where the search query matched.
 class SearchMatch extends Equatable {

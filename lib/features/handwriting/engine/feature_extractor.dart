@@ -1,6 +1,6 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
-import 'package:y2notes2/features/handwriting/domain/entities/recognition_result.dart';
+import 'package:biscuitse/features/handwriting/domain/entities/recognition_result.dart';
 
 /// Feature vector for one character (8 direction bins + structural features).
 class CharacterFeatures {

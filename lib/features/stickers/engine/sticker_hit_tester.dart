@@ -1,6 +1,6 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
-import 'package:y2notes2/features/stickers/domain/entities/sticker_element.dart';
+import 'package:biscuitse/features/stickers/domain/entities/sticker_element.dart';
 
 /// Hit-tests sticker elements to find which sticker is at a given canvas point.
 class StickerHitTester {

@@ -1,16 +1,16 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uuid/uuid.dart';
-import 'package:y2notes2/features/canvas/domain/models/canvas_config.dart';
-import 'package:y2notes2/features/documents/data/document_repository.dart';
-import 'package:y2notes2/features/documents/domain/entities/notebook.dart';
-import 'package:y2notes2/features/documents/domain/entities/notebook_page.dart';
-import 'package:y2notes2/features/documents/domain/models/export_options.dart';
-import 'package:y2notes2/features/documents/engine/image_export_engine.dart';
-import 'package:y2notes2/features/documents/engine/image_import_engine.dart';
-import 'package:y2notes2/features/documents/engine/pdf_export_engine.dart';
-import 'package:y2notes2/features/documents/engine/pdf_import_engine.dart';
-import 'package:y2notes2/features/documents/presentation/bloc/document_event.dart';
-import 'package:y2notes2/features/documents/presentation/bloc/document_state.dart';
+import 'package:biscuitse/features/canvas/domain/models/canvas_config.dart';
+import 'package:biscuitse/features/documents/data/document_repository.dart';
+import 'package:biscuitse/features/documents/domain/entities/notebook.dart';
+import 'package:biscuitse/features/documents/domain/entities/notebook_page.dart';
+import 'package:biscuitse/features/documents/domain/models/export_options.dart';
+import 'package:biscuitse/features/documents/engine/image_export_engine.dart';
+import 'package:biscuitse/features/documents/engine/image_import_engine.dart';
+import 'package:biscuitse/features/documents/engine/pdf_export_engine.dart';
+import 'package:biscuitse/features/documents/engine/pdf_import_engine.dart';
+import 'package:biscuitse/features/documents/presentation/bloc/document_event.dart';
+import 'package:biscuitse/features/documents/presentation/bloc/document_state.dart';
 
 /// BLoC that manages notebook lifecycle, page navigation, and
 /// export/import operations.

@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:flutter/services.dart';
-import 'package:y2notes2/core/engine/stylus/stylus_detector.dart';
+import 'package:biscuitse/core/engine/stylus/stylus_detector.dart';
 
 /// Gesture types fired by the Apple Pencil hardware.
 enum PencilGesture {
@@ -34,7 +34,7 @@ class PencilInfo {
       'PencilInfo(type=$type, connected=$isConnected, battery=$batteryLevel%)';
 }
 
-/// Dart-side stub for the `com.y2notes2/pencil` platform method channel.
+/// Dart-side stub for the `com.biscuitse/pencil` platform method channel.
 ///
 /// The native side (iOS `PencilPlugin.swift`) listens for:
 /// - `UIPencilInteraction` double-tap (iOS 12.1+)
@@ -48,9 +48,9 @@ class PencilChannel {
   PencilChannel._();
 
   static const MethodChannel _methodChannel =
-      MethodChannel('com.y2notes2/pencil');
+      MethodChannel('com.biscuitse/pencil');
   static const EventChannel _eventChannel =
-      EventChannel('com.y2notes2/pencil/gestures');
+      EventChannel('com.biscuitse/pencil/gestures');
 
   static Stream<PencilGesture>? _gestureStream;
 

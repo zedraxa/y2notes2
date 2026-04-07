@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:y2notes2/core/extensions/iterable_extensions.dart';
-import 'package:y2notes2/features/canvas/presentation/bloc/canvas_bloc.dart';
-import 'package:y2notes2/features/canvas/presentation/bloc/canvas_state.dart';
+import 'package:biscuitse/core/extensions/iterable_extensions.dart';
+import 'package:biscuitse/features/canvas/presentation/bloc/canvas_bloc.dart';
+import 'package:biscuitse/features/canvas/presentation/bloc/canvas_state.dart';
 import '../../domain/entities/shape_element.dart';
 import '../../domain/entities/shape_type.dart';
 import '../bloc/shape_bloc.dart';

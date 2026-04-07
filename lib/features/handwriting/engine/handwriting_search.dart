@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:y2notes2/features/handwriting/domain/entities/recognition_result.dart';
-import 'package:y2notes2/features/handwriting/domain/models/search_match.dart';
+import 'package:biscuitse/features/handwriting/domain/entities/recognition_result.dart';
+import 'package:biscuitse/features/handwriting/domain/models/search_match.dart';
 
 /// Represents a page's recognized text alongside its stroke metadata.
 class RecognizedPage {

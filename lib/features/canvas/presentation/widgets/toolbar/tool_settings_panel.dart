@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:y2notes2/features/canvas/domain/entities/tools/tool_setting_definition.dart';
-import 'package:y2notes2/features/canvas/domain/entities/tools/tool_settings.dart';
-import 'package:y2notes2/features/canvas/presentation/bloc/canvas_bloc.dart';
-import 'package:y2notes2/features/canvas/presentation/bloc/canvas_event.dart';
-import 'package:y2notes2/features/canvas/presentation/bloc/canvas_state.dart';
+import 'package:biscuitse/features/canvas/domain/entities/tools/tool_setting_definition.dart';
+import 'package:biscuitse/features/canvas/domain/entities/tools/tool_settings.dart';
+import 'package:biscuitse/features/canvas/presentation/bloc/canvas_bloc.dart';
+import 'package:biscuitse/features/canvas/presentation/bloc/canvas_event.dart';
+import 'package:biscuitse/features/canvas/presentation/bloc/canvas_state.dart';
 
 /// A bottom-sheet panel that exposes the active tool's custom parameters
 /// (e.g. watercolor wetness, pastel chalkiness, glow intensity).

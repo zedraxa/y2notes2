@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:y2notes2/features/documents/presentation/bloc/document_bloc.dart';
-import 'package:y2notes2/features/documents/presentation/bloc/document_event.dart';
+import 'package:biscuitse/features/documents/presentation/bloc/document_bloc.dart';
+import 'package:biscuitse/features/documents/presentation/bloc/document_event.dart';
 
 /// A compact toolbar button that triggers the file picker for PDF or image
 /// import.

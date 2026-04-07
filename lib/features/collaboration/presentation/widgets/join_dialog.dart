@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:y2notes2/features/collaboration/presentation/bloc/collaboration_bloc.dart';
+import 'package:biscuitse/features/collaboration/presentation/bloc/collaboration_bloc.dart';
 
 /// Dialog that lets the user enter a room code to join an existing session.
 class JoinDialog extends StatefulWidget {

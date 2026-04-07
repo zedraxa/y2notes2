@@ -1,5 +1,5 @@
-import 'package:y2notes2/core/constants/app_constants.dart';
-import 'package:y2notes2/core/utils/device_capability.dart';
+import 'package:biscuitse/core/constants/app_constants.dart';
+import 'package:biscuitse/core/utils/device_capability.dart';
 
 /// Performance budget that scales effect complexity based on device tier.
 class EffectBudget {

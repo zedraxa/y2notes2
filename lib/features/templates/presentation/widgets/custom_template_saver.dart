@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:y2notes2/features/canvas/domain/models/canvas_config.dart';
-import 'package:y2notes2/features/templates/domain/entities/page_template.dart';
+import 'package:biscuitse/features/canvas/domain/models/canvas_config.dart';
+import 'package:biscuitse/features/templates/domain/entities/page_template.dart';
 
 /// Dialog for saving the current canvas as a custom template.
 class CustomTemplateSaver extends StatefulWidget {

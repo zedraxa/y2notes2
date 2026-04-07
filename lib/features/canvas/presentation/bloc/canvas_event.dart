@@ -1,13 +1,13 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
-import 'package:y2notes2/core/engine/stylus/stylus_detector.dart';
-import 'package:y2notes2/core/engine/stylus/stylus_gesture_handler.dart';
-import 'package:y2notes2/features/canvas/domain/entities/point_data.dart';
-import 'package:y2notes2/features/canvas/domain/entities/tool.dart';
-import 'package:y2notes2/features/canvas/domain/entities/tools/tool_settings.dart';
-import 'package:y2notes2/features/canvas/domain/models/canvas_config.dart';
-import 'package:y2notes2/features/shapes/domain/entities/shape_element.dart';
-import 'package:y2notes2/features/shapes/domain/entities/shape_type.dart';
+import 'package:biscuitse/core/engine/stylus/stylus_detector.dart';
+import 'package:biscuitse/core/engine/stylus/stylus_gesture_handler.dart';
+import 'package:biscuitse/features/canvas/domain/entities/point_data.dart';
+import 'package:biscuitse/features/canvas/domain/entities/tool.dart';
+import 'package:biscuitse/features/canvas/domain/entities/tools/tool_settings.dart';
+import 'package:biscuitse/features/canvas/domain/models/canvas_config.dart';
+import 'package:biscuitse/features/shapes/domain/entities/shape_element.dart';
+import 'package:biscuitse/features/shapes/domain/entities/shape_type.dart';
 
 /// Base class for all canvas events.
 abstract class CanvasEvent extends Equatable {

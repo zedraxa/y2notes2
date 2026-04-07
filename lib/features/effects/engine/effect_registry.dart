@@ -1,4 +1,4 @@
-import 'package:y2notes2/features/effects/engine/effect_config.dart';
+import 'package:biscuitse/features/effects/engine/effect_config.dart';
 
 /// Central registry for all writing effects.
 ///

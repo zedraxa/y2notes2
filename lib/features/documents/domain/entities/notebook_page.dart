@@ -2,9 +2,9 @@ import 'dart:ui' as ui;
 
 import 'package:equatable/equatable.dart';
 import 'package:uuid/uuid.dart';
-import 'package:y2notes2/features/canvas/domain/entities/stroke.dart';
-import 'package:y2notes2/features/canvas/domain/models/canvas_config.dart';
-import 'package:y2notes2/features/documents/domain/entities/canvas_elements.dart';
+import 'package:biscuitse/features/canvas/domain/entities/stroke.dart';
+import 'package:biscuitse/features/canvas/domain/models/canvas_config.dart';
+import 'package:biscuitse/features/documents/domain/entities/canvas_elements.dart';
 
 /// A single page in a [Notebook].
 class NotebookPage extends Equatable {

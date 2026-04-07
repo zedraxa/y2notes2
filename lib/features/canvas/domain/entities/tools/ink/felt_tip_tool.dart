@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:y2notes2/features/canvas/domain/entities/point_data.dart';
-import 'package:y2notes2/features/canvas/domain/entities/tools/base_freehand_tool.dart';
-import 'package:y2notes2/features/canvas/domain/entities/tools/tool_category.dart';
-import 'package:y2notes2/features/canvas/domain/entities/tools/tool_setting_definition.dart';
-import 'package:y2notes2/features/canvas/domain/entities/tools/tool_settings.dart';
+import 'package:biscuitse/features/canvas/domain/entities/point_data.dart';
+import 'package:biscuitse/features/canvas/domain/entities/tools/base_freehand_tool.dart';
+import 'package:biscuitse/features/canvas/domain/entities/tools/tool_category.dart';
+import 'package:biscuitse/features/canvas/domain/entities/tools/tool_setting_definition.dart';
+import 'package:biscuitse/features/canvas/domain/entities/tools/tool_settings.dart';
 
 class FeltTipTool extends BaseFreehandTool {
   @override String get id => 'felt_tip';

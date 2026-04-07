@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:y2notes2/features/library/domain/entities/folder.dart';
-import 'package:y2notes2/features/library/presentation/bloc/library_bloc.dart';
-import 'package:y2notes2/features/library/presentation/bloc/library_event.dart';
-import 'package:y2notes2/features/library/presentation/bloc/library_state.dart';
+import 'package:biscuitse/features/library/domain/entities/folder.dart';
+import 'package:biscuitse/features/library/presentation/bloc/library_bloc.dart';
+import 'package:biscuitse/features/library/presentation/bloc/library_event.dart';
+import 'package:biscuitse/features/library/presentation/bloc/library_state.dart';
 
 /// Horizontal breadcrumb trail showing the current folder path.
 ///

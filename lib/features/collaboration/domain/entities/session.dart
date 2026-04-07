@@ -1,5 +1,5 @@
-import 'package:y2notes2/features/collaboration/domain/entities/participant.dart';
-import 'package:y2notes2/features/collaboration/domain/entities/permission.dart';
+import 'package:biscuitse/features/collaboration/domain/entities/participant.dart';
+import 'package:biscuitse/features/collaboration/domain/entities/permission.dart';
 
 /// Describes a single join/leave event recorded in session history.
 class SessionHistoryEntry {
@@ -107,7 +107,7 @@ class Session {
   final RoomSettings settings;
 
   /// Returns the deep-link URL for this session.
-  String get shareUrl => 'y2notes://join/$roomCode';
+  String get shareUrl => 'biscuitse://join/$roomCode';
 
   Session copyWith({
     Map<String, Participant>? participants,

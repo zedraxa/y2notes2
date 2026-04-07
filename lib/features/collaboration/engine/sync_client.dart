@@ -2,8 +2,8 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:math' as math;
 
-import 'package:y2notes2/features/collaboration/engine/crdt_engine.dart';
-import 'package:y2notes2/features/collaboration/domain/entities/participant.dart';
+import 'package:biscuitse/features/collaboration/engine/crdt_engine.dart';
+import 'package:biscuitse/features/collaboration/domain/entities/participant.dart';
 
 // ─── Connection state ─────────────────────────────────────────────────────────
 
@@ -74,10 +74,10 @@ class PresenceUpdate {
 abstract class SyncClient {
   /// Creates a real WebSocket-backed sync client.
   ///
-  /// [serverUrl] defaults to the public y2notes relay but can be overridden
+  /// [serverUrl] defaults to the public Biscuitsé relay but can be overridden
   /// for self-hosted deployments.
   factory SyncClient.create({String? serverUrl}) =>
-      _WebSocketSyncClient(serverUrl: serverUrl ?? 'wss://relay.y2notes.app');
+      _WebSocketSyncClient(serverUrl: serverUrl ?? 'wss://relay.biscuitse.app');
 
   /// Creates an in-process stub that never connects to a real server.
   factory SyncClient.stub() => _StubSyncClient();

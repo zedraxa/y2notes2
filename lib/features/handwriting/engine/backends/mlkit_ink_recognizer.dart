@@ -1,6 +1,6 @@
-import 'package:y2notes2/features/handwriting/domain/entities/recognition_result.dart';
-import 'package:y2notes2/features/handwriting/engine/recognition_engine.dart';
-import 'package:y2notes2/features/handwriting/engine/backends/heuristic_recognizer.dart';
+import 'package:biscuitse/features/handwriting/domain/entities/recognition_result.dart';
+import 'package:biscuitse/features/handwriting/engine/recognition_engine.dart';
+import 'package:biscuitse/features/handwriting/engine/backends/heuristic_recognizer.dart';
 
 /// Adapter for Google ML Kit Digital Ink Recognition.
 ///

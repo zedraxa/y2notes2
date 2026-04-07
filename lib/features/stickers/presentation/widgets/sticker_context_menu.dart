@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:y2notes2/features/stickers/presentation/bloc/sticker_bloc.dart';
-import 'package:y2notes2/features/stickers/presentation/bloc/sticker_event.dart';
+import 'package:biscuitse/features/stickers/presentation/bloc/sticker_bloc.dart';
+import 'package:biscuitse/features/stickers/presentation/bloc/sticker_event.dart';
 
 Future<void> showStickerContextMenu({
   required BuildContext context,

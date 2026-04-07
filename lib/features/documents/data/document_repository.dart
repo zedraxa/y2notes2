@@ -1,10 +1,10 @@
 import 'dart:convert';
 
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:y2notes2/features/canvas/domain/entities/stroke.dart';
-import 'package:y2notes2/features/canvas/domain/models/canvas_config.dart';
-import 'package:y2notes2/features/documents/domain/entities/notebook.dart';
-import 'package:y2notes2/features/documents/domain/entities/notebook_page.dart';
+import 'package:biscuitse/features/canvas/domain/entities/stroke.dart';
+import 'package:biscuitse/features/canvas/domain/models/canvas_config.dart';
+import 'package:biscuitse/features/documents/domain/entities/notebook.dart';
+import 'package:biscuitse/features/documents/domain/entities/notebook_page.dart';
 
 /// Handles persistence of [Notebook] data using [SharedPreferences].
 ///
