@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:y2notes2/app/theme/colors.dart';
+import 'package:y2notes2/core/extensions/iterable_extensions.dart';
 import 'package:y2notes2/features/canvas/domain/entities/stroke.dart';
 import 'package:y2notes2/features/canvas/domain/entities/tool.dart';
 import 'package:y2notes2/features/canvas/domain/entities/tools/drawing_tool.dart';
@@ -8,6 +9,9 @@ import 'package:y2notes2/features/canvas/domain/entities/tools/tool_registry.dar
 import 'package:y2notes2/features/canvas/domain/entities/tools/tool_settings.dart';
 import 'package:y2notes2/features/canvas/domain/models/canvas_config.dart';
 import 'package:y2notes2/features/canvas/domain/models/viewport.dart';
+import 'package:y2notes2/features/shapes/domain/entities/shape_element.dart';
+import 'package:y2notes2/features/shapes/domain/entities/shape_type.dart';
+import 'package:y2notes2/features/shapes/engine/shape_recognizer.dart';
 
 /// Immutable snapshot of canvas state.
 class CanvasState extends Equatable {
@@ -23,6 +27,14 @@ class CanvasState extends Equatable {
     this.effectsEnabled = true,
     this.activeToolId = 'fountain_pen',
     this.activeToolSettings = const ToolSettings(),
+    // ── Shape state ──────────────────────────────────────────────────────
+    this.shapes = const [],
+    this.shapeRedoStack = const [],
+    this.selectedShapeId,
+    this.autoShapeRecognition = false,
+    this.shapeRecognitionProposal,
+    this.activeShapeType,
+    this.isShapeMode = false,
   });
 
   /// All committed strokes in order.
@@ -47,12 +59,43 @@ class CanvasState extends Equatable {
   /// Settings for the active plugin-based DrawingTool.
   final ToolSettings activeToolSettings;
 
+  // ── Shape state ──────────────────────────────────────────────────────────
+
+  /// All shapes placed on the canvas.
+  final List<ShapeElement> shapes;
+
+  /// Shapes available for redo (parallels stroke redo stack).
+  final List<List<ShapeElement>> shapeRedoStack;
+
+  /// ID of the currently selected shape (null = none selected).
+  final String? selectedShapeId;
+
+  /// Whether freehand strokes are automatically analysed for shapes.
+  final bool autoShapeRecognition;
+
+  /// Pending recognition result awaiting user accept/reject.
+  final ShapeRecognitionResult? shapeRecognitionProposal;
+
+  /// Active shape type when in explicit shape-drawing mode.
+  final ShapeType? activeShapeType;
+
+  /// Whether the canvas is in shape-drawing mode (vs freehand).
+  final bool isShapeMode;
+
+  // ── Derived getters ──────────────────────────────────────────────────────
+
   /// Returns the active plugin-based DrawingTool if registered.
   DrawingTool? get activeDrawingTool => ToolRegistry.get(activeToolId);
 
   bool get canUndo => strokes.isNotEmpty;
   bool get canRedo => redoStack.isNotEmpty;
   bool get isDrawing => activeStroke != null;
+
+  /// The currently selected ShapeElement.
+  ShapeElement? get selectedShape =>
+      selectedShapeId != null
+          ? shapes.where((s) => s.id == selectedShapeId).firstOrNull
+          : null;
 
   CanvasState copyWith({
     List<Stroke>? strokes,
@@ -67,6 +110,16 @@ class CanvasState extends Equatable {
     bool? effectsEnabled,
     String? activeToolId,
     ToolSettings? activeToolSettings,
+    List<ShapeElement>? shapes,
+    List<List<ShapeElement>>? shapeRedoStack,
+    String? selectedShapeId,
+    bool clearShapeSelection = false,
+    bool? autoShapeRecognition,
+    ShapeRecognitionResult? shapeRecognitionProposal,
+    bool clearShapeProposal = false,
+    ShapeType? activeShapeType,
+    bool clearActiveShapeType = false,
+    bool? isShapeMode,
   }) =>
       CanvasState(
         strokes: strokes ?? this.strokes,
@@ -81,6 +134,20 @@ class CanvasState extends Equatable {
         effectsEnabled: effectsEnabled ?? this.effectsEnabled,
         activeToolId: activeToolId ?? this.activeToolId,
         activeToolSettings: activeToolSettings ?? this.activeToolSettings,
+        shapes: shapes ?? this.shapes,
+        shapeRedoStack: shapeRedoStack ?? this.shapeRedoStack,
+        selectedShapeId: clearShapeSelection
+            ? null
+            : (selectedShapeId ?? this.selectedShapeId),
+        autoShapeRecognition:
+            autoShapeRecognition ?? this.autoShapeRecognition,
+        shapeRecognitionProposal: clearShapeProposal
+            ? null
+            : (shapeRecognitionProposal ?? this.shapeRecognitionProposal),
+        activeShapeType: clearActiveShapeType
+            ? null
+            : (activeShapeType ?? this.activeShapeType),
+        isShapeMode: isShapeMode ?? this.isShapeMode,
       );
 
   @override
@@ -96,5 +163,12 @@ class CanvasState extends Equatable {
         effectsEnabled,
         activeToolId,
         activeToolSettings,
+        shapes,
+        shapeRedoStack,
+        selectedShapeId,
+        autoShapeRecognition,
+        shapeRecognitionProposal,
+        activeShapeType,
+        isShapeMode,
       ];
 }

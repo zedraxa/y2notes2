@@ -13,9 +13,16 @@ import 'package:y2notes2/features/canvas/presentation/widgets/toolbar/pen_picker
 import 'package:y2notes2/features/canvas/presentation/widgets/toolbar/thickness_slider.dart';
 import 'package:y2notes2/features/canvas/presentation/widgets/toolbar/tool_picker_panel.dart';
 import 'package:y2notes2/features/canvas/presentation/widgets/toolbar/tool_settings_panel.dart';
+import 'package:y2notes2/features/documents/presentation/bloc/document_bloc.dart';
+import 'package:y2notes2/features/documents/presentation/pages/notebook_page_view.dart';
 import 'package:y2notes2/features/handwriting/presentation/bloc/handwriting_bloc.dart';
 import 'package:y2notes2/features/handwriting/presentation/bloc/handwriting_event.dart';
 import 'package:y2notes2/features/handwriting/presentation/bloc/handwriting_state.dart';
+import 'package:y2notes2/features/shapes/domain/entities/shape_type.dart';
+import 'package:y2notes2/features/shapes/presentation/widgets/shape_type_picker.dart';
+import 'package:y2notes2/features/stickers/presentation/bloc/sticker_bloc.dart';
+import 'package:y2notes2/features/stickers/presentation/bloc/sticker_event.dart';
+import 'package:y2notes2/features/stickers/presentation/widgets/sticker_picker_panel.dart';
 
 /// GoodNotes-style thin top toolbar.
 class MainToolbar extends StatelessWidget {
@@ -77,6 +84,12 @@ class MainToolbar extends StatelessWidget {
                   },
                 ),
                 const _Divider(),
+                // ── Auto-shape recognition toggle ──────────────────────────
+                _AutoShapeToggle(state: state, bloc: bloc),
+                const _Divider(),
+                // ── Shape tool picker ──────────────────────────────────────
+                _ShapeToolButton(state: state, bloc: bloc),
+                const _Divider(),
                 // ── Plugin tool picker ─────────────────────────────────────
                 _ToolPickerButton(state: state),
                 const _Divider(),
@@ -88,6 +101,34 @@ class MainToolbar extends StatelessWidget {
                 const Spacer(),
                 // ── Recognize (handwriting → text) ───────────────────────
                 const _RecognizeButton(),
+                const _Divider(),
+                // ── Export / Import ────────────────────────────────────────
+                const DocumentToolbarActions(),
+                const _Divider(),
+                // ── Stickers ───────────────────────────────────────────────
+                IconButton(
+                  icon: const Icon(Icons.emoji_emotions_outlined),
+                  iconSize: AppConstants.toolbarIconSize,
+                  tooltip: 'Stickers',
+                  onPressed: () {
+                    HapticController.light();
+                    showModalBottomSheet<void>(
+                      context: context,
+                      isScrollControlled: true,
+                      builder: (_) => BlocProvider.value(
+                        value: context.read<StickerBloc>(),
+                        child: StickerPickerPanel(
+                          onSelected: (template) {
+                            Navigator.of(_).pop();
+                            context
+                                .read<StickerBloc>()
+                                .add(StickerPlacementPending(template));
+                          },
+                        ),
+                      ),
+                    );
+                  },
+                ),
                 const _Divider(),
                 // ── Settings ──────────────────────────────────────────────
                 IconButton(
@@ -221,6 +262,7 @@ class _Divider extends StatelessWidget {
 /// Recognize button — taps to trigger handwriting recognition on all strokes.
 class _RecognizeButton extends StatelessWidget {
   const _RecognizeButton({super.key});
+
   @override
   Widget build(BuildContext context) {
     // HandwritingBloc is provided at the app root (see main.dart).
@@ -258,6 +300,116 @@ class _RecognizeButton extends StatelessWidget {
                 ));
               }
             },
+    );
+  }
+}
+
+/// Toggle button for auto-shape recognition.
+class _AutoShapeToggle extends StatelessWidget {
+  const _AutoShapeToggle({required this.state, required this.bloc});
+
+  final CanvasState state;
+  final CanvasBloc bloc;
+
+  @override
+  Widget build(BuildContext context) {
+    return Tooltip(
+      message: state.autoShapeRecognition
+          ? 'Auto-shape ON'
+          : 'Auto-shape OFF',
+      child: GestureDetector(
+        onTap: () {
+          HapticController.light();
+          bloc.add(AutoShapeRecognitionToggled(
+              enabled: !state.autoShapeRecognition));
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          decoration: BoxDecoration(
+            color: state.autoShapeRecognition
+                ? Theme.of(context).colorScheme.primaryContainer
+                : Colors.transparent,
+            borderRadius: BorderRadius.circular(6),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.auto_fix_high,
+                size: AppConstants.toolbarIconSize,
+                color: state.autoShapeRecognition
+                    ? Theme.of(context).colorScheme.primary
+                    : null,
+              ),
+              const SizedBox(width: 2),
+              Text(
+                'Shape',
+                style: TextStyle(
+                  fontSize: 10,
+                  color: state.autoShapeRecognition
+                      ? Theme.of(context).colorScheme.primary
+                      : null,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Button that opens the shape type picker to start explicit shape drawing.
+class _ShapeToolButton extends StatelessWidget {
+  const _ShapeToolButton({required this.state, required this.bloc});
+
+  final CanvasState state;
+  final CanvasBloc bloc;
+
+  @override
+  Widget build(BuildContext context) {
+    final isActive = state.isShapeMode;
+    return IconButton(
+      icon: Icon(
+        Icons.category_outlined,
+        color: isActive ? Theme.of(context).colorScheme.primary : null,
+      ),
+      iconSize: AppConstants.toolbarIconSize,
+      tooltip: isActive ? 'Exit shape mode' : 'Shape tools',
+      onPressed: () {
+        HapticController.light();
+        if (isActive) {
+          bloc.add(const ShapeToolDeactivated());
+        } else {
+          _showShapePicker(context);
+        }
+      },
+    );
+  }
+
+  void _showShapePicker(BuildContext context) {
+    showDialog<ShapeType>(
+      context: context,
+      builder: (_) => Dialog(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('Choose a shape',
+                  style: Theme.of(context).textTheme.titleMedium),
+              const SizedBox(height: 12),
+              ShapeTypePicker(
+                selected: state.activeShapeType,
+                onSelected: (type) {
+                  Navigator.of(context).pop(type);
+                  bloc.add(ShapeToolActivated(type));
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
