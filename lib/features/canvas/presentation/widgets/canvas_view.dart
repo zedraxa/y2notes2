@@ -10,6 +10,10 @@ import 'package:y2notes2/features/canvas/presentation/bloc/canvas_event.dart';
 import 'package:y2notes2/features/canvas/presentation/bloc/canvas_state.dart';
 import 'package:y2notes2/features/canvas/presentation/widgets/page_background.dart';
 import 'package:y2notes2/features/effects/writing/writing_effects_engine.dart';
+import 'package:y2notes2/features/stickers/domain/entities/sticker_element.dart';
+import 'package:y2notes2/features/stickers/presentation/bloc/sticker_bloc.dart';
+import 'package:y2notes2/features/stickers/presentation/bloc/sticker_state.dart';
+import 'package:y2notes2/features/stickers/presentation/widgets/sticker_interaction_handler.dart';
 
 /// The actual drawing surface.
 ///
@@ -134,43 +138,51 @@ class _CanvasViewState extends State<CanvasView>
             prev.config != curr.config ||
             prev.activeToolId != curr.activeToolId ||
             prev.activeToolSettings != curr.activeToolSettings,
-        builder: (context, state) {
-          // Trigger async cache update when strokes change
-          final canvasSize = Size(state.config.width, state.config.height);
-          _canvasEngine.updateStrokesCache(state.strokes, canvasSize);
+        builder: (context, canvasState) {
+          final canvasSize =
+              Size(canvasState.config.width, canvasState.config.height);
+          _canvasEngine.updateStrokesCache(canvasState.strokes, canvasSize);
 
-          return InteractiveViewer(
-            transformationController: _transformController,
-            minScale: 0.3,
-            maxScale: 5.0,
-            boundaryMargin: const EdgeInsets.all(200),
-            child: SizedBox(
-              width: state.config.width,
-              height: state.config.height,
-              child: Stack(
-                children: [
-                  // Layer 1: Page background
-                  PageBackground(config: state.config),
-                  // Layers 2–7: Canvas painter
-                  Listener(
-                    onPointerDown: _onPointerDown,
-                    onPointerMove: _onPointerMove,
-                    onPointerUp: _onPointerUp,
-                    onPointerCancel: _onPointerCancel,
-                    child: CustomPaint(
-                      painter: _CanvasPainter(
-                        engine: _canvasEngine,
-                        strokes: state.strokes,
-                        activeStroke: state.activeStroke,
-                        activeToolSettings: state.activeToolSettings,
-                        config: state.config,
-                      ),
-                      size: canvasSize,
+          return BlocBuilder<StickerBloc, StickerState>(
+            builder: (context, stickerState) {
+              return InteractiveViewer(
+                transformationController: _transformController,
+                minScale: 0.3,
+                maxScale: 5.0,
+                boundaryMargin: const EdgeInsets.all(200),
+                child: SizedBox(
+                  width: canvasState.config.width,
+                  height: canvasState.config.height,
+                  child: StickerInteractionHandler(
+                    child: Stack(
+                      children: [
+                        // Layer 1: Page background
+                        PageBackground(config: canvasState.config),
+                        // Layers 2–7: Canvas painter (strokes + stickers)
+                        Listener(
+                          onPointerDown: _onPointerDown,
+                          onPointerMove: _onPointerMove,
+                          onPointerUp: _onPointerUp,
+                          onPointerCancel: _onPointerCancel,
+                          child: CustomPaint(
+                            painter: _CanvasPainter(
+                              engine: _canvasEngine,
+                              strokes: canvasState.strokes,
+                              activeStroke: canvasState.activeStroke,
+                              activeToolSettings: canvasState.activeToolSettings,
+                              config: canvasState.config,
+                              stickers: stickerState.sortedByZIndex,
+                              selectedStickerId: stickerState.selectedStickerId,
+                            ),
+                            size: canvasSize,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                ],
-              ),
-            ),
+                ),
+              );
+            },
           );
         },
       );
@@ -184,6 +196,8 @@ class _CanvasPainter extends CustomPainter {
     required this.activeStroke,
     required this.activeToolSettings,
     required this.config,
+    required this.stickers,
+    this.selectedStickerId,
   });
 
   final CanvasEngine engine;
@@ -191,6 +205,8 @@ class _CanvasPainter extends CustomPainter {
   final Stroke? activeStroke;
   final ToolSettings activeToolSettings;
   final CanvasConfig config;
+  final List<StickerElement> stickers;
+  final String? selectedStickerId;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -201,6 +217,8 @@ class _CanvasPainter extends CustomPainter {
       strokes: strokes,
       activeStroke: activeStroke,
       activeToolSettings: activeToolSettings,
+      stickers: stickers,
+      selectedStickerId: selectedStickerId,
     );
   }
 
@@ -209,5 +227,7 @@ class _CanvasPainter extends CustomPainter {
       old.strokes != strokes ||
       old.activeStroke != activeStroke ||
       old.activeToolSettings != activeToolSettings ||
-      old.config != config;
+      old.config != config ||
+      old.stickers != stickers ||
+      old.selectedStickerId != selectedStickerId;
 }

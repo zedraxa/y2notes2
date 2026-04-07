@@ -12,6 +12,9 @@ import 'package:y2notes2/features/canvas/presentation/widgets/toolbar/effects_to
 import 'package:y2notes2/features/canvas/presentation/widgets/toolbar/pen_picker.dart';
 import 'package:y2notes2/features/canvas/presentation/widgets/toolbar/thickness_slider.dart';
 import 'package:y2notes2/features/canvas/presentation/widgets/toolbar/tool_picker_panel.dart';
+import 'package:y2notes2/features/stickers/presentation/bloc/sticker_bloc.dart';
+import 'package:y2notes2/features/stickers/presentation/bloc/sticker_event.dart';
+import 'package:y2notes2/features/stickers/presentation/widgets/sticker_picker_panel.dart';
 
 /// GoodNotes-style thin top toolbar.
 class MainToolbar extends StatelessWidget {
@@ -79,6 +82,31 @@ class MainToolbar extends StatelessWidget {
                 // ── Undo / Redo ────────────────────────────────────────────
                 _UndoRedoButtons(state: state, bloc: bloc),
                 const Spacer(),
+                // ── Stickers ───────────────────────────────────────────────
+                IconButton(
+                  icon: const Icon(Icons.emoji_emotions_outlined),
+                  iconSize: AppConstants.toolbarIconSize,
+                  tooltip: 'Stickers',
+                  onPressed: () {
+                    HapticController.light();
+                    showModalBottomSheet<void>(
+                      context: context,
+                      isScrollControlled: true,
+                      builder: (_) => BlocProvider.value(
+                        value: context.read<StickerBloc>(),
+                        child: StickerPickerPanel(
+                          onSelected: (template) {
+                            Navigator.of(_).pop();
+                            context
+                                .read<StickerBloc>()
+                                .add(StickerPlacementPending(template));
+                          },
+                        ),
+                      ),
+                    );
+                  },
+                ),
+                const _Divider(),
                 // ── Settings ──────────────────────────────────────────────
                 IconButton(
                   icon: const Icon(Icons.settings_outlined),

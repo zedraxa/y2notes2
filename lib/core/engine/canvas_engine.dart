@@ -8,6 +8,7 @@ import 'package:y2notes2/features/canvas/domain/entities/stroke.dart';
 import 'package:y2notes2/features/canvas/domain/entities/tools/tool_settings.dart';
 import 'package:y2notes2/features/canvas/domain/models/canvas_config.dart';
 import 'package:y2notes2/features/effects/writing/writing_effects_engine.dart';
+import 'package:y2notes2/features/stickers/domain/entities/sticker_element.dart';
 
 /// Core rendering loop and coordination hub for the canvas.
 ///
@@ -72,6 +73,8 @@ class CanvasEngine with ChangeNotifier {
     required List<Stroke> strokes,
     required Stroke? activeStroke,
     ToolSettings? activeToolSettings,
+    List<StickerElement> stickers = const [],
+    String? selectedStickerId,
   }) {
     _compositor.compose(
       canvas: canvas,
@@ -81,6 +84,8 @@ class CanvasEngine with ChangeNotifier {
       activeStroke: activeStroke,
       strokesCache: _strokesCache,
       activeToolSettings: activeToolSettings,
+      stickers: stickers,
+      selectedStickerId: selectedStickerId,
     );
   }
 
