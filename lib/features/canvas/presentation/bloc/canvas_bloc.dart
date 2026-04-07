@@ -224,11 +224,7 @@ class CanvasBloc extends Bloc<CanvasEvent, CanvasState> {
   /// mutation (add, delete, drag end, style / type change).
   void _onShapeSnapshotRequested(
       ShapeSnapshotRequested event, Emitter<CanvasState> emit) {
-    final newStack = [...state.shapeUndoStack, state.shapes];
-    // Cap history the same way strokes are capped.
-    final capped = newStack.length > AppConstants.maxUndoHistory
-        ? newStack.sublist(newStack.length - AppConstants.maxUndoHistory)
-        : newStack;
+    final capped = _cappedShapeStack([...state.shapeUndoStack, state.shapes]);
     emit(state.copyWith(
       shapeUndoStack: capped,
       shapeRedoStack: [], // clear redo on new operation
@@ -270,10 +266,7 @@ class CanvasBloc extends Bloc<CanvasEvent, CanvasState> {
         : state.strokes.sublist(0, state.strokes.length - 1);
 
     // Snapshot current shapes so the add can be undone.
-    final newUndoStack = [...state.shapeUndoStack, state.shapes];
-    final cappedUndo = newUndoStack.length > AppConstants.maxUndoHistory
-        ? newUndoStack.sublist(newUndoStack.length - AppConstants.maxUndoHistory)
-        : newUndoStack;
+    final cappedUndo = _cappedShapeStack([...state.shapeUndoStack, state.shapes]);
 
     emit(state.copyWith(
       shapes: [...state.shapes, shape],
@@ -302,6 +295,16 @@ class CanvasBloc extends Bloc<CanvasEvent, CanvasState> {
         clearActiveShapeType: true,
         clearShapeSelection: true,
       ));
+
+  // ─── Helpers ──────────────────────────────────────────────────────────────
+
+  /// Returns [stack] with at most [AppConstants.maxUndoHistory] entries,
+  /// dropping the oldest entries if the cap is exceeded.
+  List<List<ShapeElement>> _cappedShapeStack(
+      List<List<ShapeElement>> stack) {
+    if (stack.length <= AppConstants.maxUndoHistory) return stack;
+    return stack.sublist(stack.length - AppConstants.maxUndoHistory);
+  }
 
   // ─── Stylus event handlers ────────────────────────────────────────────────
 

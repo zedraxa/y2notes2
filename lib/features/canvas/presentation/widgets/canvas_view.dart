@@ -116,22 +116,22 @@ class _CanvasViewState extends State<CanvasView>
   // ─── Pointer event handlers ───────────────────────────────────────────────
 
   void _onPointerDown(PointerDownEvent event) {
-    final bloc = context.read<CanvasBloc>();
+    final canvasBloc = context.read<CanvasBloc>();
 
     // Detect and report stylus type.
     final stylusType = StylusDetector.detectStylusType(event);
-    bloc.add(StylusDetectedEvent(stylusType));
+    canvasBloc.add(StylusDetectedEvent(stylusType));
 
     // When pen touches the screen, clear any hover state.
-    if (bloc.state.isHovering) {
-      bloc.add(const HoverEnded());
+    if (canvasBloc.state.isHovering) {
+      canvasBloc.add(const HoverEnded());
     }
 
     // ── Shape hit-testing ─────────────────────────────────────────────────
     // When shapes exist on the canvas, check whether the pointer landed on a
     // shape body or resize/rotation handle.  If so, route the gesture to the
     // ShapeBloc instead of starting a new ink stroke.
-    final shapes = bloc.state.shapes;
+    final shapes = canvasBloc.state.shapes;
     if (shapes.isNotEmpty) {
       final hit = ShapeHitTester.hitTest(shapes, event.localPosition);
       if (hit != null) {
@@ -154,7 +154,7 @@ class _CanvasViewState extends State<CanvasView>
       }
 
       // Tapped on empty canvas — deselect any selected shape.
-      if (bloc.state.selectedShapeId != null) {
+      if (canvasBloc.state.selectedShapeId != null) {
         context.read<ShapeBloc>().add(const ShapeDeselectedEvent());
       }
     }
@@ -164,10 +164,10 @@ class _CanvasViewState extends State<CanvasView>
     final input = StylusAdapterFactory.convert(event);
     final point = _stylusInputToPointData(input, null);
     _lastPoint = point;
-    bloc.add(StrokeStarted(point));
+    canvasBloc.add(StrokeStarted(point));
 
     // Notify effects engines
-    final state = bloc.state;
+    final state = canvasBloc.state;
     if (state.effectsEnabled) {
       _effectsEngine.onStrokeStart(point);
       _interactionEngine.onTouchDown(
