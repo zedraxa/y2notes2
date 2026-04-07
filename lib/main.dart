@@ -7,6 +7,8 @@ import 'package:y2notes2/core/services/settings_service.dart';
 import 'package:y2notes2/features/canvas/domain/entities/tools/tool_registry.dart';
 import 'package:y2notes2/features/canvas/presentation/bloc/canvas_bloc.dart';
 import 'package:y2notes2/features/documents/data/document_repository.dart';
+import 'package:y2notes2/features/handwriting/presentation/bloc/handwriting_bloc.dart';
+import 'package:y2notes2/features/library/data/library_repository.dart';
 import 'package:y2notes2/features/shapes/presentation/bloc/shape_bloc.dart';
 import 'package:y2notes2/features/stickers/presentation/bloc/sticker_bloc.dart';
 import 'package:y2notes2/features/templates/data/template_repository.dart';
@@ -24,6 +26,7 @@ void main() async {
 
   final prefs = await SharedPreferences.getInstance();
   final documentRepository = DocumentRepository(prefs);
+  final libraryRepository = LibraryRepository(prefs);
   final templateRepository = TemplateRepository(prefs);
 
   // Register all plugin-based drawing tools.
@@ -54,6 +57,8 @@ void main() async {
             BlocProvider(
               create: (_) => StickerBloc(),
             ),
+            // HandwritingBloc manages recognition state across the app.
+            BlocProvider(create: (_) => HandwritingBloc()),
             // Template & Widget blocs.
             BlocProvider(
               create: (_) => TemplateBloc(repository: templateRepository)
@@ -66,6 +71,7 @@ void main() async {
           child: Y2NotesApp(
             settingsService: settingsService,
             documentRepository: documentRepository,
+            libraryRepository: libraryRepository,
           ),
         ),
       ),

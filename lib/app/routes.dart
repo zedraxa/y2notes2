@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 import 'package:y2notes2/features/canvas/presentation/pages/canvas_page.dart';
 import 'package:y2notes2/features/documents/presentation/bloc/document_bloc.dart';
 import 'package:y2notes2/features/documents/presentation/bloc/document_event.dart';
+import 'package:y2notes2/features/handwriting/presentation/pages/recognition_settings_page.dart';
+import 'package:y2notes2/features/library/presentation/pages/library_page.dart';
 import 'package:y2notes2/features/settings/presentation/effects_settings_page.dart';
 import 'package:y2notes2/features/workspace/presentation/pages/workspace_page.dart';
 
@@ -12,9 +14,27 @@ class AppRouter {
   late final GoRouter router = GoRouter(
     initialLocation: '/',
     routes: [
+      // ── Library (new root) ──────────────────────────────────────────────
       GoRoute(
         path: '/',
+        builder: (context, state) => const LibraryPage(),
+      ),
+      // ── Legacy workspace (still accessible) ────────────────────────────
+      GoRoute(
+        path: '/workspace',
         builder: (context, state) => const WorkspacePage(),
+      ),
+      // ── Notebook viewer ─────────────────────────────────────────────────
+      GoRoute(
+        path: '/notebook/:id',
+        builder: (context, state) {
+          final id = state.pathParameters['id']!;
+          final bloc = context.read<DocumentBloc>();
+          if (bloc.state.notebook?.id != id) {
+            bloc.add(OpenNotebook(notebookId: id));
+          }
+          return const CanvasPage();
+        },
       ),
       GoRoute(
         path: '/notebook/:id/page/:pageNum',
@@ -37,6 +57,15 @@ class AppRouter {
           return const CanvasPage();
         },
       ),
+      // ── Infinite canvas ──────────────────────────────────────────────────
+      GoRoute(
+        path: '/canvas/:id',
+        builder: (context, state) {
+          // Canvas navigation is handled by WorkspacePage internally.
+          return const WorkspacePage();
+        },
+      ),
+      // ── Settings ─────────────────────────────────────────────────────────
       GoRoute(
         path: '/settings',
         builder: (context, state) => const EffectsSettingsPage(),
@@ -45,6 +74,10 @@ class AppRouter {
             path: 'effects',
             builder: (context, state) =>
                 const EffectsSettingsPage(showEffectsOnly: true),
+          ),
+          GoRoute(
+            path: 'recognition',
+            builder: (context, state) => const RecognitionSettingsPage(),
           ),
         ],
       ),
