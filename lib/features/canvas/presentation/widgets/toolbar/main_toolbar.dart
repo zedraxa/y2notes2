@@ -13,6 +13,8 @@ import 'package:y2notes2/features/canvas/presentation/widgets/toolbar/pen_picker
 import 'package:y2notes2/features/canvas/presentation/widgets/toolbar/thickness_slider.dart';
 import 'package:y2notes2/features/canvas/presentation/widgets/toolbar/tool_picker_panel.dart';
 import 'package:y2notes2/features/canvas/presentation/widgets/toolbar/tool_settings_panel.dart';
+import 'package:y2notes2/features/documents/presentation/bloc/document_bloc.dart';
+import 'package:y2notes2/features/documents/presentation/pages/notebook_page_view.dart';
 import 'package:y2notes2/features/shapes/domain/entities/shape_type.dart';
 import 'package:y2notes2/features/shapes/presentation/widgets/shape_type_picker.dart';
 import 'package:y2notes2/features/stickers/presentation/bloc/sticker_bloc.dart';
@@ -94,6 +96,9 @@ class MainToolbar extends StatelessWidget {
                 // ── Undo / Redo ────────────────────────────────────────────
                 _UndoRedoButtons(state: state, bloc: bloc),
                 const Spacer(),
+                // ── Export / Import ────────────────────────────────────────
+                const DocumentToolbarActions(),
+                const _Divider(),
                 // ── Stickers ───────────────────────────────────────────────
                 IconButton(
                   icon: const Icon(Icons.emoji_emotions_outlined),
