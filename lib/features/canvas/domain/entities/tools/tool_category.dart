@@ -1,1 +1,1 @@
-enum ToolCategory { ink, paint, dry, glow, highlighter, utility }
+enum ToolCategory { ink, paint, dry, glow, highlighter, utility, shape }
