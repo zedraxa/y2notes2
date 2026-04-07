@@ -13,6 +13,13 @@ class SettingsService {
   final ValueNotifier<bool> hapticsEnabledNotifier = ValueNotifier(true);
   final ValueNotifier<String> pageTemplateNotifier = ValueNotifier('lined');
 
+  // ─── Recognition notifiers ────────────────────────────────────────────────
+  final ValueNotifier<String> recognitionLanguageNotifier =
+      ValueNotifier('en-US');
+  final ValueNotifier<bool> recognitionRealTimeNotifier = ValueNotifier(false);
+  final ValueNotifier<double> recognitionConfidenceNotifier =
+      ValueNotifier(0.3);
+
   // ─── Effect-specific notifiers ────────────────────────────────────────────
   final Map<String, ValueNotifier<bool>> effectToggles = {};
   final Map<String, ValueNotifier<double>> effectIntensities = {};
@@ -52,6 +59,9 @@ class SettingsService {
   static const _palmRejectionKey = 'stylus_palm_rejection';
   static const _leftHandModeKey = 'stylus_left_hand';
   static const _gestureMappingPrefix = 'stylus_gesture_';
+  static const _recognitionLanguageKey = 'recognition_language';
+  static const _recognitionRealTimeKey = 'recognition_real_time';
+  static const _recognitionConfidenceKey = 'recognition_confidence';
 
   static const List<String> effectNames = [
     'ink_flow',
@@ -77,6 +87,13 @@ class SettingsService {
         _prefs.getBool(_hapticsEnabledKey) ?? true;
     pageTemplateNotifier.value =
         _prefs.getString(_pageTemplateKey) ?? 'lined';
+
+    recognitionLanguageNotifier.value =
+        _prefs.getString(_recognitionLanguageKey) ?? 'en-US';
+    recognitionRealTimeNotifier.value =
+        _prefs.getBool(_recognitionRealTimeKey) ?? false;
+    recognitionConfidenceNotifier.value =
+        _prefs.getDouble(_recognitionConfidenceKey) ?? 0.3;
 
     for (final name in effectNames) {
       effectToggles[name] = ValueNotifier(
@@ -137,6 +154,21 @@ class SettingsService {
   Future<void> setEffectIntensity(String name, double value) async {
     effectIntensities[name]?.value = value;
     await _prefs.setDouble('$_effectIntensityPrefix$name', value);
+  }
+
+  Future<void> setRecognitionLanguage(String code) async {
+    recognitionLanguageNotifier.value = code;
+    await _prefs.setString(_recognitionLanguageKey, code);
+  }
+
+  Future<void> setRecognitionRealTime(bool value) async {
+    recognitionRealTimeNotifier.value = value;
+    await _prefs.setBool(_recognitionRealTimeKey, value);
+  }
+
+  Future<void> setRecognitionConfidence(double value) async {
+    recognitionConfidenceNotifier.value = value;
+    await _prefs.setDouble(_recognitionConfidenceKey, value);
   }
 
   bool isEffectEnabled(String name) => effectToggles[name]?.value ?? true;
@@ -222,6 +254,9 @@ class SettingsService {
     effectsEnabledNotifier.dispose();
     hapticsEnabledNotifier.dispose();
     pageTemplateNotifier.dispose();
+    recognitionLanguageNotifier.dispose();
+    recognitionRealTimeNotifier.dispose();
+    recognitionConfidenceNotifier.dispose();
     for (final n in effectToggles.values) {
       n.dispose();
     }
