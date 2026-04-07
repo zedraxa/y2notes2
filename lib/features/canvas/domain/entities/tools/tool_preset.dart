@@ -18,7 +18,7 @@ class ToolPreset {
 }
 
 class ToolPresetManager {
-  static const _uuid = Uuid();
+  static final _uuid = Uuid();
   static final Map<String, List<ToolPreset>> _presets = {};
 
   static void registerBuiltIn(ToolPreset preset) {
