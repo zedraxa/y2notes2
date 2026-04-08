@@ -60,9 +60,7 @@ class MatrixData extends Equatable {
   Map<String, dynamic> toJson() => {
         'rows': rows,
         'cols': cols,
-        'values': values
-            .map((row) => row.map((v) => v).toList())
-            .toList(),
+        'values': values,
         if (label != null) 'label': label,
       };
 
