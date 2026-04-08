@@ -250,3 +250,105 @@ class LoadRichTextElements extends RichTextEvent {
   @override
   List<Object?> get props => [elements];
 }
+
+// ── Undo / Redo ─────────────────────────────────────────────
+
+/// Undo the last editing action.
+class UndoRichText extends RichTextEvent {
+  const UndoRichText();
+}
+
+/// Redo a previously undone action.
+class RedoRichText extends RichTextEvent {
+  const RedoRichText();
+}
+
+// ── Table delete operations ─────────────────────────────────
+
+/// Remove a row from a table node.
+class RemoveTableRow extends RichTextEvent {
+  const RemoveTableRow({
+    required this.elementId,
+    required this.nodeIndex,
+    required this.row,
+  });
+
+  final String elementId;
+  final int nodeIndex;
+  final int row;
+
+  @override
+  List<Object?> get props => [elementId, nodeIndex, row];
+}
+
+/// Remove a column from a table node.
+class RemoveTableColumn extends RichTextEvent {
+  const RemoveTableColumn({
+    required this.elementId,
+    required this.nodeIndex,
+    required this.col,
+  });
+
+  final String elementId;
+  final int nodeIndex;
+  final int col;
+
+  @override
+  List<Object?> get props => [elementId, nodeIndex, col];
+}
+
+// ── Text colour ─────────────────────────────────────────────
+
+/// Set the colour of a span.
+class SetSpanColor extends RichTextEvent {
+  const SetSpanColor({
+    required this.elementId,
+    required this.nodeIndex,
+    required this.spanIndex,
+    required this.color,
+  });
+
+  final String elementId;
+  final int nodeIndex;
+  final int spanIndex;
+  final Color? color;
+
+  @override
+  List<Object?> get props =>
+      [elementId, nodeIndex, spanIndex, color];
+}
+
+// ── Find & replace ──────────────────────────────────────────
+
+/// Open find & replace with a query.
+class FindInRichText extends RichTextEvent {
+  const FindInRichText({required this.query});
+  final String query;
+
+  @override
+  List<Object?> get props => [query];
+}
+
+/// Replace occurrences in the selected element.
+class ReplaceInRichText extends RichTextEvent {
+  const ReplaceInRichText({
+    required this.elementId,
+    required this.query,
+    required this.replacement,
+    this.replaceAll = false,
+  });
+
+  final String elementId;
+  final String query;
+  final String replacement;
+  final bool replaceAll;
+
+  @override
+  List<Object?> get props =>
+      [elementId, query, replacement, replaceAll];
+}
+
+/// Clear find state.
+class ClearFind extends RichTextEvent {
+  const ClearFind();
+}
