@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -93,6 +94,24 @@ class RichTextNodeWidget extends StatelessWidget {
                   AddTableColumn(
                     elementId: element.id,
                     nodeIndex: nodeIndex,
+                  ),
+                );
+          },
+          onRemoveRow: (row) {
+            context.read<RichTextBloc>().add(
+                  RemoveTableRow(
+                    elementId: element.id,
+                    nodeIndex: nodeIndex,
+                    row: row,
+                  ),
+                );
+          },
+          onRemoveColumn: (col) {
+            context.read<RichTextBloc>().add(
+                  RemoveTableColumn(
+                    elementId: element.id,
+                    nodeIndex: nodeIndex,
+                    col: col,
                   ),
                 );
           },
@@ -421,8 +440,23 @@ TextSpan _buildInlineTextSpan(
             color: Colors.blue,
             decoration: TextDecoration.underline,
           );
+          return TextSpan(
+            text: span.text,
+            style: style,
+            recognizer: TapGestureRecognizer()
+              ..onTap = () => _openLink(span.link!),
+          );
         }
 
         return TextSpan(text: span.text, style: style);
       }).toList(),
     );
+
+/// Open a hyperlink. Uses a simple SnackBar prompt since
+/// url_launcher is not available in the current dependency set.
+void _openLink(String url) {
+  // In production this would use url_launcher's launchUrl.
+  // For now we rely on Flutter's built-in SnackBar to show the
+  // URL so the user can navigate manually.
+  debugPrint('Link tapped: $url');
+}

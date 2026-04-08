@@ -9,6 +9,8 @@ class RichTextTableWidget extends StatelessWidget {
     required this.onCellChanged,
     required this.onAddRow,
     required this.onAddColumn,
+    this.onRemoveRow,
+    this.onRemoveColumn,
     this.isEditing = false,
     super.key,
   });
@@ -18,6 +20,8 @@ class RichTextTableWidget extends StatelessWidget {
       onCellChanged;
   final VoidCallback onAddRow;
   final VoidCallback onAddColumn;
+  final ValueChanged<int>? onRemoveRow;
+  final ValueChanged<int>? onRemoveColumn;
   final bool isEditing;
 
   @override
@@ -27,40 +31,106 @@ class RichTextTableWidget extends StatelessWidget {
       return const SizedBox.shrink();
     }
 
+    final colCount =
+        data.isNotEmpty ? data.first.length : 0;
+    final canDeleteRow = data.length > 1;
+    final canDeleteCol = colCount > 1;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Table grid
-        Table(
-          border: TableBorder.all(
-            color: Theme.of(context).dividerColor,
-            width: 0.5,
+        // Column delete buttons (edit mode)
+        if (isEditing && canDeleteCol)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 2),
+            child: Row(
+              children: [
+                for (var col = 0;
+                    col < colCount;
+                    col++)
+                  Expanded(
+                    child: Center(
+                      child: GestureDetector(
+                        onTap: () =>
+                            onRemoveColumn?.call(col),
+                        child: Icon(
+                          Icons.close,
+                          size: 14,
+                          color: Colors.red
+                              .withOpacity(0.6),
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
           ),
-          defaultVerticalAlignment:
-              TableCellVerticalAlignment.middle,
+        // Table grid with row delete buttons
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            for (var row = 0;
-                row < data.length;
-                row++)
-              TableRow(
-                decoration: row == 0
-                    ? BoxDecoration(
-                        color: Theme.of(context)
-                            .colorScheme
-                            .surfaceContainerHighest
-                            .withOpacity(0.5),
-                      )
-                    : null,
+            Expanded(
+              child: Table(
+                border: TableBorder.all(
+                  color:
+                      Theme.of(context).dividerColor,
+                  width: 0.5,
+                ),
+                defaultVerticalAlignment:
+                    TableCellVerticalAlignment.middle,
                 children: [
-                  for (var col = 0;
-                      col < data[row].length;
-                      col++)
-                    _TableCell(
-                      value: data[row][col],
-                      isHeader: row == 0,
-                      isEditing: isEditing,
-                      onChanged: (v) =>
-                          onCellChanged(row, col, v),
+                  for (var row = 0;
+                      row < data.length;
+                      row++)
+                    TableRow(
+                      decoration: row == 0
+                          ? BoxDecoration(
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .surfaceContainerHighest
+                                  .withOpacity(0.5),
+                            )
+                          : null,
+                      children: [
+                        for (var col = 0;
+                            col <
+                                data[row].length;
+                            col++)
+                          _TableCell(
+                            value: data[row][col],
+                            isHeader: row == 0,
+                            isEditing: isEditing,
+                            onChanged: (v) =>
+                                onCellChanged(
+                                    row, col, v),
+                          ),
+                      ],
+                    ),
+                ],
+              ),
+            ),
+            // Row delete buttons
+            if (isEditing && canDeleteRow)
+              Column(
+                children: [
+                  for (var row = 0;
+                      row < data.length;
+                      row++)
+                    SizedBox(
+                      height: 36,
+                      width: 24,
+                      child: Center(
+                        child: GestureDetector(
+                          onTap: () =>
+                              onRemoveRow?.call(row),
+                          child: Icon(
+                            Icons.close,
+                            size: 14,
+                            color: Colors.red
+                                .withOpacity(0.6),
+                          ),
+                        ),
+                      ),
                     ),
                 ],
               ),
