@@ -292,33 +292,82 @@ class _UndoRedoButtons extends StatelessWidget {
   Widget build(BuildContext context) => Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          IconButton(
-            icon: const Icon(Icons.undo_rounded),
-            iconSize: AppConstants.toolbarIconSize,
-            onPressed: state.canUndo
-                ? () {
-                    HapticController.light();
-                    bloc.add(const UndoRequested());
-                  }
-                : null,
-            tooltip: 'Undo',
-            color: state.canUndo
-                ? null
-                : Theme.of(context).disabledColor,
+          Semantics(
+            label: state.canUndo
+                ? 'Undo (${state.undoCount} actions available)'
+                : 'Undo (nothing to undo)',
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                IconButton(
+                  icon: AnimatedOpacity(
+                    opacity: state.canUndo ? 1.0 : 0.4,
+                    duration: const Duration(milliseconds: 150),
+                    child: const Icon(Icons.undo_rounded),
+                  ),
+                  iconSize: AppConstants.toolbarIconSize,
+                  onPressed: state.canUndo
+                      ? () {
+                          HapticController.light();
+                          bloc.add(const UndoRequested());
+                        }
+                      : null,
+                  tooltip: 'Undo (⌘Z)',
+                ),
+                if (state.canUndo && state.undoCount > 1)
+                  Positioned(
+                    right: 2,
+                    top: 2,
+                    child: AnimatedScale(
+                      scale: state.canUndo ? 1.0 : 0.0,
+                      duration: const Duration(milliseconds: 200),
+                      curve: Curves.easeOutBack,
+                      child: Container(
+                        padding: const EdgeInsets.all(3),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.primary,
+                          shape: BoxShape.circle,
+                        ),
+                        constraints: const BoxConstraints(
+                          minWidth: 16,
+                          minHeight: 16,
+                        ),
+                        child: Center(
+                          child: Text(
+                            '${state.undoCount > 99 ? "99+" : state.undoCount}',
+                            style: TextStyle(
+                              color:
+                                  Theme.of(context).colorScheme.onPrimary,
+                              fontSize: 9,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
           ),
-          IconButton(
-            icon: const Icon(Icons.redo_rounded),
-            iconSize: AppConstants.toolbarIconSize,
-            onPressed: state.canRedo
-                ? () {
-                    HapticController.light();
-                    bloc.add(const RedoRequested());
-                  }
-                : null,
-            tooltip: 'Redo',
-            color: state.canRedo
-                ? null
-                : Theme.of(context).disabledColor,
+          Semantics(
+            label: state.canRedo
+                ? 'Redo (${state.redoCount} actions available)'
+                : 'Redo (nothing to redo)',
+            child: IconButton(
+              icon: AnimatedOpacity(
+                opacity: state.canRedo ? 1.0 : 0.4,
+                duration: const Duration(milliseconds: 150),
+                child: const Icon(Icons.redo_rounded),
+              ),
+              iconSize: AppConstants.toolbarIconSize,
+              onPressed: state.canRedo
+                  ? () {
+                      HapticController.light();
+                      bloc.add(const RedoRequested());
+                    }
+                  : null,
+              tooltip: 'Redo (⌘⇧Z)',
+            ),
           ),
         ],
       );

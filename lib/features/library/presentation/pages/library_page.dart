@@ -16,6 +16,9 @@ import 'package:biscuits/features/library/presentation/widgets/sort_filter_bar.d
 import 'package:biscuits/features/library/presentation/widgets/spotlight_search.dart';
 import 'package:biscuits/features/library/presentation/widgets/tag_cloud.dart';
 import 'package:biscuits/features/library/presentation/widgets/trash_view.dart';
+import 'package:biscuits/shared/widgets/apple_toast.dart';
+import 'package:biscuits/shared/widgets/keyboard_shortcuts_overlay.dart';
+import 'package:biscuits/shared/widgets/skeleton_loader.dart';
 
 /// The root screen of the app — the unified document library.
 ///
@@ -56,6 +59,16 @@ class _LibraryPageState extends State<LibraryPage> {
       context.read<LibraryBloc>().add(const OpenSpotlight());
       return KeyEventResult.handled;
     }
+    // ⌘+/ → Keyboard shortcuts overlay
+    if (isMetaOrCtrl && event.logicalKey == LogicalKeyboardKey.slash) {
+      KeyboardShortcutsOverlay.show(context);
+      return KeyEventResult.handled;
+    }
+    // ⌘+, → Settings
+    if (isMetaOrCtrl && event.logicalKey == LogicalKeyboardKey.comma) {
+      context.go('/settings');
+      return KeyEventResult.handled;
+    }
     return KeyEventResult.ignored;
   }
 
@@ -88,33 +101,38 @@ class _LibraryPageState extends State<LibraryPage> {
   AppBar _buildAppBar(BuildContext context, LibraryState state) {
     return AppBar(
       title: state.isSearching
-          ? TextField(
-              controller: _searchController,
-              focusNode: _searchFocus,
-              decoration: InputDecoration(
-                hintText: 'Search…',
-                border: InputBorder.none,
-                suffixIcon: IconButton(
-                  icon: const Icon(Icons.close),
-                  onPressed: () {
-                    _searchController.clear();
-                    context.read<LibraryBloc>().add(const ClearSearch());
-                  },
+          ? Semantics(
+              label: 'Search library',
+              child: TextField(
+                controller: _searchController,
+                focusNode: _searchFocus,
+                decoration: InputDecoration(
+                  hintText: 'Search…',
+                  border: InputBorder.none,
+                  suffixIcon: IconButton(
+                    icon: const Icon(Icons.close),
+                    tooltip: 'Clear search',
+                    onPressed: () {
+                      _searchController.clear();
+                      context.read<LibraryBloc>().add(const ClearSearch());
+                    },
+                  ),
                 ),
+                onChanged: (q) {
+                  if (q.isNotEmpty) {
+                    context.read<LibraryBloc>().add(SearchLibrary(q));
+                  } else {
+                    context.read<LibraryBloc>().add(const ClearSearch());
+                  }
+                },
               ),
-              onChanged: (q) {
-                if (q.isNotEmpty) {
-                  context.read<LibraryBloc>().add(SearchLibrary(q));
-                } else {
-                  context.read<LibraryBloc>().add(const ClearSearch());
-                }
-              },
             )
           : const Text('Library'),
       actions: [
         if (!state.isSearching)
           IconButton(
             icon: const Icon(Icons.search),
+            tooltip: 'Search (⌘K)',
             onPressed: () {
               context.read<LibraryBloc>().add(SearchLibrary(''));
               _searchFocus.requestFocus();
@@ -124,6 +142,11 @@ class _LibraryPageState extends State<LibraryPage> {
           icon: const Icon(Icons.label_outline),
           tooltip: 'Tag Cloud',
           onPressed: () => setState(() => _showTagCloud = !_showTagCloud),
+        ),
+        IconButton(
+          icon: const Icon(Icons.keyboard_rounded),
+          tooltip: 'Keyboard Shortcuts (⌘/)',
+          onPressed: () => KeyboardShortcutsOverlay.show(context),
         ),
         IconButton(
           icon: const Icon(Icons.delete_outline),
@@ -220,23 +243,55 @@ class _LibraryPageState extends State<LibraryPage> {
 
   Widget _buildBody(BuildContext context, LibraryState state) {
     if (state.isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return const LibraryGridSkeleton();
     }
     if (state.error != null) {
       return Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.error_outline, size: 48, color: Colors.red),
-            const SizedBox(height: 12),
-            Text(state.error!),
-            const SizedBox(height: 12),
-            FilledButton(
-              onPressed: () =>
-                  context.read<LibraryBloc>().add(const LoadLibrary()),
-              child: const Text('Retry'),
-            ),
-          ],
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TweenAnimationBuilder<double>(
+                tween: Tween(begin: 0.0, end: 1.0),
+                duration: const Duration(milliseconds: 400),
+                curve: Curves.easeOutCubic,
+                builder: (_, value, child) => Opacity(
+                  opacity: value,
+                  child: Transform.translate(
+                    offset: Offset(0, 12 * (1 - value)),
+                    child: child,
+                  ),
+                ),
+                child: Icon(
+                  Icons.cloud_off_rounded,
+                  size: 56,
+                  color: Theme.of(context)
+                      .colorScheme
+                      .error
+                      .withOpacity(0.6),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Something went wrong',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                state.error!,
+                style: Theme.of(context).textTheme.bodySmall,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 20),
+              FilledButton.icon(
+                onPressed: () =>
+                    context.read<LibraryBloc>().add(const LoadLibrary()),
+                icon: const Icon(Icons.refresh_rounded, size: 18),
+                label: const Text('Try Again'),
+              ),
+            ],
+          ),
         ),
       );
     }

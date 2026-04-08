@@ -98,3 +98,10 @@ export 'package:biscuits/shared/widgets/apple_sheet.dart';
 // Utilities
 export 'package:biscuits/shared/widgets/frosted_container.dart';
 export 'package:biscuits/app/theme/motion_widgets.dart';
+
+// Feedback & UX
+export 'package:biscuits/shared/widgets/apple_toast.dart';
+export 'package:biscuits/shared/widgets/skeleton_loader.dart';
+export 'package:biscuits/shared/widgets/keyboard_shortcuts_overlay.dart';
+export 'package:biscuits/shared/widgets/confirm_action.dart';
+export 'package:biscuits/shared/widgets/reduced_motion.dart';
