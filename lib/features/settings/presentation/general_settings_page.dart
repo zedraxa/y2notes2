@@ -1,36 +1,109 @@
 import 'package:flutter/material.dart';
+import 'package:y2notes2/app/theme/colors.dart';
 import 'package:y2notes2/core/services/settings_service.dart';
 import 'package:y2notes2/shared/widgets/service_provider.dart';
 
-/// General settings: appearance (dark mode), haptic feedback, and default
-/// tool size.
+/// General settings: Apple iOS Settings-style with grouped rounded sections.
 class GeneralSettingsPage extends StatelessWidget {
   const GeneralSettingsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
     final settings = ServiceProvider.of<SettingsService>(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
       appBar: AppBar(title: const Text('General')),
       body: ListView(
-        padding: const EdgeInsets.symmetric(vertical: 8),
+        padding: const EdgeInsets.fromLTRB(20, 8, 20, 40),
         children: [
+          // ── Appearance ──────────────────────────────────────────────────
           _SectionHeader('Appearance'),
-          _DarkModeToggle(settings: settings),
-          const Divider(height: 24),
+          const SizedBox(height: 6),
+          _GroupedSection(
+            isDark: isDark,
+            children: [
+              _DarkModeToggle(settings: settings),
+            ],
+          ),
+          const SizedBox(height: 24),
+          // ── Feedback ────────────────────────────────────────────────────
           _SectionHeader('Feedback'),
-          _HapticsToggle(settings: settings),
-          const Divider(height: 24),
+          const SizedBox(height: 6),
+          _GroupedSection(
+            isDark: isDark,
+            children: [
+              _HapticsToggle(settings: settings),
+            ],
+          ),
+          const SizedBox(height: 24),
+          // ── Defaults ────────────────────────────────────────────────────
           _SectionHeader('Defaults'),
-          _DefaultToolSizeSlider(settings: settings),
-          _AutoSaveIntervalSlider(settings: settings),
-          const Divider(height: 24),
+          const SizedBox(height: 6),
+          _GroupedSection(
+            isDark: isDark,
+            children: [
+              _DefaultToolSizeSlider(settings: settings),
+              _AutoSaveIntervalSlider(settings: settings),
+            ],
+          ),
+          const SizedBox(height: 24),
+          // ── Navigation ──────────────────────────────────────────────────
           _SectionHeader('Navigation'),
-          _PageGesturesToggle(settings: settings),
-          const Divider(height: 24),
+          const SizedBox(height: 6),
+          _GroupedSection(
+            isDark: isDark,
+            children: [
+              _PageGesturesToggle(settings: settings),
+            ],
+          ),
+          const SizedBox(height: 24),
+          // ── Data ────────────────────────────────────────────────────────
           _SectionHeader('Data'),
-          _ResetTile(settings: settings),
+          const SizedBox(height: 6),
+          _GroupedSection(
+            isDark: isDark,
+            children: [
+              _ResetTile(settings: settings),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─── iOS-style grouped section container ────────────────────────────────────
+
+class _GroupedSection extends StatelessWidget {
+  const _GroupedSection({
+    required this.isDark,
+    required this.children,
+  });
+
+  final bool isDark;
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.darkSurface : AppColors.surface,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        children: [
+          for (int i = 0; i < children.length; i++) ...[
+            if (i > 0)
+              Divider(
+                height: 0.5,
+                thickness: 0.5,
+                indent: 20,
+                color: isDark ? AppColors.darkDivider : AppColors.toolbarBorder,
+              ),
+            children[i],
+          ],
         ],
       ),
     );
@@ -46,12 +119,13 @@ class _SectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+        padding: const EdgeInsets.fromLTRB(4, 4, 4, 0),
         child: Text(
           title.toUpperCase(),
           style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                letterSpacing: 1.2,
-                fontWeight: FontWeight.w600,
+                letterSpacing: 0.5,
+                fontWeight: FontWeight.w500,
+                color: AppColors.textSecondary,
               ),
         ),
       );
@@ -68,6 +142,8 @@ class _DarkModeToggle extends StatelessWidget {
   Widget build(BuildContext context) => ValueListenableBuilder<bool>(
         valueListenable: settings.darkModeNotifier,
         builder: (context, isDark, _) => SwitchListTile(
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
           title: const Text('Dark Mode'),
           subtitle: const Text('Switch between light and dark theme'),
           value: isDark,
@@ -85,6 +161,8 @@ class _HapticsToggle extends StatelessWidget {
   Widget build(BuildContext context) => ValueListenableBuilder<bool>(
         valueListenable: settings.hapticsEnabledNotifier,
         builder: (context, enabled, _) => SwitchListTile(
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
           title: const Text('Haptic Feedback'),
           subtitle: const Text('Vibration feedback for tool interactions'),
           value: enabled,
@@ -102,6 +180,8 @@ class _DefaultToolSizeSlider extends StatelessWidget {
   Widget build(BuildContext context) => ValueListenableBuilder<double>(
         valueListenable: settings.defaultToolSizeNotifier,
         builder: (context, value, _) => ListTile(
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
           title: const Text('Default Pen Size'),
           subtitle: Slider(
             value: value,
@@ -128,6 +208,8 @@ class _AutoSaveIntervalSlider extends StatelessWidget {
   Widget build(BuildContext context) => ValueListenableBuilder<int>(
         valueListenable: settings.autoSaveIntervalNotifier,
         builder: (context, seconds, _) => ListTile(
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
           title: const Text('Auto-save Interval'),
           subtitle: Slider(
             value: seconds.toDouble(),
@@ -162,6 +244,8 @@ class _PageGesturesToggle extends StatelessWidget {
   Widget build(BuildContext context) => ValueListenableBuilder<bool>(
         valueListenable: settings.pageGesturesEnabledNotifier,
         builder: (context, enabled, _) => SwitchListTile(
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
           title: const Text('Page Gestures'),
           subtitle: const Text(
             'Swipe with two fingers or from the screen edge to change pages',
@@ -179,9 +263,12 @@ class _ResetTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => ListTile(
-        leading:
-            Icon(Icons.restore, color: Theme.of(context).colorScheme.error),
-        title: const Text('Reset All Settings'),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+        title: Text(
+          'Reset All Settings',
+          style: TextStyle(color: AppColors.systemRed),
+        ),
         subtitle: const Text('Restore every setting to its default value'),
         onTap: () async {
           final confirmed = await showDialog<bool>(
@@ -197,7 +284,10 @@ class _ResetTile extends StatelessWidget {
                   onPressed: () => Navigator.pop(ctx, false),
                   child: const Text('Cancel'),
                 ),
-                TextButton(
+                FilledButton(
+                  style: FilledButton.styleFrom(
+                    backgroundColor: AppColors.systemRed,
+                  ),
                   onPressed: () => Navigator.pop(ctx, true),
                   child: const Text('Reset'),
                 ),
@@ -208,7 +298,8 @@ class _ResetTile extends StatelessWidget {
             await settings.resetAll();
             if (context.mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Settings restored to defaults')),
+                const SnackBar(
+                    content: Text('Settings restored to defaults')),
               );
             }
           }

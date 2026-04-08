@@ -3,7 +3,7 @@ import 'package:y2notes2/app/theme/colors.dart';
 import 'package:y2notes2/features/workspace/domain/tab_session.dart';
 import 'package:y2notes2/features/workspace/presentation/bloc/workspace_state.dart';
 
-/// A single draggable tab in the tab bar.
+/// A single draggable tab styled after Apple's clean tab aesthetic.
 class TabItem extends StatelessWidget {
   const TabItem({
     super.key,
@@ -29,16 +29,11 @@ class TabItem extends StatelessWidget {
   final VoidCallback onDuplicate;
   final VoidCallback onCloseOthers;
   final VoidCallback onCloseToTheRight;
-
-  /// Whether this is the only tab (disables "Close Others").
   final bool isOnly;
-
-  /// Whether this is the last tab in the list (disables "Close to the Right").
   final bool isLast;
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Tooltip(
@@ -53,32 +48,18 @@ class TabItem extends StatelessWidget {
             _showContextMenu(context, details.globalPosition),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 150),
+          curve: Curves.easeInOut,
           constraints: const BoxConstraints(minWidth: 80, maxWidth: 180),
-          margin: const EdgeInsets.only(top: 4, bottom: 0, right: 2),
+          margin: const EdgeInsets.only(top: 4, bottom: 0, right: 1),
           decoration: BoxDecoration(
             color: isActive
                 ? (isDark ? AppColors.darkSurface : AppColors.surface)
-                : (isDark ? AppColors.darkToolbarBg : AppColors.toolbarBg),
+                : Colors.transparent,
             borderRadius:
                 const BorderRadius.vertical(top: Radius.circular(8)),
-            border: isActive
-                ? Border(
-                    top: BorderSide(color: AppColors.accent, width: 2),
-                    left: BorderSide(
-                        color: AppColors.toolbarBorder, width: 0.5),
-                    right: BorderSide(
-                        color: AppColors.toolbarBorder, width: 0.5),
-                  )
-                : Border(
-                    top: BorderSide(color: Colors.transparent, width: 2),
-                    left: BorderSide(
-                        color: AppColors.toolbarBorder, width: 0.5),
-                    right: BorderSide(
-                        color: AppColors.toolbarBorder, width: 0.5),
-                  ),
           ),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -86,7 +67,7 @@ class TabItem extends StatelessWidget {
                   Padding(
                     padding: const EdgeInsets.only(right: 4),
                     child: Icon(
-                      Icons.push_pin,
+                      Icons.push_pin_rounded,
                       size: 10,
                       color: AppColors.accent,
                     ),
@@ -112,9 +93,12 @@ class TabItem extends StatelessWidget {
                       fontSize: 12,
                       fontWeight:
                           isActive ? FontWeight.w600 : FontWeight.w400,
+                      letterSpacing: -0.2,
                       color: isActive
-                          ? colorScheme.onSurface
-                          : colorScheme.onSurface.withAlpha(153),
+                          ? (isDark
+                              ? AppColors.darkTextPrimary
+                              : AppColors.textPrimary)
+                          : AppColors.textSecondary,
                     ),
                   ),
                 ),
@@ -141,7 +125,7 @@ class TabItem extends StatelessWidget {
         const PopupMenuItem(
           value: _ContextAction.rename,
           child: ListTile(
-            leading: Icon(Icons.edit_outlined, size: 18),
+            leading: Icon(Icons.edit_rounded, size: 18),
             title: Text('Rename'),
             dense: true,
           ),
@@ -150,7 +134,7 @@ class TabItem extends StatelessWidget {
           value: _ContextAction.pin,
           child: ListTile(
             leading: Icon(
-              tab.isPinned ? Icons.push_pin : Icons.push_pin_outlined,
+              tab.isPinned ? Icons.push_pin_rounded : Icons.push_pin_outlined,
               size: 18,
             ),
             title: Text(tab.isPinned ? 'Unpin' : 'Pin'),
@@ -160,7 +144,7 @@ class TabItem extends StatelessWidget {
         const PopupMenuItem(
           value: _ContextAction.duplicate,
           child: ListTile(
-            leading: Icon(Icons.copy_outlined, size: 18),
+            leading: Icon(Icons.copy_rounded, size: 18),
             title: Text('Duplicate'),
             dense: true,
           ),
@@ -170,7 +154,7 @@ class TabItem extends StatelessWidget {
           value: _ContextAction.closeOthers,
           enabled: !isOnly,
           child: const ListTile(
-            leading: Icon(Icons.tab_unselected, size: 18),
+            leading: Icon(Icons.tab_unselected_rounded, size: 18),
             title: Text('Close Others'),
             dense: true,
           ),
@@ -179,18 +163,20 @@ class TabItem extends StatelessWidget {
           value: _ContextAction.closeToTheRight,
           enabled: !isLast,
           child: const ListTile(
-            leading: Icon(Icons.chevron_right, size: 18),
+            leading: Icon(Icons.chevron_right_rounded, size: 18),
             title: Text('Close Tabs to the Right'),
             dense: true,
           ),
         ),
         if (!tab.isPinned) const PopupMenuDivider(),
         if (!tab.isPinned)
-          const PopupMenuItem(
+          PopupMenuItem(
             value: _ContextAction.close,
             child: ListTile(
-              leading: Icon(Icons.close, size: 18, color: Colors.red),
-              title: Text('Close', style: TextStyle(color: Colors.red)),
+              leading: Icon(Icons.close_rounded, size: 18,
+                  color: AppColors.systemRed),
+              title: Text('Close',
+                  style: TextStyle(color: AppColors.systemRed)),
               dense: true,
             ),
           ),
@@ -225,7 +211,6 @@ class TabItem extends StatelessWidget {
           autofocus: true,
           decoration: const InputDecoration(
             hintText: 'Tab name',
-            border: OutlineInputBorder(),
           ),
           onSubmitted: (value) {
             if (value.trim().isNotEmpty) {
@@ -300,18 +285,16 @@ class _CloseButtonState extends State<_CloseButton> {
             height: 16,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color:
-                  _hovered ? Colors.red.withAlpha(30) : Colors.transparent,
+              color: _hovered
+                  ? AppColors.systemRed.withOpacity(0.12)
+                  : Colors.transparent,
             ),
             child: Icon(
-              Icons.close,
+              Icons.close_rounded,
               size: 10,
               color: _hovered
-                  ? Colors.red
-                  : Theme.of(context)
-                      .colorScheme
-                      .onSurface
-                      .withAlpha(153),
+                  ? AppColors.systemRed
+                  : AppColors.textSecondary.withOpacity(0.5),
             ),
           ),
         ),
@@ -320,7 +303,7 @@ class _CloseButtonState extends State<_CloseButton> {
   }
 }
 
-/// Scrollable, reorderable tab bar shown above the canvas.
+/// Apple-style minimal tab bar with clean backgrounds and subtle transitions.
 class TabBarWidget extends StatelessWidget {
   const TabBarWidget({
     super.key,
@@ -354,10 +337,12 @@ class TabBarWidget extends StatelessWidget {
     return Container(
       height: 36,
       decoration: BoxDecoration(
-        color: isDark ? AppColors.darkToolbarBg : AppColors.toolbarBg,
+        color: isDark
+            ? AppColors.darkBackground
+            : AppColors.background,
         border: Border(
           bottom: BorderSide(
-            color: AppColors.toolbarBorder,
+            color: isDark ? AppColors.darkDivider : AppColors.toolbarBorder,
             width: 0.5,
           ),
         ),
@@ -400,13 +385,17 @@ class TabBarWidget extends StatelessWidget {
               },
             ),
           ),
-          // New tab button — disabled at max tab limit
+          // New tab button
           Tooltip(
             message: state.tabs.length >= 8
                 ? 'Maximum 8 tabs'
                 : 'New tab (⌘T)',
             child: IconButton(
-              icon: const Icon(Icons.add, size: 16),
+              icon: Icon(
+                Icons.add_rounded,
+                size: 16,
+                color: AppColors.textSecondary,
+              ),
               onPressed: state.tabs.length < 8 ? onNewTab : null,
               padding: EdgeInsets.zero,
               constraints: const BoxConstraints(

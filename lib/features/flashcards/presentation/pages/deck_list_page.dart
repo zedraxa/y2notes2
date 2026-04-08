@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:y2notes2/app/theme/colors.dart';
 
 import '../../domain/entities/flash_card_deck.dart';
 import '../bloc/flash_card_bloc.dart';
 import '../bloc/flash_card_event.dart';
 import '../bloc/flash_card_state.dart';
 
-/// Shows all flash card decks with summary info and a FAB to create new decks.
+/// Apple-style flash card deck list with refined cards and clean empty state.
 class DeckListPage extends StatelessWidget {
   const DeckListPage({super.key});
 
@@ -19,7 +20,7 @@ class DeckListPage extends StatelessWidget {
           appBar: AppBar(
             title: const Text('Flash Cards'),
             leading: IconButton(
-              icon: const Icon(Icons.arrow_back),
+              icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
               onPressed: () => context.go('/'),
             ),
           ),
@@ -30,7 +31,7 @@ class DeckListPage extends StatelessWidget {
                   : _DeckGrid(decks: state.decks),
           floatingActionButton: FloatingActionButton(
             onPressed: () => _showCreateDialog(context),
-            child: const Icon(Icons.add),
+            child: const Icon(Icons.add_rounded, size: 28),
           ),
         );
       },
@@ -100,25 +101,40 @@ class _EmptyState extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.style_outlined, size: 80, color: Colors.grey.shade400),
-          const SizedBox(height: 16),
+          Container(
+            width: 72,
+            height: 72,
+            decoration: BoxDecoration(
+              color: AppColors.systemIndigo.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Icon(
+              Icons.style_rounded,
+              size: 36,
+              color: AppColors.systemIndigo.withOpacity(0.6),
+            ),
+          ),
+          const SizedBox(height: 20),
           Text(
-            'No flash card decks yet',
+            'No Decks Yet',
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  color: Colors.grey.shade600,
+                  color: Theme.of(context)
+                      .colorScheme
+                      .onSurfaceVariant
+                      .withOpacity(0.5),
                 ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
           Text(
-            'Create your first deck to start studying!',
+            'Create your first deck to start studying',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Colors.grey.shade500,
+                  color: AppColors.textSecondary,
                 ),
           ),
           const SizedBox(height: 24),
           FilledButton.icon(
             onPressed: onCreateDeck,
-            icon: const Icon(Icons.add),
+            icon: const Icon(Icons.add_rounded, size: 18),
             label: const Text('Create Deck'),
           ),
         ],
@@ -134,13 +150,13 @@ class _DeckGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(20, 8, 20, 100),
       child: GridView.builder(
         gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
           maxCrossAxisExtent: 300,
-          childAspectRatio: 1.1,
-          mainAxisSpacing: 12,
-          crossAxisSpacing: 12,
+          childAspectRatio: 1.05,
+          mainAxisSpacing: 14,
+          crossAxisSpacing: 14,
         ),
         itemCount: decks.length,
         itemBuilder: (context, index) => _DeckCard(deck: decks[index]),
@@ -156,91 +172,103 @@ class _DeckCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     final dueCount = deck.dueCards.length;
     final masteryPct = (deck.masteryPercent * 100).round();
 
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: () {
-          context.read<FlashCardBloc>().add(DeckSelected(deck.id));
-          context.go('/flashcards/deck/${deck.id}');
-        },
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Text(deck.emoji, style: const TextStyle(fontSize: 28)),
-                  const Spacer(),
-                  if (dueCount > 0)
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: theme.colorScheme.primaryContainer,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text(
-                        '$dueCount due',
-                        style: theme.textTheme.labelSmall?.copyWith(
-                          color: theme.colorScheme.onPrimaryContainer,
-                        ),
+    return GestureDetector(
+      onTap: () {
+        context.read<FlashCardBloc>().add(DeckSelected(deck.id));
+        context.go('/flashcards/deck/${deck.id}');
+      },
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: isDark ? AppColors.darkSurface : AppColors.surface,
+          borderRadius: BorderRadius.circular(14),
+          boxShadow: [
+            if (!isDark)
+              BoxShadow(
+                color: Colors.black.withOpacity(0.04),
+                blurRadius: 10,
+                offset: const Offset(0, 2),
+              ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Text(deck.emoji, style: const TextStyle(fontSize: 28)),
+                const Spacer(),
+                if (dueCount > 0)
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: AppColors.accent.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      '$dueCount due',
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        color: AppColors.accent,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
-                ],
-              ),
-              const SizedBox(height: 12),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Text(
+              deck.name,
+              style: theme.textTheme.titleMedium,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+            if (deck.description != null) ...[
+              const SizedBox(height: 4),
               Text(
-                deck.name,
-                style: theme.textTheme.titleMedium,
-                maxLines: 2,
+                deck.description!,
+                style: theme.textTheme.bodySmall,
+                maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
-              if (deck.description != null) ...[
-                const SizedBox(height: 4),
+            ],
+            const Spacer(),
+            Row(
+              children: [
                 Text(
-                  deck.description!,
+                  '${deck.cardCount} cards',
+                  style: theme.textTheme.bodySmall,
+                ),
+                const Spacer(),
+                Text(
+                  '$masteryPct% mastered',
                   style: theme.textTheme.bodySmall?.copyWith(
-                    color: Colors.grey.shade600,
+                    color: masteryPct >= 80
+                        ? AppColors.systemGreen
+                        : masteryPct >= 50
+                            ? AppColors.systemOrange
+                            : AppColors.textSecondary,
+                    fontWeight: FontWeight.w500,
                   ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
                 ),
               ],
-              const Spacer(),
-              Row(
-                children: [
-                  Text(
-                    '${deck.cardCount} cards',
-                    style: theme.textTheme.bodySmall,
-                  ),
-                  const Spacer(),
-                  Text(
-                    '$masteryPct% mastered',
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: masteryPct >= 80
-                          ? Colors.green
-                          : masteryPct >= 50
-                              ? Colors.orange
-                              : Colors.grey,
-                    ),
-                  ),
-                ],
+            ),
+            const SizedBox(height: 8),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(3),
+              child: LinearProgressIndicator(
+                value: deck.masteryPercent,
+                minHeight: 3,
+                backgroundColor: isDark
+                    ? AppColors.darkDivider
+                    : AppColors.toolbarBorder,
               ),
-              const SizedBox(height: 6),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(4),
-                child: LinearProgressIndicator(
-                  value: deck.masteryPercent,
-                  minHeight: 4,
-                  backgroundColor: Colors.grey.shade200,
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
