@@ -1,6 +1,7 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:biscuits/app/theme/colors.dart';
 import 'package:biscuits/core/engine/canvas_engine.dart';
 import 'package:biscuits/core/engine/stylus/hover_cursor.dart';
 import 'package:biscuits/core/engine/stylus/stylus_adapter.dart';
@@ -709,7 +710,7 @@ class _ShapeRecognitionBanner extends StatelessWidget {
                   onTap: onAccept,
                   child: const CircleAvatar(
                     radius: 14,
-                    backgroundColor: Colors.green,
+                    backgroundColor: AppColors.success,
                     child: Icon(Icons.check, size: 16, color: Colors.white),
                   ),
                 ),
@@ -718,7 +719,7 @@ class _ShapeRecognitionBanner extends StatelessWidget {
                   onTap: onReject,
                   child: const CircleAvatar(
                     radius: 14,
-                    backgroundColor: Colors.red,
+                    backgroundColor: AppColors.error,
                     child: Icon(Icons.close, size: 16, color: Colors.white),
                   ),
                 ),

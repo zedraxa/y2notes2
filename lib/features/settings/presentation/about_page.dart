@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:biscuits/shared/widgets/biscuits_logo.dart';
 
 /// About page: app name, version, open-source licenses, and credits.
 class AboutPage extends StatelessWidget {
@@ -13,35 +14,26 @@ class AboutPage extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.symmetric(vertical: 8),
         children: [
-          const SizedBox(height: 24),
-          // App icon / name block
+          const SizedBox(height: 32),
+          // App logo & name block
+          const Center(
+            child: BiscuitsLogo(size: 80),
+          ),
+          const SizedBox(height: 8),
           Center(
-            child: Column(
-              children: [
-                Icon(
-                  Icons.edit_note_rounded,
-                  size: 64,
-                  color: theme.colorScheme.primary,
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  'Biscuits',
-                  style: theme.textTheme.headlineMedium,
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'Version 1.0.0',
-                  style: theme.textTheme.bodySmall,
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'A cross-platform note-taking app\nwith magical writing effects',
-                  textAlign: TextAlign.center,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: theme.colorScheme.onSurface.withOpacity(0.7),
-                  ),
-                ),
-              ],
+            child: Text(
+              'Version 1.0.0',
+              style: theme.textTheme.bodySmall,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Center(
+            child: Text(
+              'A modern note-taking app\nwith magical writing effects',
+              textAlign: TextAlign.center,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.colorScheme.onSurface.withOpacity(0.7),
+              ),
             ),
           ),
           const SizedBox(height: 32),
@@ -68,13 +60,9 @@ class AboutPage extends StatelessWidget {
               context: context,
               applicationName: 'Biscuits',
               applicationVersion: '1.0.0',
-              applicationIcon: Padding(
-                padding: const EdgeInsets.all(8),
-                child: Icon(
-                  Icons.edit_note_rounded,
-                  size: 48,
-                  color: theme.colorScheme.primary,
-                ),
+              applicationIcon: const Padding(
+                padding: EdgeInsets.all(8),
+                child: BiscuitsLogo(size: 48, showText: false),
               ),
             ),
           ),
@@ -106,7 +94,7 @@ class _SectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+        padding: const EdgeInsets.fromLTRB(20, 16, 20, 4),
         child: Text(
           title.toUpperCase(),
           style: Theme.of(context).textTheme.labelSmall?.copyWith(
