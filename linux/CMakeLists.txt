@@ -10,7 +10,7 @@ set(APPLICATION_ID "com.biscuits.app")
 
 # Explicitly opt in to modern CMake behaviors to avoid warnings with recent
 # versions of CMake.
-cmake_policy(VERSION 3.13...3.25)
+cmake_policy(VERSION 3.13...3.31)
 
 # Load bundled libraries from the lib/ directory relative to the binary.
 set(CMAKE_INSTALL_RPATH "$ORIGIN/lib")
