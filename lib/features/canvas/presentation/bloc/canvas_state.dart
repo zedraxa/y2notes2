@@ -41,6 +41,8 @@ class CanvasState extends Equatable {
     this.detectedStylusType = StylusType.unknown,
     this.hoverPosition,
     this.isHovering = false,
+    this.hoverTilt = 0.0,
+    this.hoverAzimuth = 0.0,
   });
 
   /// All committed strokes in order.
@@ -102,6 +104,14 @@ class CanvasState extends Equatable {
   /// Whether the stylus is currently hovering above the screen (not touching).
   final bool isHovering;
 
+  /// Altitude angle of the hovering pen from the screen plane.
+  /// 0 = completely flat, π/2 = perfectly vertical.
+  final double hoverTilt;
+
+  /// Azimuth angle (rotation in the screen plane, radians) of the hovering pen.
+  /// Used by the ghost-nib renderer to angle the nib correctly.
+  final double hoverAzimuth;
+
   // ── Derived getters ──────────────────────────────────────────────────────
 
   /// Returns the active plugin-based DrawingTool if registered.
@@ -145,6 +155,8 @@ class CanvasState extends Equatable {
     Offset? hoverPosition,
     bool clearHoverPosition = false,
     bool? isHovering,
+    double? hoverTilt,
+    double? hoverAzimuth,
   }) =>
       CanvasState(
         strokes: strokes ?? this.strokes,
@@ -178,6 +190,8 @@ class CanvasState extends Equatable {
         hoverPosition:
             clearHoverPosition ? null : (hoverPosition ?? this.hoverPosition),
         isHovering: isHovering ?? this.isHovering,
+        hoverTilt: hoverTilt ?? this.hoverTilt,
+        hoverAzimuth: hoverAzimuth ?? this.hoverAzimuth,
       );
 
   @override
@@ -204,5 +218,7 @@ class CanvasState extends Equatable {
         detectedStylusType,
         hoverPosition,
         isHovering,
+        hoverTilt,
+        hoverAzimuth,
       ];
 }

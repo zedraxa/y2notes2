@@ -1,11 +1,15 @@
+import 'dart:async';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:biscuits/app/theme/colors.dart';
 import 'package:biscuits/core/engine/canvas_engine.dart';
 import 'package:biscuits/core/engine/stylus/hover_cursor.dart';
+import 'package:biscuits/core/engine/stylus/platform_channels/android_pen_channel.dart';
+import 'package:biscuits/core/engine/stylus/platform_channels/pencil_channel.dart';
 import 'package:biscuits/core/engine/stylus/stylus_adapter.dart';
 import 'package:biscuits/core/engine/stylus/stylus_detector.dart';
+import 'package:biscuits/core/engine/stylus/stylus_gesture_handler.dart';
 import 'package:biscuits/core/extensions/iterable_extensions.dart';
 import 'package:biscuits/core/services/settings_service.dart';
 import 'package:biscuits/features/canvas/domain/entities/point_data.dart';
@@ -80,6 +84,21 @@ class _CanvasViewState extends State<CanvasView>
   // instead of the stroke drawing pipeline.
   bool _activeShapeGesture = false;
 
+  // Set to true when pencil-only mode is enabled and the current pointer-down
+  // was from a finger/touch.  The matching move/up events are then silently
+  // dropped so the incomplete gesture doesn't leave a dangling stroke.
+  bool _pencilOnlyRejected = false;
+
+  // ── Platform-channel subscriptions for double-tap and barrel-button gestures
+  StreamSubscription<PencilGesture>? _pencilGestureSub;
+  StreamSubscription<AndroidPenEvent>? _androidPenSub;
+
+  // Tracks the last known stylus position for placing the double-tap flash.
+  Offset? _lastStylusPosition;
+
+  // When non-null, a DoubleTapFlash ring is shown at this position.
+  Offset? _doubleTapFlashPosition;
+
   // For detecting undo/redo/tool-switch between BLoC states
   int _prevStrokeCount = 0;
   int _prevRedoCount = 0;
@@ -99,6 +118,14 @@ class _CanvasViewState extends State<CanvasView>
 
     // Rebuild the canvas view on each animation frame
     _canvasEngine.addListener(_onEngineUpdate);
+
+    // ── Apple Pencil double-tap / squeeze ─────────────────────────────────────
+    // Subscribe to hardware gestures forwarded by the native iOS plugin.
+    // On non-iOS platforms the stream is silent, so this is always safe.
+    _pencilGestureSub = PencilChannel.gestureStream.listen(_onPencilGesture);
+
+    // ── Samsung S Pen / Wacom barrel-button ───────────────────────────────────
+    _androidPenSub = AndroidPenChannel.buttonStream.listen(_onAndroidPenEvent);
   }
 
   @override
@@ -118,6 +145,8 @@ class _CanvasViewState extends State<CanvasView>
 
   @override
   void dispose() {
+    _pencilGestureSub?.cancel();
+    _androidPenSub?.cancel();
     _canvasEngine
       ..removeListener(_onEngineUpdate)
       ..dispose();
@@ -136,9 +165,25 @@ class _CanvasViewState extends State<CanvasView>
   void _onPointerDown(PointerDownEvent event) {
     final canvasBloc = context.read<CanvasBloc>();
 
+    // ── Pencil-only mode guard ────────────────────────────────────────────────
+    // When the user has enabled pencil-only drawing, reject any non-stylus
+    // (finger / mouse) pointer before it reaches the ink pipeline.
+    // Pan/zoom is unaffected because InteractiveViewer sits above this Listener.
+    _pencilOnlyRejected = false;
+    if (_settingsService.pencilOnlyModeNotifier.value &&
+        !StylusDetector.isStylus(event)) {
+      _pencilOnlyRejected = true;
+      return;
+    }
+
     // Detect and report stylus type.
     final stylusType = StylusDetector.detectStylusType(event);
     canvasBloc.add(StylusDetectedEvent(stylusType));
+
+    // Track last stylus position for double-tap flash placement.
+    if (StylusDetector.isStylus(event)) {
+      _lastStylusPosition = event.localPosition;
+    }
 
     // When pen touches the screen, clear any hover state.
     if (canvasBloc.state.isHovering) {
@@ -197,6 +242,9 @@ class _CanvasViewState extends State<CanvasView>
   }
 
   void _onPointerMove(PointerMoveEvent event) {
+    // Drop moves that belong to a pencil-only-rejected finger gesture.
+    if (_pencilOnlyRejected) return;
+
     // Route to ShapeBloc if this gesture started on a shape.
     if (_activeShapeGesture) {
       final shapeBloc = context.read<ShapeBloc>();
@@ -229,6 +277,12 @@ class _CanvasViewState extends State<CanvasView>
   }
 
   void _onPointerUp(PointerUpEvent event) {
+    // Drop ups that belong to a pencil-only-rejected finger gesture.
+    if (_pencilOnlyRejected) {
+      _pencilOnlyRejected = false;
+      return;
+    }
+
     // End a shape drag/resize gesture.
     if (_activeShapeGesture) {
       _activeShapeGesture = false;
@@ -275,8 +329,59 @@ class _CanvasViewState extends State<CanvasView>
   /// Handles hover events when the stylus hovers above the screen.
   void _onPointerHover(PointerHoverEvent event) {
     if (!StylusDetector.isStylus(event)) return;
+    _lastStylusPosition = event.localPosition;
     final bloc = context.read<CanvasBloc>();
-    bloc.add(HoverPositionChanged(event.localPosition));
+    bloc.add(HoverPositionChanged(
+      event.localPosition,
+      // `tilt` on PointerEvent is the altitude angle (0 = flat, π/2 = vertical).
+      tilt: event.tilt,
+      // `orientation` is the azimuth in the screen plane.
+      azimuth: event.orientation,
+    ));
+  }
+
+  // ─── Platform-channel gesture handlers ────────────────────────────────────
+
+  /// Fires when the Apple Pencil hardware sends a double-tap or squeeze gesture.
+  void _onPencilGesture(PencilGesture gesture) {
+    StylusGestureAction action;
+    switch (gesture) {
+      case PencilGesture.doubleTap:
+        action = _settingsService
+            .getGestureAction(StylusGesture.barrelDoubleTap);
+      case PencilGesture.squeeze:
+        action = _settingsService
+            .getGestureAction(StylusGesture.squeeze);
+    }
+    if (action == StylusGestureAction.none) return;
+    _dispatchGestureAction(action);
+  }
+
+  /// Fires when the Samsung S Pen or Wacom barrel button is pressed.
+  void _onAndroidPenEvent(AndroidPenEvent event) {
+    if (event.type != 'buttonDown') return;
+    final action =
+        _settingsService.getGestureAction(StylusGesture.barrelButton);
+    if (action == StylusGestureAction.none) return;
+    _dispatchGestureAction(action);
+  }
+
+  /// Dispatches a [StylusGestureAction] to the [CanvasBloc] and shows the
+  /// double-tap flash ring at the last known stylus position.
+  void _dispatchGestureAction(StylusGestureAction action) {
+    if (!mounted) return;
+    context.read<CanvasBloc>().add(StylusGestureTriggered(action));
+    // Show the flash ring at the last stylus position (hover or touch).
+    final flashPos = _lastStylusPosition;
+    if (flashPos != null) {
+      setState(() => _doubleTapFlashPosition = flashPos);
+    }
+  }
+
+  /// Called by [DoubleTapFlash] when its animation finishes so we can
+  /// remove the overlay.
+  void _onFlashComplete() {
+    if (mounted) setState(() => _doubleTapFlashPosition = null);
   }
 
   // ─── InteractiveViewer zoom callbacks ────────────────────────────────────
@@ -394,7 +499,9 @@ class _CanvasViewState extends State<CanvasView>
             prev.shapeRecognitionProposal != curr.shapeRecognitionProposal ||
             prev.selectedShapeId != curr.selectedShapeId ||
             prev.isHovering != curr.isHovering ||
-            prev.hoverPosition != curr.hoverPosition,
+            prev.hoverPosition != curr.hoverPosition ||
+            prev.hoverTilt != curr.hoverTilt ||
+            prev.hoverAzimuth != curr.hoverAzimuth,
         builder: (context, state) {
           final canvasSize = Size(state.config.width, state.config.height);
           _canvasEngine.updateStrokesCache(state.strokes, canvasSize);
@@ -492,7 +599,9 @@ class _CanvasViewState extends State<CanvasView>
                                 participants: collabState.participants,
                               ),
                             ),
-                            // Hover cursor — inside canvas coordinate space
+                            // Hover cursor — inside canvas coordinate space.
+                            // Ghost-nib mode shows a tilt-aware nib shape;
+                            // circle mode shows the plain brush-size preview.
                             if (state.isHovering && state.hoverPosition != null)
                               HoverCursor(
                                 position: state.hoverPosition!,
@@ -500,7 +609,20 @@ class _CanvasViewState extends State<CanvasView>
                                 color: state.activeColor,
                                 isEraser: state.activeTool.type ==
                                     StrokeTool.eraser,
-                                isVisible: true,
+                                isVisible: _settingsService
+                                    .hoverPreviewEnabledNotifier.value,
+                                ghostNib: _settingsService
+                                    .ghostNibEnabledNotifier.value,
+                                tilt: state.hoverTilt,
+                                azimuth: state.hoverAzimuth,
+                              ),
+                            // Double-tap / barrel-button gesture flash ring.
+                            if (_doubleTapFlashPosition != null)
+                              DoubleTapFlash(
+                                key: ValueKey(_doubleTapFlashPosition),
+                                position: _doubleTapFlashPosition!,
+                                color: state.activeColor,
+                                onComplete: _onFlashComplete,
                               ),
                             // Layer: Media overlay (audio/video elements)
                             const MediaOverlay(),

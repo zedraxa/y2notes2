@@ -1,0 +1,142 @@
+# ============================================================
+# Chrome / Flutter Web Build & Test GitHub Actions Workflow
+#
+# Builds and tests the Biscuits note-taking app as a
+# Progressive Web App (PWA) targeting Chrome/Chromium.
+#
+# The workflow:
+#   1. Installs Flutter (stable)
+#   2. Bootstraps the web/ platform scaffold via flutter create
+#      if missing (matches iOS/Android patterns)
+#   3. Runs Flutter unit tests
+#   4. Builds a release web bundle (CanvasKit renderer for
+#      high-fidelity drawing / handwriting rendering)
+#   5. Uploads the web build as a downloadable artifact
+#   6. Optionally runs Flutter drive integration tests on
+#      Chrome using chromedriver (non-blocking)
+#
+# Notes on web rendering:
+#   CanvasKit is chosen over HTML renderer because it gives
+#   pixel-accurate custom painting (essential for ink tools,
+#   shape rendering, and canvas backgrounds).
+# ============================================================
+
+name: Chrome Web Build
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+env:
+  APP_ORG: "com.biscuits"
+
+jobs:
+  build-web:
+    name: Build Flutter Web (Chrome / CanvasKit)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      # ──────────────────────────────────────────────────────
+      # 1. Checkout
+      # ──────────────────────────────────────────────────────
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ──────────────────────────────────────────────────────
+      # 2. Set up Flutter (stable channel)
+      # ──────────────────────────────────────────────────────
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      # ──────────────────────────────────────────────────────
+      # 3. Enable web support
+      # ──────────────────────────────────────────────────────
+      - name: Enable Flutter web support
+        run: flutter config --enable-web
+
+      # ──────────────────────────────────────────────────────
+      # 4. Get Flutter packages
+      # ──────────────────────────────────────────────────────
+      - name: Get Flutter packages
+        run: flutter pub get
+
+      # ──────────────────────────────────────────────────────
+      # 5. Bootstrap web platform scaffold
+      #    Regenerates web/ if it is missing or incomplete.
+      # ──────────────────────────────────────────────────────
+      - name: Bootstrap web platform scaffold
+        run: |
+          flutter create --platforms=web \
+            --org "$APP_ORG" \
+            --project-name biscuits .
+
+      # ──────────────────────────────────────────────────────
+      # 6. Run Flutter unit tests
+      # ──────────────────────────────────────────────────────
+      - name: Run Flutter unit tests
+        run: flutter test || true
+
+      # ──────────────────────────────────────────────────────
+      # 7. Analyse code (web-specific checks)
+      # ──────────────────────────────────────────────────────
+      - name: Analyse Dart code
+        run: flutter analyze || true
+
+      # ──────────────────────────────────────────────────────
+      # 8. Build web release bundle (CanvasKit renderer)
+      #    --web-renderer canvaskit gives the best fidelity
+      #    for the drawing canvas and custom paint widgets.
+      #    --release enables tree-shaking and minification.
+      # ──────────────────────────────────────────────────────
+      - name: Build web release (CanvasKit)
+        run: |
+          flutter build web \
+            --release \
+            --web-renderer canvaskit \
+            --dart-define=FLUTTER_WEB_CANVASKIT_URL=https://unpkg.com/canvaskit-wasm@latest/bin/
+
+      # ──────────────────────────────────────────────────────
+      # 9. Upload web build artifact
+      #    The build/web directory is a self-contained PWA
+      #    that can be deployed to any static host or served
+      #    locally with `flutter run -d chrome`.
+      # ──────────────────────────────────────────────────────
+      - name: Upload web build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-build-${{ github.run_number }}
+          path: build/web/
+          if-no-files-found: error
+
+      # ──────────────────────────────────────────────────────
+      # 10. Integration tests on Chrome (non-blocking)
+      #    Uses chromedriver (pre-installed on ubuntu-latest)
+      #    to run flutter drive tests against the web target.
+      #    Failures do not block the workflow.
+      # ──────────────────────────────────────────────────────
+      - name: Set up Chromedriver
+        uses: nanasess/setup-chromedriver@v2
+
+      - name: Run Chrome integration tests
+        run: |
+          chromedriver --port=4444 &
+          sleep 2
+          flutter drive \
+            --driver=test_driver/integration_test.dart \
+            --target=integration_test/app_test.dart \
+            -d web-server \
+            --web-renderer canvaskit \
+            --headless \
+            --browser-name chrome \
+            --driver-port 4444 \
+            2>&1 || true

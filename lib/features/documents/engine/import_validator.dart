@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'dart:io' if (dart.library.html) 'package:biscuits/core/io/io_stub.dart';
 
 import 'package:biscuits/features/documents/domain/models/import_options.dart';
 
