@@ -15,28 +15,31 @@ class RenderPipeline {
   final StrokeRenderer renderer;
 
   ui.Image? _strokesCache;
-  int _cachedStrokeCount = 0;
+  int _cachedContentHash = 0;
 
   /// Returns the cached [ui.Image] of all committed strokes.
   ///
-  /// Rebuilds the cache only when [strokes] has changed.
+  /// Rebuilds the cache only when the content hash of [strokes] has changed,
+  /// correctly handling undo/redo scenarios where stroke count stays the same
+  /// but the actual strokes differ.
   Future<ui.Image?> getStrokesCache(
     List<Stroke> strokes,
     Size canvasSize,
   ) async {
     if (strokes.isEmpty) {
       _strokesCache = null;
-      _cachedStrokeCount = 0;
+      _cachedContentHash = 0;
       return null;
     }
 
-    // Only rebuild if stroke count changed (new stroke committed / undo).
-    if (strokes.length == _cachedStrokeCount && _strokesCache != null) {
+    // Use a content-based hash that accounts for stroke identity (not just count).
+    final contentHash = Object.hashAll(strokes.map((s) => s.id));
+    if (contentHash == _cachedContentHash && _strokesCache != null) {
       return _strokesCache;
     }
 
     _strokesCache = await _rasterize(strokes, canvasSize);
-    _cachedStrokeCount = strokes.length;
+    _cachedContentHash = contentHash;
     return _strokesCache;
   }
 
@@ -58,7 +61,7 @@ class RenderPipeline {
   /// Invalidate the cache (e.g. after undo/redo).
   void invalidateCache() {
     _strokesCache = null;
-    _cachedStrokeCount = 0;
+    _cachedContentHash = 0;
   }
 
   void dispose() {
