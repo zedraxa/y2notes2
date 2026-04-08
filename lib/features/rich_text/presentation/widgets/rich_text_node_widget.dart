@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -93,6 +94,24 @@ class RichTextNodeWidget extends StatelessWidget {
                   AddTableColumn(
                     elementId: element.id,
                     nodeIndex: nodeIndex,
+                  ),
+                );
+          },
+          onRemoveRow: (row) {
+            context.read<RichTextBloc>().add(
+                  RemoveTableRow(
+                    elementId: element.id,
+                    nodeIndex: nodeIndex,
+                    row: row,
+                  ),
+                );
+          },
+          onRemoveColumn: (col) {
+            context.read<RichTextBloc>().add(
+                  RemoveTableColumn(
+                    elementId: element.id,
+                    nodeIndex: nodeIndex,
+                    col: col,
                   ),
                 );
           },
@@ -421,8 +440,23 @@ TextSpan _buildInlineTextSpan(
             color: Colors.blue,
             decoration: TextDecoration.underline,
           );
+          return TextSpan(
+            text: span.text,
+            style: style,
+            recognizer: TapGestureRecognizer()
+              ..onTap = () => _openLink(span.link!),
+          );
         }
 
         return TextSpan(text: span.text, style: style);
       }).toList(),
     );
+
+/// Open a hyperlink.
+///
+/// Currently logs the URL since url_launcher is not in the
+/// dependency set. Replace with `launchUrl(Uri.parse(url))`
+/// once `url_launcher` is added to pubspec.yaml.
+void _openLink(String url) {
+  debugPrint('Link tapped: $url');
+}
