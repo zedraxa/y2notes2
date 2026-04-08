@@ -1,7 +1,7 @@
-import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:perfect_freehand/perfect_freehand.dart';
 import 'package:biscuits/core/engine/stroke_smoother.dart';
+import 'package:biscuits/core/engine/stylus/pressure_curve.dart';
 import 'package:biscuits/features/canvas/domain/entities/stroke.dart';
 import 'package:biscuits/features/canvas/domain/entities/tool.dart';
 import 'package:biscuits/features/canvas/domain/entities/point_data.dart';
@@ -79,31 +79,11 @@ class StrokeRenderer {
     return points.map((p) {
       // Apply tilt-to-width: altitude modulates the pressure passed to
       // perfect_freehand, so very flat strokes produce wider marks.
-      final tiltMultiplier = _tiltMultiplier(p.altitude);
-      final modulatedPressure = (p.pressure * tiltMultiplier).clamp(0.0, 1.0);
+      // Delegates to the shared StylusWidthCalculator implementation.
+      final tiltMul = StylusWidthCalculator.tiltMultiplier(p.altitude);
+      final modulatedPressure = (p.pressure * tiltMul).clamp(0.0, 1.0);
       return PointVector(p.x, p.y, modulatedPressure);
     }).toList();
-  }
-
-  /// Returns a width multiplier based on the pen altitude angle [radians].
-  ///
-  /// | Altitude  | Multiplier | Description          |
-  /// |-----------|------------|----------------------|
-  /// | < 30°     | 2.0        | Flat — shading mode  |
-  /// | 30° – 60° | 1.0        | Normal writing       |
-  /// | > 60°     | 0.5        | Upright — fine detail|
-  ///
-  /// Uses a smoothstep function (Hermite interpolation) instead of piecewise-
-  /// linear so there are no sudden width jumps at the 30° and 60° boundaries.
-  static double _tiltMultiplier(double radians) {
-    const flat = 30.0 * math.pi / 180.0;   // 30°
-    const normal = 60.0 * math.pi / 180.0; // 60°
-    if (radians <= flat) return 2.0;
-    if (radians >= normal) return 0.5;
-    // Smoothstep: 3t² − 2t³  (Hermite basis, zero derivative at boundaries).
-    final t = (radians - flat) / (normal - flat);
-    final smooth = t * t * (3.0 - 2.0 * t);
-    return 2.0 - 1.5 * smooth;
   }
 
   StrokeOptions _buildOptions(Stroke stroke) =>
