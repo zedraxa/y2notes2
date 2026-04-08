@@ -48,6 +48,7 @@ import 'package:biscuits/features/stickers/presentation/bloc/sticker_bloc.dart';
 import 'package:biscuits/features/stickers/presentation/bloc/sticker_state.dart';
 import 'package:biscuits/features/stickers/presentation/widgets/sticker_interaction_handler.dart';
 import 'package:biscuits/features/media/presentation/widgets/media_overlay.dart';
+import 'package:biscuits/features/canvas/presentation/widgets/toolbar/squeeze_palette_overlay.dart';
 import 'package:biscuits/shared/widgets/service_provider.dart';
 
 /// The actual drawing surface.
@@ -188,6 +189,12 @@ class _CanvasViewState extends State<CanvasView>
     // When pen touches the screen, clear any hover state.
     if (canvasBloc.state.isHovering) {
       canvasBloc.add(const HoverEnded());
+    }
+
+    // Dismiss the squeeze palette if it's open and the user taps the canvas.
+    if (canvasBloc.state.squeezePaletteVisible) {
+      canvasBloc.add(const SqueezePaletteClosed());
+      return; // Don't start a stroke while dismissing the palette.
     }
 
     // ── Shape hit-testing ─────────────────────────────────────────────────
@@ -370,7 +377,21 @@ class _CanvasViewState extends State<CanvasView>
   /// double-tap flash ring at the last known stylus position.
   void _dispatchGestureAction(StylusGestureAction action) {
     if (!mounted) return;
-    context.read<CanvasBloc>().add(StylusGestureTriggered(action));
+    final bloc = context.read<CanvasBloc>();
+
+    // For showToolPicker, ensure the palette position is set even if hover
+    // position is null (e.g. pen was touching rather than hovering).
+    if (action == StylusGestureAction.showToolPicker) {
+      final pos = bloc.state.hoverPosition ?? _lastStylusPosition;
+      if (pos != null && !bloc.state.squeezePaletteVisible) {
+        bloc.add(SqueezePaletteOpened(pos));
+      } else if (bloc.state.squeezePaletteVisible) {
+        bloc.add(const SqueezePaletteClosed());
+      }
+      return; // Skip the flash ring for palette actions.
+    }
+
+    bloc.add(StylusGestureTriggered(action));
     // Show the flash ring at the last stylus position (hover or touch).
     final flashPos = _lastStylusPosition;
     if (flashPos != null) {
@@ -501,7 +522,9 @@ class _CanvasViewState extends State<CanvasView>
             prev.isHovering != curr.isHovering ||
             prev.hoverPosition != curr.hoverPosition ||
             prev.hoverTilt != curr.hoverTilt ||
-            prev.hoverAzimuth != curr.hoverAzimuth,
+            prev.hoverAzimuth != curr.hoverAzimuth ||
+            prev.squeezePaletteVisible != curr.squeezePaletteVisible ||
+            prev.squeezePalettePosition != curr.squeezePalettePosition,
         builder: (context, state) {
           final canvasSize = Size(state.config.width, state.config.height);
           _canvasEngine.updateStrokesCache(state.strokes, canvasSize);
@@ -623,6 +646,24 @@ class _CanvasViewState extends State<CanvasView>
                                 position: _doubleTapFlashPosition!,
                                 color: state.activeColor,
                                 onComplete: _onFlashComplete,
+                              ),
+                            // Squeeze palette — radial tool picker at ghost-nib position.
+                            if (state.squeezePaletteVisible &&
+                                state.squeezePalettePosition != null)
+                              SqueezePaletteOverlay(
+                                key: ValueKey(state.squeezePalettePosition),
+                                position: state.squeezePalettePosition!,
+                                activeToolId: state.activeToolId,
+                                onToolSelected: (toolId) {
+                                  final bloc = context.read<CanvasBloc>();
+                                  bloc.add(DrawingToolChanged(toolId));
+                                  bloc.add(const SqueezePaletteClosed());
+                                },
+                                onDismiss: () {
+                                  context
+                                      .read<CanvasBloc>()
+                                      .add(const SqueezePaletteClosed());
+                                },
                               ),
                             // Layer: Media overlay (audio/video elements)
                             const MediaOverlay(),

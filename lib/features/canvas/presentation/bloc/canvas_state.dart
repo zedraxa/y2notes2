@@ -43,6 +43,9 @@ class CanvasState extends Equatable {
     this.isHovering = false,
     this.hoverTilt = 0.0,
     this.hoverAzimuth = 0.0,
+    // ── Squeeze palette state ────────────────────────────────────────────
+    this.squeezePaletteVisible = false,
+    this.squeezePalettePosition,
   });
 
   /// All committed strokes in order.
@@ -112,6 +115,15 @@ class CanvasState extends Equatable {
   /// Used by the ghost-nib renderer to angle the nib correctly.
   final double hoverAzimuth;
 
+  // ── Squeeze palette state ──────────────────────────────────────────────────
+
+  /// Whether the squeeze-triggered tool palette is currently visible.
+  final bool squeezePaletteVisible;
+
+  /// Position (in canvas logical pixels) where the squeeze palette should open.
+  /// Matches the ghost-nib / last-known stylus position at the moment of squeeze.
+  final Offset? squeezePalettePosition;
+
   // ── Derived getters ──────────────────────────────────────────────────────
 
   /// Returns the active plugin-based DrawingTool if registered.
@@ -157,6 +169,9 @@ class CanvasState extends Equatable {
     bool? isHovering,
     double? hoverTilt,
     double? hoverAzimuth,
+    bool? squeezePaletteVisible,
+    Offset? squeezePalettePosition,
+    bool clearSqueezePalettePosition = false,
   }) =>
       CanvasState(
         strokes: strokes ?? this.strokes,
@@ -192,6 +207,11 @@ class CanvasState extends Equatable {
         isHovering: isHovering ?? this.isHovering,
         hoverTilt: hoverTilt ?? this.hoverTilt,
         hoverAzimuth: hoverAzimuth ?? this.hoverAzimuth,
+        squeezePaletteVisible:
+            squeezePaletteVisible ?? this.squeezePaletteVisible,
+        squeezePalettePosition: clearSqueezePalettePosition
+            ? null
+            : (squeezePalettePosition ?? this.squeezePalettePosition),
       );
 
   @override
@@ -220,5 +240,7 @@ class CanvasState extends Equatable {
         isHovering,
         hoverTilt,
         hoverAzimuth,
+        squeezePaletteVisible,
+        squeezePalettePosition,
       ];
 }

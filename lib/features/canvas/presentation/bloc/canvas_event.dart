@@ -245,3 +245,21 @@ class StylusGestureTriggered extends CanvasEvent {
   @override
   List<Object?> get props => [action];
 }
+
+// ─── Squeeze palette events ───────────────────────────────────────────────────
+
+/// Opens the squeeze palette at [position] (ghost nib / last stylus position).
+class SqueezePaletteOpened extends CanvasEvent {
+  const SqueezePaletteOpened(this.position);
+
+  /// Canvas-local position where the palette should appear.
+  final Offset position;
+
+  @override
+  List<Object?> get props => [position];
+}
+
+/// Closes the squeeze palette (tool selected or tapped outside).
+class SqueezePaletteClosed extends CanvasEvent {
+  const SqueezePaletteClosed();
+}
