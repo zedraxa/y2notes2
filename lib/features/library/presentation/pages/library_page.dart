@@ -611,15 +611,16 @@ class _LibraryPageState extends State<LibraryPage> {
       // Create the notebook document and import the file contents.
       final docBloc = context.read<DocumentBloc>();
       docBloc.add(CreateNotebook(id: id, title: fileName));
-      final ext = file.name.split('.').last.toLowerCase();
-      if (ext == 'pdf') {
+      final filePath = file.path!;
+      final isPdf = file.name.toLowerCase().endsWith('.pdf');
+      if (isPdf) {
         docBloc.add(ImportPdfFromPath(
-          filePath: file.path!,
+          filePath: filePath,
           options: const ImportOptions(mode: ImportMode.appendToCurrentNotebook),
         ));
       } else {
         docBloc.add(ImportImageFromPath(
-          filePath: file.path!,
+          filePath: filePath,
           options: const ImportOptions(mode: ImportMode.appendToCurrentNotebook),
         ));
       }
