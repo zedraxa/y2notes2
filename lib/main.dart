@@ -1,8 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:biscuits/app/app.dart';
+import 'package:biscuits/core/di/dependencies.dart';
+import 'package:biscuits/core/di/service_locator.dart';
 import 'package:biscuits/core/engine/haptic_controller.dart';
+import 'package:biscuits/core/services/app_logger.dart';
 import 'package:biscuits/core/services/settings_service.dart';
 import 'package:biscuits/features/audio_sync/presentation/bloc/audio_sync_bloc.dart';
 import 'package:biscuits/features/canvas/domain/entities/tools/tool_preset.dart';
@@ -29,106 +33,123 @@ import 'package:biscuits/features/widgets/presentation/bloc/widget_bloc.dart';
 import 'package:biscuits/features/workspace/presentation/bloc/workspace_bloc.dart';
 import 'package:biscuits/shared/widgets/service_provider.dart';
 
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+void main() {
+  // Catch Flutter framework errors.
+  FlutterError.onError = (details) {
+    FlutterError.presentError(details);
+    AppLogger.instance.error(
+      'Flutter framework error',
+      error: details.exception,
+      stackTrace: details.stack,
+      tag: 'FlutterError',
+    );
+  };
 
-  final settingsService = SettingsService();
-  await settingsService.init();
+  // Run inside a guarded zone so async errors are captured.
+  runZonedGuarded(
+    () async {
+      WidgetsFlutterBinding.ensureInitialized();
 
-  final prefs = await SharedPreferences.getInstance();
-  final documentRepository = DocumentRepository(prefs);
-  final libraryRepository = LibraryRepository(prefs);
-  final templateRepository = TemplateRepository(prefs);
-  final flashCardRepository = FlashCardRepository(prefs);
+      // ── Initialise dependency graph ───────────────────────────────────
+      await initDependencies();
 
-  // Register all plugin-based drawing tools.
-  ToolRegistry.registerAll();
+      final sl = ServiceLocator.instance;
+      final settingsService = sl<SettingsService>();
+      final documentRepository = sl<DocumentRepository>();
+      final libraryRepository = sl<LibraryRepository>();
+      final templateRepository = sl<TemplateRepository>();
+      final flashCardRepository = sl<FlashCardRepository>();
 
-  // Bind haptic controller to settings
-  HapticController.bind(settingsService);
+      // Register all plugin-based drawing tools.
+      ToolRegistry.registerAll();
 
-  // Bind tool preset persistence to settings
-  ToolPresetManager.bind(settingsService);
+      // Bind haptic controller to settings
+      HapticController.bind(settingsService);
 
-  runApp(
-    ServiceProvider<SettingsService>(
-      service: settingsService,
-      child: ServiceProvider<DocumentRepository>(
-        service: documentRepository,
-        child: MultiBlocProvider(
-          providers: [
-            // WorkspaceBloc manages the tab bar.
-            BlocProvider(create: (_) => WorkspaceBloc()),
-            // A root CanvasBloc is still provided for the initial tab;
-            // WorkspacePage creates per-tab blocs internally.
-            BlocProvider(
-              create: (_) => CanvasBloc(settingsService: settingsService),
-            ),
-            BlocProvider(
-              create: (ctx) => ShapeBloc(
-                canvasBloc: ctx.read<CanvasBloc>(),
+      // Bind tool preset persistence to settings
+      ToolPresetManager.bind(settingsService);
+
+      runApp(
+        ServiceProvider<SettingsService>(
+          service: settingsService,
+          child: ServiceProvider<DocumentRepository>(
+            service: documentRepository,
+            child: MultiBlocProvider(
+              providers: [
+                BlocProvider(
+                  create: (_) => WorkspaceBloc(),
+                ),
+                BlocProvider(
+                  create: (_) => CanvasBloc(
+                    settingsService: settingsService,
+                  ),
+                ),
+                BlocProvider(
+                  create: (ctx) => ShapeBloc(
+                    canvasBloc: ctx.read<CanvasBloc>(),
+                  ),
+                ),
+                BlocProvider(
+                  create: (_) => StickerBloc(),
+                ),
+                BlocProvider(
+                  create: (_) => HandwritingBloc(),
+                ),
+                BlocProvider(
+                  create: (_) => CollaborationBloc(
+                    localUserId: 'local_user',
+                    localDisplayName: 'Me',
+                  ),
+                ),
+                BlocProvider(
+                  create: (_) =>
+                      TemplateBloc(repository: templateRepository)
+                        ..add(const TemplatesLoaded()),
+                ),
+                BlocProvider(
+                  create: (_) => WidgetBloc(),
+                ),
+                BlocProvider(
+                  create: (_) => AudioSyncBloc(),
+                ),
+                BlocProvider(
+                  create: (_) => InfiniteCanvasBloc(),
+                ),
+                BlocProvider(
+                  create: (_) => MediaBloc(),
+                ),
+                BlocProvider(
+                  create: (_) => GraphBloc(),
+                ),
+                BlocProvider(
+                  create: (_) => RichTextBloc(),
+                ),
+                BlocProvider(
+                  create: (_) => CloudSyncBloc(),
+                ),
+                BlocProvider(
+                  create: (_) =>
+                      FlashCardBloc(repository: flashCardRepository)
+                        ..add(const FlashCardsLoaded()),
+                ),
+              ],
+              child: BiscuitsApp(
+                settingsService: settingsService,
+                documentRepository: documentRepository,
+                libraryRepository: libraryRepository,
               ),
             ),
-            BlocProvider(
-              create: (_) => StickerBloc(),
-            ),
-            // HandwritingBloc manages recognition state across the app.
-            BlocProvider(create: (_) => HandwritingBloc()),
-            // CollaborationBloc manages real-time sync and presence.
-            BlocProvider(
-              create: (_) => CollaborationBloc(
-                // Use placeholder IDs — in a real app these come from auth.
-                localUserId: 'local_user',
-                localDisplayName: 'Me',
-              ),
-            ),
-            // Template & Widget blocs.
-            BlocProvider(
-              create: (_) => TemplateBloc(repository: templateRepository)
-                ..add(const TemplatesLoaded()),
-            ),
-            BlocProvider(
-              create: (_) => WidgetBloc(),
-            ),
-            // AudioSyncBloc manages synchronised recording
-            // and playback with stroke timestamps.
-            BlocProvider(
-              create: (_) => AudioSyncBloc(),
-            ),
-            // Root InfiniteCanvasBloc — individual pages can override with
-            // their own scoped provider when needed.
-            BlocProvider(
-              create: (_) => InfiniteCanvasBloc(),
-            ),
-            // MediaBloc manages audio/video elements and playback.
-            BlocProvider(
-              create: (_) => MediaBloc(),
-            ),
-            // GraphBloc manages interactive math graphs.
-            BlocProvider(
-              create: (_) => GraphBloc(),
-            ),
-            // RichTextBloc manages rich text elements on the canvas.
-            BlocProvider(
-              create: (_) => RichTextBloc(),
-            ),
-            // CloudSyncBloc manages cloud provider connections and syncing.
-            BlocProvider(
-              create: (_) => CloudSyncBloc(),
-            ),
-            // FlashCardBloc manages flash card decks, study sessions, and quizzes.
-            BlocProvider(
-              create: (_) => FlashCardBloc(repository: flashCardRepository)
-                ..add(const FlashCardsLoaded()),
-            ),
-          ],
-          child: BiscuitsApp(
-            settingsService: settingsService,
-            documentRepository: documentRepository,
-            libraryRepository: libraryRepository,
           ),
         ),
-      ),
-    ),
+      );
+    },
+    (error, stackTrace) {
+      AppLogger.instance.error(
+        'Unhandled error',
+        error: error,
+        stackTrace: stackTrace,
+        tag: 'Zone',
+      );
+    },
   );
 }
