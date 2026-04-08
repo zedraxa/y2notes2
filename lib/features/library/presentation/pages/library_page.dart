@@ -580,28 +580,38 @@ class _LibraryPageState extends State<LibraryPage> {
   }
 
   Future<void> _importDocument(BuildContext context) async {
-    final result = await FilePicker.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: ['pdf', 'png', 'jpg', 'jpeg'],
-      allowMultiple: false,
-    );
-    if (result == null || result.files.isEmpty) return;
-    final file = result.files.first;
-    if (file.path == null) return;
+    try {
+      final result = await FilePicker.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['pdf', 'png', 'jpg', 'jpeg'],
+        allowMultiple: false,
+      );
+      if (result == null || result.files.isEmpty) return;
+      final file = result.files.first;
+      if (file.path == null) return;
 
-    if (!context.mounted) return;
-    final fileName =
-        file.name.replaceAll(RegExp(r'\.(pdf|png|jpe?g)$', caseSensitive: false), '');
-    final id = const Uuid().v4();
-    context.read<LibraryBloc>().add(
-          CreateItem(id: id, name: fileName, type: LibraryItemType.notebook),
+      if (!context.mounted) return;
+      final fileName =
+          file.name.replaceAll(RegExp(r'\.(pdf|png|jpe?g)$', caseSensitive: false), '');
+      final id = const Uuid().v4();
+      context.read<LibraryBloc>().add(
+            CreateItem(id: id, name: fileName, type: LibraryItemType.notebook),
+          );
+      AppleToast.show(
+        context,
+        message: '"$fileName" imported',
+        style: AppleToastStyle.success,
+      );
+      context.push(AppRoutes.notebook(id));
+    } catch (e) {
+      if (context.mounted) {
+        AppleToast.show(
+          context,
+          message: 'Failed to import document',
+          style: AppleToastStyle.error,
         );
-    AppleToast.show(
-      context,
-      message: '"$fileName" imported',
-      style: AppleToastStyle.success,
-    );
-    context.push(AppRoutes.notebook(id));
+      }
+    }
   }
 }
 
