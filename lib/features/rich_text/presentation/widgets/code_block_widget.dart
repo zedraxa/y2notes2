@@ -281,11 +281,16 @@ TextSpan _buildHighlightedSpan(
   final numbers = RegExp(r'\b(\d+\.?\d*)\b');
 
   // Build a combined pattern to tokenise in one pass.
+  // Group layout:
+  //   group(1) = comment
+  //   group(2) = string
+  //   group(3) = keyword
+  //   group(4) = number
   final combined = RegExp(
-    '${comments.pattern}'
-    '|${strings.pattern}'
-    '|${keywords.pattern}'
-    '|${numbers.pattern}',
+    '(?<comment>${comments.pattern})'
+    '|(?<string>${strings.pattern})'
+    '|(?<keyword>${keywords.pattern})'
+    '|(?<number>${numbers.pattern})',
     multiLine: true,
   );
 
@@ -302,20 +307,16 @@ TextSpan _buildHighlightedSpan(
     final text = match.group(0)!;
     TextStyle style;
 
-    if (comments.hasMatch(text) &&
-        (text.startsWith('//') ||
-            text.startsWith('#'))) {
+    if (match.namedGroup('comment') != null) {
       style = const TextStyle(
         color: Color(0xFF6A9955),
         fontStyle: FontStyle.italic,
       );
-    } else if (strings.hasMatch(text) &&
-        (text.startsWith('"') ||
-            text.startsWith("'"))) {
+    } else if (match.namedGroup('string') != null) {
       style = const TextStyle(
         color: Color(0xFFCE9178),
       );
-    } else if (keywords.hasMatch(text)) {
+    } else if (match.namedGroup('keyword') != null) {
       style = const TextStyle(
         color: Color(0xFF569CD6),
         fontWeight: FontWeight.bold,

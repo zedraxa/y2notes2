@@ -452,11 +452,11 @@ TextSpan _buildInlineTextSpan(
       }).toList(),
     );
 
-/// Open a hyperlink. Uses a simple SnackBar prompt since
-/// url_launcher is not available in the current dependency set.
+/// Open a hyperlink.
+///
+/// Currently logs the URL since url_launcher is not in the
+/// dependency set. Replace with `launchUrl(Uri.parse(url))`
+/// once `url_launcher` is added to pubspec.yaml.
 void _openLink(String url) {
-  // In production this would use url_launcher's launchUrl.
-  // For now we rely on Flutter's built-in SnackBar to show the
-  // URL so the user can navigate manually.
   debugPrint('Link tapped: $url');
 }
