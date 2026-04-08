@@ -52,6 +52,9 @@ class _SqueezePaletteOverlayState extends State<SqueezePaletteOverlay>
   /// Total diameter of the palette hit area.
   static const double _paletteSize = (_ringRadius + _buttonSize) * 2;
 
+  /// Duration of the open/close animation in milliseconds.
+  static const int _animDurationMs = 220;
+
   @override
   void initState() {
     super.initState();
@@ -59,7 +62,7 @@ class _SqueezePaletteOverlayState extends State<SqueezePaletteOverlay>
 
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 220),
+      duration: const Duration(milliseconds: _animDurationMs),
     );
 
     _scaleAnimation = CurvedAnimation(
@@ -290,7 +293,9 @@ class _AnimatedToolButton extends StatelessWidget {
       builder: (_, __) {
         // Each button pops in slightly after the previous one.
         final delayFraction =
-            (delay.inMilliseconds / 220).clamp(0.0, 0.8);
+            (delay.inMilliseconds /
+                    _SqueezePaletteOverlayState._animDurationMs)
+                .clamp(0.0, 0.8);
         final progress = ((parentAnimation.value - delayFraction) /
                 (1.0 - delayFraction))
             .clamp(0.0, 1.0);
