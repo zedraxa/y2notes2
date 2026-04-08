@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:y2notes2/features/library/domain/entities/tag.dart';
+import 'package:biscuits/features/library/domain/entities/tag.dart';
 
 /// A tag-cloud visualisation where each tag's size reflects its [Tag.usageCount].
 class TagCloud extends StatelessWidget {

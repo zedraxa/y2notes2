@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:y2notes2/core/constants/app_constants.dart';
+import 'package:biscuits/core/constants/app_constants.dart';
 
 /// Base scaffold used by all full-screen pages.
 ///

@@ -1,8 +1,8 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:y2notes2/features/templates/data/builtin_templates.dart';
-import 'package:y2notes2/features/templates/data/template_repository.dart';
-import 'package:y2notes2/features/templates/presentation/bloc/template_event.dart';
-import 'package:y2notes2/features/templates/presentation/bloc/template_state.dart';
+import 'package:biscuits/features/templates/data/builtin_templates.dart';
+import 'package:biscuits/features/templates/data/template_repository.dart';
+import 'package:biscuits/features/templates/presentation/bloc/template_event.dart';
+import 'package:biscuits/features/templates/presentation/bloc/template_state.dart';
 
 class TemplateBloc extends Bloc<TemplateEvent, TemplateState> {
   TemplateBloc({required TemplateRepository repository})

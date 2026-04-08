@@ -1,6 +1,6 @@
-import 'package:y2notes2/features/cloud_sync/data/cloud_sync_service.dart';
-import 'package:y2notes2/features/cloud_sync/domain/entities/cloud_provider.dart';
-import 'package:y2notes2/features/cloud_sync/domain/entities/sync_metadata.dart';
+import 'package:biscuits/features/cloud_sync/data/cloud_sync_service.dart';
+import 'package:biscuits/features/cloud_sync/domain/entities/cloud_provider.dart';
+import 'package:biscuits/features/cloud_sync/domain/entities/sync_metadata.dart';
 
 /// OneDrive implementation of [CloudSyncService].
 ///

@@ -1,7 +1,7 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
-import 'package:y2notes2/core/constants/app_constants.dart';
-import 'package:y2notes2/core/utils/device_capability.dart';
+import 'package:biscuits/core/constants/app_constants.dart';
+import 'package:biscuits/core/utils/device_capability.dart';
 
 /// Particle shape variants.
 enum ParticleShape { circle, star, sparkle, square }

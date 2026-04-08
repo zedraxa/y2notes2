@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:y2notes2/features/scanner/domain/entities/scanned_document.dart';
+import 'package:biscuits/features/scanner/domain/entities/scanned_document.dart';
 
 /// Configuration options for the document scanner.
 class ScannerOptions extends Equatable {

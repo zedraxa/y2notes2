@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
-import 'package:y2notes2/features/scanner/domain/entities/scanned_document.dart';
-import 'package:y2notes2/features/scanner/domain/models/scanner_options.dart';
+import 'package:biscuits/features/scanner/domain/entities/scanned_document.dart';
+import 'package:biscuits/features/scanner/domain/models/scanner_options.dart';
 
 /// The processing phase of the scanner workflow.
 enum ScannerPhase {

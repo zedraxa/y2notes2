@@ -1,10 +1,10 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
-import 'package:y2notes2/features/stickers/data/stamp_paths.dart';
-import 'package:y2notes2/features/stickers/data/washi_patterns.dart';
-import 'package:y2notes2/features/stickers/domain/entities/sticker_element.dart';
-import 'package:y2notes2/features/stickers/domain/models/washi_pattern.dart';
-import 'package:y2notes2/features/stickers/data/sticker_packs.dart';
+import 'package:biscuits/features/stickers/data/stamp_paths.dart';
+import 'package:biscuits/features/stickers/data/washi_patterns.dart';
+import 'package:biscuits/features/stickers/domain/entities/sticker_element.dart';
+import 'package:biscuits/features/stickers/domain/models/washi_pattern.dart';
+import 'package:biscuits/features/stickers/data/sticker_packs.dart';
 
 class StickerRenderer {
   void renderSticker(

@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:y2notes2/features/documents/presentation/bloc/document_bloc.dart';
-import 'package:y2notes2/features/documents/presentation/bloc/document_event.dart';
-import 'package:y2notes2/features/documents/presentation/bloc/document_state.dart';
-import 'package:y2notes2/features/documents/presentation/widgets/export_dialog.dart';
-import 'package:y2notes2/features/documents/presentation/widgets/import_button.dart';
-import 'package:y2notes2/features/documents/presentation/widgets/outline_panel.dart';
-import 'package:y2notes2/features/documents/presentation/widgets/page_gesture_handler.dart';
-import 'package:y2notes2/features/documents/presentation/widgets/page_navigator.dart';
+import 'package:biscuits/features/documents/presentation/bloc/document_bloc.dart';
+import 'package:biscuits/features/documents/presentation/bloc/document_event.dart';
+import 'package:biscuits/features/documents/presentation/bloc/document_state.dart';
+import 'package:biscuits/features/documents/presentation/widgets/export_dialog.dart';
+import 'package:biscuits/features/documents/presentation/widgets/import_button.dart';
+import 'package:biscuits/features/documents/presentation/widgets/outline_panel.dart';
+import 'package:biscuits/features/documents/presentation/widgets/page_gesture_handler.dart';
+import 'package:biscuits/features/documents/presentation/widgets/page_navigator.dart';
 
 /// Full notebook view: the canvas (passed as [child]) surrounded by the
 /// page navigator strip, outline panel, and export/import affordances.

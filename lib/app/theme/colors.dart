@@ -1,25 +1,36 @@
 import 'package:flutter/material.dart';
 
-/// GoodNotes-inspired warm, muted color palette.
+/// Biscuits — warm, approachable color palette with a biscuit/cookie motif.
+///
+/// Light mode: cream/warm backgrounds, golden accent, rich brown text.
+/// Dark mode: deep cocoa backgrounds, warm charcoal surfaces, cream text.
 abstract class AppColors {
   AppColors._();
 
   // ─── Light Mode ──────────────────────────────────────────────────────────
-  static const Color background = Color(0xFFF5F0EB);
+  static const Color background = Color(0xFFFFF8F0);
   static const Color surface = Color(0xFFFFFFFF);
-  static const Color toolbarBg = Color(0xFFF8F6F3);
-  static const Color toolbarBorder = Color(0xFFE8E4DF);
-  static const Color textPrimary = Color(0xFF2D2D2D);
-  static const Color textSecondary = Color(0xFF8A8580);
-  static const Color accent = Color(0xFF4A90D9);
+  static const Color surfaceVariant = Color(0xFFFFF3E8);
+  static const Color toolbarBg = Color(0xFFFFFBF6);
+  static const Color toolbarBorder = Color(0xFFEDE3D8);
+  static const Color textPrimary = Color(0xFF3D2B1F);
+  static const Color textSecondary = Color(0xFF8C7B6B);
+  static const Color accent = Color(0xFFD4A574);
+  static const Color accentDark = Color(0xFFB8864E);
+  static const Color success = Color(0xFF6B9E78);
+  static const Color error = Color(0xFFCC6B5A);
 
   // ─── Dark Mode ───────────────────────────────────────────────────────────
-  static const Color darkBackground = Color(0xFF1C1C1E);
-  static const Color darkSurface = Color(0xFF2C2C2E);
-  static const Color darkToolbarBg = Color(0xFF3A3A3C);
-  static const Color darkDivider = Color(0xFF48484A);
-  static const Color darkTextPrimary = Color(0xFFF2F2F7);
-  static const Color darkTextSecondary = Color(0xFF8E8E93);
+  static const Color darkBackground = Color(0xFF1A1210);
+  static const Color darkSurface = Color(0xFF2C2420);
+  static const Color darkSurfaceVariant = Color(0xFF362E28);
+  static const Color darkToolbarBg = Color(0xFF3A302A);
+  static const Color darkDivider = Color(0xFF4A3F38);
+  static const Color darkTextPrimary = Color(0xFFF5E6D3);
+  static const Color darkTextSecondary = Color(0xFFA89888);
+  static const Color darkAccent = Color(0xFFDEB887);
+  static const Color darkSuccess = Color(0xFF7DB88A);
+  static const Color darkError = Color(0xFFE08070);
 
   // ─── Pen Colors ──────────────────────────────────────────────────────────
   static const List<Color> defaultPenColors = [

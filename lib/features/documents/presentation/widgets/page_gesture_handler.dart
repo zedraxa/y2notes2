@@ -1,11 +1,11 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:y2notes2/core/services/settings_service.dart';
-import 'package:y2notes2/features/documents/presentation/bloc/document_bloc.dart';
-import 'package:y2notes2/features/documents/presentation/bloc/document_event.dart';
-import 'package:y2notes2/features/documents/presentation/bloc/document_state.dart';
-import 'package:y2notes2/shared/widgets/service_provider.dart';
+import 'package:biscuits/core/services/settings_service.dart';
+import 'package:biscuits/features/documents/presentation/bloc/document_bloc.dart';
+import 'package:biscuits/features/documents/presentation/bloc/document_event.dart';
+import 'package:biscuits/features/documents/presentation/bloc/document_state.dart';
+import 'package:biscuits/shared/widgets/service_provider.dart';
 
 /// Detects two-finger horizontal swipe gestures to navigate between notebook
 /// pages.

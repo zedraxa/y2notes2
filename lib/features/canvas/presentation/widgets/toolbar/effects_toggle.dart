@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:y2notes2/app/theme/colors.dart';
+import 'package:biscuits/app/theme/colors.dart';
 
 /// Star/sparkle icon toggle for all writing effects with smooth transitions.
 class EffectsToggle extends StatelessWidget {

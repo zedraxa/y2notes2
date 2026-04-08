@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:y2notes2/core/services/settings_service.dart';
-import 'package:y2notes2/shared/widgets/service_provider.dart';
+import 'package:biscuits/core/services/settings_service.dart';
+import 'package:biscuits/shared/widgets/service_provider.dart';
 
 /// Backup & data settings: auto-save toggle, default export format, and
 /// a visual storage usage hint.

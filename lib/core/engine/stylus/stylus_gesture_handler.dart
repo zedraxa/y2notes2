@@ -1,5 +1,5 @@
-import 'package:y2notes2/core/engine/stylus/stylus_adapter.dart';
-import 'package:y2notes2/core/engine/stylus/stylus_detector.dart';
+import 'package:biscuits/core/engine/stylus/stylus_adapter.dart';
+import 'package:biscuits/core/engine/stylus/stylus_detector.dart';
 
 /// Maps hardware stylus gestures to configurable app actions.
 ///

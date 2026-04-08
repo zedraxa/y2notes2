@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
-import 'package:y2notes2/core/services/settings_service.dart';
-import 'package:y2notes2/features/canvas/domain/entities/tools/tool_settings.dart';
+import 'package:biscuits/core/services/settings_service.dart';
+import 'package:biscuits/features/canvas/domain/entities/tools/tool_settings.dart';
 
 class ToolPreset {
   const ToolPreset({

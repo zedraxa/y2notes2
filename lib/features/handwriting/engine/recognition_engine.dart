@@ -1,4 +1,4 @@
-import 'package:y2notes2/features/handwriting/domain/entities/recognition_result.dart';
+import 'package:biscuits/features/handwriting/domain/entities/recognition_result.dart';
 
 /// Abstract recognition backend — allows swapping implementations.
 abstract class RecognitionBackend {

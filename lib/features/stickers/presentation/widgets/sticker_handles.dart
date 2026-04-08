@@ -1,10 +1,10 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:y2notes2/features/stickers/domain/entities/sticker_element.dart';
-import 'package:y2notes2/features/stickers/presentation/bloc/sticker_bloc.dart';
-import 'package:y2notes2/features/stickers/presentation/bloc/sticker_event.dart';
-import 'package:y2notes2/features/stickers/presentation/bloc/sticker_state.dart';
+import 'package:biscuits/features/stickers/domain/entities/sticker_element.dart';
+import 'package:biscuits/features/stickers/presentation/bloc/sticker_bloc.dart';
+import 'package:biscuits/features/stickers/presentation/bloc/sticker_event.dart';
+import 'package:biscuits/features/stickers/presentation/bloc/sticker_state.dart';
 
 /// Widget that renders interactive selection handles for the selected sticker.
 ///

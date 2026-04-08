@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:y2notes2/app/routes.dart';
-import 'package:y2notes2/app/theme/app_theme.dart';
-import 'package:y2notes2/core/services/settings_service.dart';
-import 'package:y2notes2/features/documents/data/document_repository.dart';
-import 'package:y2notes2/features/documents/presentation/bloc/document_bloc.dart';
-import 'package:y2notes2/features/library/data/library_repository.dart';
-import 'package:y2notes2/features/library/presentation/bloc/library_bloc.dart';
+import 'package:biscuits/app/routes.dart';
+import 'package:biscuits/app/theme/app_theme.dart';
+import 'package:biscuits/core/services/settings_service.dart';
+import 'package:biscuits/features/documents/data/document_repository.dart';
+import 'package:biscuits/features/documents/presentation/bloc/document_bloc.dart';
+import 'package:biscuits/features/library/data/library_repository.dart';
+import 'package:biscuits/features/library/presentation/bloc/library_bloc.dart';
 
 /// Root application widget.
-class Y2NotesApp extends StatefulWidget {
-  const Y2NotesApp({
+class BiscuitsApp extends StatefulWidget {
+  const BiscuitsApp({
     super.key,
     required this.settingsService,
     required this.documentRepository,
@@ -22,10 +22,10 @@ class Y2NotesApp extends StatefulWidget {
   final LibraryRepository libraryRepository;
 
   @override
-  State<Y2NotesApp> createState() => _Y2NotesAppState();
+  State<BiscuitsApp> createState() => _BiscuitsAppState();
 }
 
-class _Y2NotesAppState extends State<Y2NotesApp> {
+class _BiscuitsAppState extends State<BiscuitsApp> {
   late final AppRouter _appRouter;
 
   @override
@@ -51,7 +51,7 @@ class _Y2NotesAppState extends State<Y2NotesApp> {
             ),
           ],
           child: MaterialApp.router(
-            title: 'Y2Notes',
+            title: 'Biscuits',
             debugShowCheckedModeBanner: false,
             theme: AppTheme.light(),
             darkTheme: AppTheme.dark(),

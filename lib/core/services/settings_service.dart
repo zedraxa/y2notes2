@@ -1,7 +1,7 @@
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/foundation.dart';
-import 'package:y2notes2/core/engine/stylus/pressure_curve.dart';
-import 'package:y2notes2/core/engine/stylus/stylus_gesture_handler.dart';
+import 'package:biscuits/core/engine/stylus/pressure_curve.dart';
+import 'package:biscuits/core/engine/stylus/stylus_gesture_handler.dart';
 
 /// Persists user preferences such as effect toggles, theme, and stylus settings.
 class SettingsService {

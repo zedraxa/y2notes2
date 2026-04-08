@@ -1,13 +1,13 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uuid/uuid.dart';
-import 'package:y2notes2/features/library/data/library_repository.dart';
-import 'package:y2notes2/features/library/domain/entities/folder.dart';
-import 'package:y2notes2/features/library/domain/entities/library_item.dart';
-import 'package:y2notes2/features/library/domain/entities/smart_collection.dart';
-import 'package:y2notes2/features/library/domain/entities/tag.dart';
-import 'package:y2notes2/features/library/engine/search_engine.dart';
-import 'package:y2notes2/features/library/presentation/bloc/library_event.dart';
-import 'package:y2notes2/features/library/presentation/bloc/library_state.dart';
+import 'package:biscuits/features/library/data/library_repository.dart';
+import 'package:biscuits/features/library/domain/entities/folder.dart';
+import 'package:biscuits/features/library/domain/entities/library_item.dart';
+import 'package:biscuits/features/library/domain/entities/smart_collection.dart';
+import 'package:biscuits/features/library/domain/entities/tag.dart';
+import 'package:biscuits/features/library/engine/search_engine.dart';
+import 'package:biscuits/features/library/presentation/bloc/library_event.dart';
+import 'package:biscuits/features/library/presentation/bloc/library_state.dart';
 
 /// BLoC that manages the entire library feature.
 class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {

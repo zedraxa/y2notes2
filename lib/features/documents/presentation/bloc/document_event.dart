@@ -1,13 +1,13 @@
 import 'package:equatable/equatable.dart';
-import 'package:y2notes2/features/canvas/domain/entities/stroke.dart';
-import 'package:y2notes2/features/canvas/domain/models/canvas_config.dart';
-import 'package:y2notes2/features/documents/domain/entities/canvas_elements.dart';
-import 'package:y2notes2/features/documents/domain/models/export_options.dart';
-import 'package:y2notes2/features/documents/domain/models/import_options.dart';
-import 'package:y2notes2/features/media/domain/entities/media_element.dart';
-import 'package:y2notes2/features/pdf_annotation/domain/entities/pdf_annotation.dart';
-import 'package:y2notes2/features/rich_text/domain/entities/rich_text_element.dart';
-import 'package:y2notes2/features/scanner/domain/entities/scanned_document.dart';
+import 'package:biscuits/features/canvas/domain/entities/stroke.dart';
+import 'package:biscuits/features/canvas/domain/models/canvas_config.dart';
+import 'package:biscuits/features/documents/domain/entities/canvas_elements.dart';
+import 'package:biscuits/features/documents/domain/models/export_options.dart';
+import 'package:biscuits/features/documents/domain/models/import_options.dart';
+import 'package:biscuits/features/media/domain/entities/media_element.dart';
+import 'package:biscuits/features/pdf_annotation/domain/entities/pdf_annotation.dart';
+import 'package:biscuits/features/rich_text/domain/entities/rich_text_element.dart';
+import 'package:biscuits/features/scanner/domain/entities/scanned_document.dart';
 
 /// Base class for all document-feature events.
 abstract class DocumentEvent extends Equatable {

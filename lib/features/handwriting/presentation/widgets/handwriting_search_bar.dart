@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:y2notes2/features/handwriting/presentation/bloc/handwriting_bloc.dart';
-import 'package:y2notes2/features/handwriting/presentation/bloc/handwriting_event.dart';
-import 'package:y2notes2/features/handwriting/presentation/bloc/handwriting_state.dart';
-import 'package:y2notes2/features/handwriting/domain/models/search_match.dart';
+import 'package:biscuits/features/handwriting/presentation/bloc/handwriting_bloc.dart';
+import 'package:biscuits/features/handwriting/presentation/bloc/handwriting_event.dart';
+import 'package:biscuits/features/handwriting/presentation/bloc/handwriting_state.dart';
+import 'package:biscuits/features/handwriting/domain/models/search_match.dart';
 
 /// Expandable search bar for searching recognized handwriting text.
 class HandwritingSearchBar extends StatefulWidget {

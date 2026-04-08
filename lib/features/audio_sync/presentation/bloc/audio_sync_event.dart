@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:y2notes2/features/audio_sync/domain/entities/transcription_segment.dart';
+import 'package:biscuits/features/audio_sync/domain/entities/transcription_segment.dart';
 
 /// Base class for all audio sync events.
 abstract class AudioSyncEvent extends Equatable {

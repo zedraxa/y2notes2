@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:y2notes2/features/media/domain/entities/media_element.dart';
+import 'package:biscuits/features/media/domain/entities/media_element.dart';
 
 /// Bottom sheet that lets the user pick an audio or video
 /// file to insert onto the canvas.

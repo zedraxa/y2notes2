@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:y2notes2/features/media/domain/entities/media_element.dart';
-import 'package:y2notes2/features/media/presentation/bloc/media_bloc.dart';
-import 'package:y2notes2/features/media/presentation/bloc/media_event.dart';
-import 'package:y2notes2/features/media/presentation/bloc/media_state.dart';
+import 'package:biscuits/features/media/domain/entities/media_element.dart';
+import 'package:biscuits/features/media/presentation/bloc/media_bloc.dart';
+import 'package:biscuits/features/media/presentation/bloc/media_event.dart';
+import 'package:biscuits/features/media/presentation/bloc/media_state.dart';
 
 /// Inline media player widget rendered on the canvas.
 ///

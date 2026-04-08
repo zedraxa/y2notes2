@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:y2notes2/features/effects/interaction/interaction_effect.dart';
+import 'package:biscuits/features/effects/interaction/interaction_effect.dart';
 
 class _PageTurnAnimation {
   _PageTurnAnimation({required this.direction, required this.pageSize});

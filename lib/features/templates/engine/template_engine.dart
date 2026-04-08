@@ -1,6 +1,6 @@
-import 'package:y2notes2/features/canvas/domain/models/canvas_config.dart';
-import 'package:y2notes2/features/templates/data/builtin_templates.dart';
-import 'package:y2notes2/features/templates/domain/entities/page_template.dart';
+import 'package:biscuits/features/canvas/domain/models/canvas_config.dart';
+import 'package:biscuits/features/templates/data/builtin_templates.dart';
+import 'package:biscuits/features/templates/domain/entities/page_template.dart';
 
 /// Applies [NoteTemplate]s to canvas pages.
 class TemplateEngine {

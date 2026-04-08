@@ -1,6 +1,6 @@
-import 'package:y2notes2/features/library/domain/entities/library_item.dart';
-import 'package:y2notes2/features/library/domain/entities/search_result.dart';
-import 'package:y2notes2/features/library/engine/search_engine.dart';
+import 'package:biscuits/features/library/domain/entities/library_item.dart';
+import 'package:biscuits/features/library/domain/entities/search_result.dart';
+import 'package:biscuits/features/library/engine/search_engine.dart';
 
 /// Maintains an inverted index of library items for fast full-text search.
 ///

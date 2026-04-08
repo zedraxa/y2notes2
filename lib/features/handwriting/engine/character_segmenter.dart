@@ -1,6 +1,6 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
-import 'package:y2notes2/features/handwriting/domain/entities/recognition_result.dart';
+import 'package:biscuits/features/handwriting/domain/entities/recognition_result.dart';
 
 /// Character / word segmentation from a list of strokes.
 ///

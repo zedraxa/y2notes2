@@ -1,9 +1,9 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:y2notes2/features/pdf_annotation/domain/entities/pdf_annotation.dart';
-import 'package:y2notes2/features/pdf_annotation/domain/entities/pdf_bookmark.dart';
-import 'package:y2notes2/features/pdf_annotation/domain/entities/pdf_text_span.dart';
-import 'package:y2notes2/features/pdf_annotation/presentation/bloc/pdf_annotation_event.dart';
-import 'package:y2notes2/features/pdf_annotation/presentation/bloc/pdf_annotation_state.dart';
+import 'package:biscuits/features/pdf_annotation/domain/entities/pdf_annotation.dart';
+import 'package:biscuits/features/pdf_annotation/domain/entities/pdf_bookmark.dart';
+import 'package:biscuits/features/pdf_annotation/domain/entities/pdf_text_span.dart';
+import 'package:biscuits/features/pdf_annotation/presentation/bloc/pdf_annotation_event.dart';
+import 'package:biscuits/features/pdf_annotation/presentation/bloc/pdf_annotation_state.dart';
 
 /// BLoC that manages PDF annotation state: tool selection, text
 /// selection, CRUD operations on annotations and bookmarks.

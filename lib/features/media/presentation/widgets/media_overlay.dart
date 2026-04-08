@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:y2notes2/features/media/presentation/bloc/media_bloc.dart';
-import 'package:y2notes2/features/media/presentation/bloc/media_state.dart';
-import 'package:y2notes2/features/media/presentation/widgets/media_player_widget.dart';
+import 'package:biscuits/features/media/presentation/bloc/media_bloc.dart';
+import 'package:biscuits/features/media/presentation/bloc/media_state.dart';
+import 'package:biscuits/features/media/presentation/widgets/media_player_widget.dart';
 
 /// Overlay layer that renders all [MediaElement]s on the
 /// canvas as draggable player widgets.

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:y2notes2/features/handwriting/engine/math_recognizer.dart';
-import 'package:y2notes2/features/handwriting/presentation/bloc/handwriting_bloc.dart';
-import 'package:y2notes2/features/handwriting/presentation/bloc/handwriting_event.dart';
-import 'package:y2notes2/features/handwriting/presentation/bloc/handwriting_state.dart';
+import 'package:biscuits/features/handwriting/engine/math_recognizer.dart';
+import 'package:biscuits/features/handwriting/presentation/bloc/handwriting_bloc.dart';
+import 'package:biscuits/features/handwriting/presentation/bloc/handwriting_event.dart';
+import 'package:biscuits/features/handwriting/presentation/bloc/handwriting_state.dart';
 
 /// Overlay that displays a computed math result next to a detected expression.
 class MathResultOverlay extends StatelessWidget {

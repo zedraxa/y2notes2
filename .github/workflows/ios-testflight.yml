@@ -25,8 +25,8 @@ on:
   workflow_dispatch:
 
 env:
-  BUNDLE_ID: "com.y2notes.app"
-  APP_ORG: "com.y2notes"
+  BUNDLE_ID: "com.biscuits.app"
+  APP_ORG: "com.biscuits"
   # Temporary keychain name (unique per run to avoid conflicts)
   KEYCHAIN_NAME: "build-${{ github.run_number }}.keychain"
   # Path where the provisioning profile will be installed
@@ -71,7 +71,7 @@ jobs:
           if [ ! -f "ios/Runner.xcodeproj/project.pbxproj" ]; then
             flutter create --platforms=ios \
               --org "$APP_ORG" \
-              --project-name y2notes2 .
+              --project-name biscuits .
           fi
 
       # ----------------------------------------------------------
@@ -188,7 +188,7 @@ jobs:
               <string>manual</string>
               <key>provisioningProfiles</key>
               <dict>
-                  <key>com.y2notes.app</key>
+                  <key>com.biscuits.app</key>
                   <string>${PROFILE_NAME}</string>
               </dict>
               <key>stripSwiftSymbols</key>

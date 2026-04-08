@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:y2notes2/features/pdf_annotation/domain/entities/pdf_annotation.dart';
-import 'package:y2notes2/features/pdf_annotation/presentation/bloc/pdf_annotation_bloc.dart';
-import 'package:y2notes2/features/pdf_annotation/presentation/bloc/pdf_annotation_event.dart';
-import 'package:y2notes2/features/pdf_annotation/presentation/bloc/pdf_annotation_state.dart';
+import 'package:biscuits/features/pdf_annotation/domain/entities/pdf_annotation.dart';
+import 'package:biscuits/features/pdf_annotation/presentation/bloc/pdf_annotation_bloc.dart';
+import 'package:biscuits/features/pdf_annotation/presentation/bloc/pdf_annotation_event.dart';
+import 'package:biscuits/features/pdf_annotation/presentation/bloc/pdf_annotation_state.dart';
 
 /// Renders all annotations for the current PDF page on top of the
 /// rasterised content.

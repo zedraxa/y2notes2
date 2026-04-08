@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:y2notes2/features/documents/domain/models/import_options.dart';
+import 'package:biscuits/features/documents/domain/models/import_options.dart';
 
 /// Shared validation utilities for import engines.
 class ImportValidator {

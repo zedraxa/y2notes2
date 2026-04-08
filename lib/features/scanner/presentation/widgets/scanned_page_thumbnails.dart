@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:y2notes2/features/scanner/domain/entities/scanned_document.dart';
+import 'package:biscuits/features/scanner/domain/entities/scanned_document.dart';
 
 /// Thumbnail strip showing confirmed scanned pages with
 /// delete and reorder capabilities.

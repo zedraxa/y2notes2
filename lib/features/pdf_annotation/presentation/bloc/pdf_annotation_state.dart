@@ -1,9 +1,9 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
-import 'package:y2notes2/features/pdf_annotation/domain/entities/pdf_annotation.dart';
-import 'package:y2notes2/features/pdf_annotation/domain/entities/pdf_bookmark.dart';
-import 'package:y2notes2/features/pdf_annotation/domain/entities/pdf_text_span.dart';
-import 'package:y2notes2/features/pdf_annotation/presentation/bloc/pdf_annotation_event.dart';
+import 'package:biscuits/features/pdf_annotation/domain/entities/pdf_annotation.dart';
+import 'package:biscuits/features/pdf_annotation/domain/entities/pdf_bookmark.dart';
+import 'package:biscuits/features/pdf_annotation/domain/entities/pdf_text_span.dart';
+import 'package:biscuits/features/pdf_annotation/presentation/bloc/pdf_annotation_event.dart';
 
 /// Immutable state for the PDF annotation feature.
 class PdfAnnotationState extends Equatable {

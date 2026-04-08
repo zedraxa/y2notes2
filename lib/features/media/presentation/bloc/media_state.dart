@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:y2notes2/features/media/domain/entities/media_element.dart';
+import 'package:biscuits/features/media/domain/entities/media_element.dart';
 
 /// Immutable state for the media feature.
 class MediaState extends Equatable {

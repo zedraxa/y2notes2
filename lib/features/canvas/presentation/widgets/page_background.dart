@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:y2notes2/app/theme/colors.dart';
-import 'package:y2notes2/features/canvas/domain/models/canvas_config.dart';
+import 'package:biscuits/app/theme/colors.dart';
+import 'package:biscuits/features/canvas/domain/models/canvas_config.dart';
 
 /// Renders page background templates as the lowest canvas layer.
 class PageBackground extends StatelessWidget {

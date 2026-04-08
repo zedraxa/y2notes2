@@ -1,5 +1,5 @@
-import 'package:y2notes2/features/handwriting/domain/entities/recognition_result.dart';
-import 'package:y2notes2/features/handwriting/engine/recognition_engine.dart';
+import 'package:biscuits/features/handwriting/domain/entities/recognition_result.dart';
+import 'package:biscuits/features/handwriting/engine/recognition_engine.dart';
 
 /// Adapter for Google ML Kit Text Recognition (image-based OCR).
 ///

@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:y2notes2/features/widgets/domain/entities/smart_widget.dart';
+import 'package:biscuits/features/widgets/domain/entities/smart_widget.dart';
 
 /// Pomodoro timer — 25 min work / 5 min break / 15 min long break.
 class PomodoroWidget extends SmartWidget {

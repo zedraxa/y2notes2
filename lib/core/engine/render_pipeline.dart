@@ -1,7 +1,7 @@
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
-import 'package:y2notes2/core/engine/stroke_renderer.dart';
-import 'package:y2notes2/features/canvas/domain/entities/stroke.dart';
+import 'package:biscuits/core/engine/stroke_renderer.dart';
+import 'package:biscuits/features/canvas/domain/entities/stroke.dart';
 
 /// Orchestrates the two-layer rendering pipeline:
 ///  - Committed strokes → rasterized bitmap cache via [PictureRecorder]

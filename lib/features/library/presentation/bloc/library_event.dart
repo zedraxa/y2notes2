@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
-import 'package:y2notes2/features/library/domain/entities/folder.dart';
-import 'package:y2notes2/features/library/domain/entities/library_item.dart';
-import 'package:y2notes2/features/library/domain/entities/tag.dart';
+import 'package:biscuits/features/library/domain/entities/folder.dart';
+import 'package:biscuits/features/library/domain/entities/library_item.dart';
+import 'package:biscuits/features/library/domain/entities/tag.dart';
 
 abstract class LibraryEvent extends Equatable {
   const LibraryEvent();

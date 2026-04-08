@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:y2notes2/features/widgets/domain/entities/smart_widget.dart';
+import 'package:biscuits/features/widgets/domain/entities/smart_widget.dart';
 
 class WidgetState extends Equatable {
   const WidgetState({

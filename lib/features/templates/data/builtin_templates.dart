@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:y2notes2/core/constants/app_constants.dart';
-import 'package:y2notes2/features/canvas/domain/models/canvas_config.dart';
-import 'package:y2notes2/features/templates/domain/entities/page_template.dart';
-import 'package:y2notes2/features/templates/domain/entities/template_region.dart';
+import 'package:biscuits/core/constants/app_constants.dart';
+import 'package:biscuits/features/canvas/domain/models/canvas_config.dart';
+import 'package:biscuits/features/templates/domain/entities/page_template.dart';
+import 'package:biscuits/features/templates/domain/entities/template_region.dart';
 
 /// All 24 built-in page templates.
 abstract class BuiltinTemplates {

@@ -6,11 +6,11 @@ import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
-import 'package:y2notes2/features/canvas/domain/entities/stroke.dart';
-import 'package:y2notes2/features/canvas/domain/models/canvas_config.dart';
-import 'package:y2notes2/features/documents/domain/entities/canvas_elements.dart';
-import 'package:y2notes2/features/documents/domain/models/export_options.dart';
-import 'package:y2notes2/features/shapes/domain/entities/shape_type.dart';
+import 'package:biscuits/features/canvas/domain/entities/stroke.dart';
+import 'package:biscuits/features/canvas/domain/models/canvas_config.dart';
+import 'package:biscuits/features/documents/domain/entities/canvas_elements.dart';
+import 'package:biscuits/features/documents/domain/models/export_options.dart';
+import 'package:biscuits/features/shapes/domain/entities/shape_type.dart';
 
 /// Converts canvas content (strokes, shapes, stickers) into a PDF document.
 class PdfExportEngine {
@@ -331,7 +331,7 @@ class PdfExportEngine {
   /// Saves a PDF to the device's documents directory and returns the file path.
   Future<String> saveToFile({
     required Uint8List pdfBytes,
-    String fileName = 'y2notes_export.pdf',
+    String fileName = 'biscuits_export.pdf',
   }) async {
     final dir = await getApplicationDocumentsDirectory();
     final file = File('${dir.path}/$fileName');
@@ -342,7 +342,7 @@ class PdfExportEngine {
   /// Opens the system share sheet so the user can share / print the PDF.
   Future<void> shareAsPdf({
     required Uint8List pdfBytes,
-    String name = 'Y2Notes Export',
+    String name = 'Biscuits Export',
     String subject = 'Notes export',
   }) async {
     await Printing.sharePdf(
@@ -355,7 +355,7 @@ class PdfExportEngine {
   /// Opens the system print dialog.
   Future<void> printPdf({
     required Uint8List pdfBytes,
-    String name = 'Y2Notes',
+    String name = 'Biscuits',
   }) async {
     await Printing.layoutPdf(
       onLayout: (_) async => pdfBytes,

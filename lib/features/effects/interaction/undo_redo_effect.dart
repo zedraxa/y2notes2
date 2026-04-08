@@ -1,7 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-import 'package:y2notes2/features/effects/interaction/interaction_effect.dart';
+import 'package:biscuits/features/effects/interaction/interaction_effect.dart';
 
 enum _FlashType { undo, redo }
 

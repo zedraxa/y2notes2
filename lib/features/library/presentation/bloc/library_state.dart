@@ -1,10 +1,10 @@
 import 'package:equatable/equatable.dart';
-import 'package:y2notes2/features/library/domain/entities/folder.dart';
-import 'package:y2notes2/features/library/domain/entities/library_item.dart';
-import 'package:y2notes2/features/library/domain/entities/search_result.dart';
-import 'package:y2notes2/features/library/domain/entities/smart_collection.dart';
-import 'package:y2notes2/features/library/domain/entities/tag.dart';
-import 'package:y2notes2/features/library/presentation/bloc/library_event.dart';
+import 'package:biscuits/features/library/domain/entities/folder.dart';
+import 'package:biscuits/features/library/domain/entities/library_item.dart';
+import 'package:biscuits/features/library/domain/entities/search_result.dart';
+import 'package:biscuits/features/library/domain/entities/smart_collection.dart';
+import 'package:biscuits/features/library/domain/entities/tag.dart';
+import 'package:biscuits/features/library/presentation/bloc/library_event.dart';
 
 /// Immutable snapshot of the library UI state.
 class LibraryState extends Equatable {

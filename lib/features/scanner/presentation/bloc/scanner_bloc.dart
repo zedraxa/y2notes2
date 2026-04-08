@@ -1,8 +1,8 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:y2notes2/features/scanner/domain/entities/scanned_document.dart';
-import 'package:y2notes2/features/scanner/engine/document_scanner_engine.dart';
-import 'package:y2notes2/features/scanner/presentation/bloc/scanner_event.dart';
-import 'package:y2notes2/features/scanner/presentation/bloc/scanner_state.dart';
+import 'package:biscuits/features/scanner/domain/entities/scanned_document.dart';
+import 'package:biscuits/features/scanner/engine/document_scanner_engine.dart';
+import 'package:biscuits/features/scanner/presentation/bloc/scanner_event.dart';
+import 'package:biscuits/features/scanner/presentation/bloc/scanner_state.dart';
 
 /// BLoC that manages the document scanning workflow.
 class ScannerBloc extends Bloc<ScannerEvent, ScannerState> {

@@ -1,8 +1,8 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
-import 'package:y2notes2/features/pdf_annotation/domain/entities/pdf_annotation.dart';
-import 'package:y2notes2/features/pdf_annotation/domain/entities/pdf_bookmark.dart';
-import 'package:y2notes2/features/pdf_annotation/domain/entities/pdf_text_span.dart';
+import 'package:biscuits/features/pdf_annotation/domain/entities/pdf_annotation.dart';
+import 'package:biscuits/features/pdf_annotation/domain/entities/pdf_bookmark.dart';
+import 'package:biscuits/features/pdf_annotation/domain/entities/pdf_text_span.dart';
 
 /// Base class for PDF annotation events.
 abstract class PdfAnnotationEvent extends Equatable {

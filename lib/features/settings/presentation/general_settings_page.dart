@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:y2notes2/core/services/settings_service.dart';
-import 'package:y2notes2/shared/widgets/service_provider.dart';
+import 'package:biscuits/core/services/settings_service.dart';
+import 'package:biscuits/shared/widgets/service_provider.dart';
 
 /// General settings: appearance (dark mode), haptic feedback, and default
 /// tool size.

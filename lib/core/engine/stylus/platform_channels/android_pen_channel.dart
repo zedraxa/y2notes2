@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:flutter/services.dart';
-import 'package:y2notes2/core/engine/stylus/stylus_detector.dart';
+import 'package:biscuits/core/engine/stylus/stylus_detector.dart';
 
 /// Events fired via the Android pen platform channel.
 class AndroidPenEvent {
@@ -51,7 +51,7 @@ class AndroidPenInfo {
       'battery=$batteryLevel%, levels=$pressureLevels)';
 }
 
-/// Dart-side stub for the `com.y2notes2/android_pen` platform method channel.
+/// Dart-side stub for the `com.biscuits/android_pen` platform method channel.
 ///
 /// The native side (Kotlin `AndroidPenPlugin.kt`) listens for:
 /// - Samsung S Pen barrel button events via `MotionEvent` button mask
@@ -66,9 +66,9 @@ class AndroidPenChannel {
   AndroidPenChannel._();
 
   static const MethodChannel _methodChannel =
-      MethodChannel('com.y2notes2/android_pen');
+      MethodChannel('com.biscuits/android_pen');
   static const EventChannel _buttonEventChannel =
-      EventChannel('com.y2notes2/android_pen/buttons');
+      EventChannel('com.biscuits/android_pen/buttons');
 
   static Stream<AndroidPenEvent>? _buttonStream;
 

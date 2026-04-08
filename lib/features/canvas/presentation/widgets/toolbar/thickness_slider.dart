@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:y2notes2/app/theme/colors.dart';
+import 'package:biscuits/app/theme/colors.dart';
 
 /// Compact slider for stroke thickness with a smoothly animated preview dot.
 class ThicknessSlider extends StatelessWidget {

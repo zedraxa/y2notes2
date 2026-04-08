@@ -3,9 +3,9 @@ import 'dart:ui' as ui;
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:y2notes2/features/documents/domain/entities/import_result.dart';
-import 'package:y2notes2/features/documents/domain/models/import_options.dart';
-import 'package:y2notes2/features/documents/engine/import_validator.dart';
+import 'package:biscuits/features/documents/domain/entities/import_result.dart';
+import 'package:biscuits/features/documents/domain/models/import_options.dart';
+import 'package:biscuits/features/documents/engine/import_validator.dart';
 
 /// Handles importing PDF files from the device and converting each page into
 /// a rasterised [ImportedPage] that can be used as a canvas background.

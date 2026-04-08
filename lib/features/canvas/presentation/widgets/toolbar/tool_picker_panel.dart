@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:y2notes2/features/canvas/domain/entities/tools/drawing_tool.dart';
-import 'package:y2notes2/features/canvas/domain/entities/tools/tool_category.dart';
-import 'package:y2notes2/features/canvas/domain/entities/tools/tool_registry.dart';
-import 'package:y2notes2/features/canvas/presentation/bloc/canvas_bloc.dart';
-import 'package:y2notes2/features/canvas/presentation/bloc/canvas_event.dart';
-import 'package:y2notes2/features/canvas/presentation/bloc/canvas_state.dart';
+import 'package:biscuits/features/canvas/domain/entities/tools/drawing_tool.dart';
+import 'package:biscuits/features/canvas/domain/entities/tools/tool_category.dart';
+import 'package:biscuits/features/canvas/domain/entities/tools/tool_registry.dart';
+import 'package:biscuits/features/canvas/presentation/bloc/canvas_bloc.dart';
+import 'package:biscuits/features/canvas/presentation/bloc/canvas_event.dart';
+import 'package:biscuits/features/canvas/presentation/bloc/canvas_state.dart';
 
 /// A categorized panel that lets the user pick any registered DrawingTool.
 class ToolPickerPanel extends StatefulWidget {

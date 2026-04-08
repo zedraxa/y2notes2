@@ -1,20 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:y2notes2/core/engine/particle_system.dart';
-import 'package:y2notes2/features/canvas/domain/entities/point_data.dart';
-import 'package:y2notes2/features/canvas/domain/entities/stroke.dart';
-import 'package:y2notes2/features/effects/engine/effect_budget.dart';
-import 'package:y2notes2/features/effects/engine/effect_config.dart';
-import 'package:y2notes2/features/effects/engine/effect_registry.dart';
-import 'package:y2notes2/features/effects/writing/chalk_effect.dart';
-import 'package:y2notes2/features/effects/writing/fountain_pen_effect.dart';
-import 'package:y2notes2/features/effects/writing/ink_dry_effect.dart';
-import 'package:y2notes2/features/effects/writing/ink_flow_effect.dart';
-import 'package:y2notes2/features/effects/writing/ink_shimmer_effect.dart';
-import 'package:y2notes2/features/effects/writing/neon_glow_effect.dart';
-import 'package:y2notes2/features/effects/writing/pressure_bloom_effect.dart';
-import 'package:y2notes2/features/effects/writing/rainbow_ink_effect.dart';
-import 'package:y2notes2/features/effects/writing/trail_particles_effect.dart';
-import 'package:y2notes2/features/effects/writing/watercolor_bleed_effect.dart';
+import 'package:biscuits/core/engine/particle_system.dart';
+import 'package:biscuits/features/canvas/domain/entities/point_data.dart';
+import 'package:biscuits/features/canvas/domain/entities/stroke.dart';
+import 'package:biscuits/features/effects/engine/effect_budget.dart';
+import 'package:biscuits/features/effects/engine/effect_config.dart';
+import 'package:biscuits/features/effects/engine/effect_registry.dart';
+import 'package:biscuits/features/effects/writing/chalk_effect.dart';
+import 'package:biscuits/features/effects/writing/fountain_pen_effect.dart';
+import 'package:biscuits/features/effects/writing/ink_dry_effect.dart';
+import 'package:biscuits/features/effects/writing/ink_flow_effect.dart';
+import 'package:biscuits/features/effects/writing/ink_shimmer_effect.dart';
+import 'package:biscuits/features/effects/writing/neon_glow_effect.dart';
+import 'package:biscuits/features/effects/writing/pressure_bloom_effect.dart';
+import 'package:biscuits/features/effects/writing/rainbow_ink_effect.dart';
+import 'package:biscuits/features/effects/writing/trail_particles_effect.dart';
+import 'package:biscuits/features/effects/writing/watercolor_bleed_effect.dart';
 
 /// Orchestrates all writing effects and the shared particle system.
 ///

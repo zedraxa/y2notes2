@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:y2notes2/features/audio_sync/domain/entities/audio_recording.dart';
+import 'package:biscuits/features/audio_sync/domain/entities/audio_recording.dart';
 
 /// Immutable snapshot of the audio sync feature state.
 class AudioSyncState extends Equatable {

@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:y2notes2/features/canvas/domain/entities/stroke.dart';
-import 'package:y2notes2/features/handwriting/domain/entities/text_block.dart';
-import 'package:y2notes2/features/handwriting/engine/backends/heuristic_recognizer.dart';
-import 'package:y2notes2/features/handwriting/engine/handwriting_search.dart';
-import 'package:y2notes2/features/handwriting/engine/math_recognizer.dart';
-import 'package:y2notes2/features/handwriting/engine/recognition_engine.dart';
-import 'package:y2notes2/features/handwriting/engine/recognition_manager.dart';
-import 'package:y2notes2/features/handwriting/presentation/bloc/handwriting_event.dart';
-import 'package:y2notes2/features/handwriting/presentation/bloc/handwriting_state.dart';
+import 'package:biscuits/features/canvas/domain/entities/stroke.dart';
+import 'package:biscuits/features/handwriting/domain/entities/text_block.dart';
+import 'package:biscuits/features/handwriting/engine/backends/heuristic_recognizer.dart';
+import 'package:biscuits/features/handwriting/engine/handwriting_search.dart';
+import 'package:biscuits/features/handwriting/engine/math_recognizer.dart';
+import 'package:biscuits/features/handwriting/engine/recognition_engine.dart';
+import 'package:biscuits/features/handwriting/engine/recognition_manager.dart';
+import 'package:biscuits/features/handwriting/presentation/bloc/handwriting_event.dart';
+import 'package:biscuits/features/handwriting/presentation/bloc/handwriting_state.dart';
 
 /// BLoC that manages handwriting recognition state.
 class HandwritingBloc extends Bloc<HandwritingEvent, HandwritingState> {

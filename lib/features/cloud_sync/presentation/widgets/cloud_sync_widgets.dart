@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:y2notes2/features/cloud_sync/domain/entities/sync_conflict.dart';
-import 'package:y2notes2/features/cloud_sync/domain/entities/sync_metadata.dart';
-import 'package:y2notes2/features/cloud_sync/presentation/bloc/cloud_sync_bloc.dart';
-import 'package:y2notes2/features/cloud_sync/presentation/bloc/cloud_sync_event.dart';
-import 'package:y2notes2/features/cloud_sync/presentation/bloc/cloud_sync_state.dart';
+import 'package:biscuits/features/cloud_sync/domain/entities/sync_conflict.dart';
+import 'package:biscuits/features/cloud_sync/domain/entities/sync_metadata.dart';
+import 'package:biscuits/features/cloud_sync/presentation/bloc/cloud_sync_bloc.dart';
+import 'package:biscuits/features/cloud_sync/presentation/bloc/cloud_sync_event.dart';
+import 'package:biscuits/features/cloud_sync/presentation/bloc/cloud_sync_state.dart';
 
 /// Compact widget that shows the current sync status in the app bar or
 /// a toolbar. Taps open the full cloud sync settings page.

@@ -19,18 +19,18 @@ class EffectsThemeData {
   final int glowLayers;
 
   static const light = EffectsThemeData(
-    particleBaseColor: Color(0xFF4A90D9),
+    particleBaseColor: Color(0xFFD4A574),
     glowBaseColor: Color(0xFFFFD700),
-    shimmerBaseColor: Color(0xFFE8F4FD),
+    shimmerBaseColor: Color(0xFFFFF3E8),
     trailOpacity: 0.65,
     bloomOpacity: 0.20,
     glowLayers: 3,
   );
 
   static const dark = EffectsThemeData(
-    particleBaseColor: Color(0xFF64B5F6),
+    particleBaseColor: Color(0xFFDEB887),
     glowBaseColor: Color(0xFFFFE57F),
-    shimmerBaseColor: Color(0xFF1A3A5C),
+    shimmerBaseColor: Color(0xFF362E28),
     trailOpacity: 0.75,
     bloomOpacity: 0.25,
     glowLayers: 3,

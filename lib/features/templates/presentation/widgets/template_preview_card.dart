@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:y2notes2/features/templates/domain/entities/page_template.dart';
+import 'package:biscuits/features/templates/domain/entities/page_template.dart';
 
 /// A compact card showing a template preview with emoji, name, description.
 class TemplatePreviewCard extends StatelessWidget {

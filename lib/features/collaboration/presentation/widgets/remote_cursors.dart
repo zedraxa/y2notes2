@@ -1,7 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-import 'package:y2notes2/features/collaboration/domain/entities/participant.dart';
+import 'package:biscuits/features/collaboration/domain/entities/participant.dart';
 
 /// Renders all remote users' cursors as an overlay on the canvas.
 ///

@@ -1,6 +1,6 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
-import 'package:y2notes2/features/stickers/domain/models/washi_pattern.dart';
+import 'package:biscuits/features/stickers/domain/models/washi_pattern.dart';
 
 /// Provides Canvas drawing utilities for washi tape patterns.
 class WashiPatternPainter {

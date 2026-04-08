@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:y2notes2/features/documents/domain/entities/notebook.dart';
-import 'package:y2notes2/features/documents/domain/entities/notebook_page.dart';
-import 'package:y2notes2/features/documents/presentation/bloc/document_bloc.dart';
-import 'package:y2notes2/features/documents/presentation/bloc/document_event.dart';
-import 'package:y2notes2/features/documents/presentation/bloc/document_state.dart';
+import 'package:biscuits/features/documents/domain/entities/notebook.dart';
+import 'package:biscuits/features/documents/domain/entities/notebook_page.dart';
+import 'package:biscuits/features/documents/presentation/bloc/document_bloc.dart';
+import 'package:biscuits/features/documents/presentation/bloc/document_event.dart';
+import 'package:biscuits/features/documents/presentation/bloc/document_state.dart';
 
 /// A slide-out panel that shows a table-of-contents / outline view of the
 /// current notebook.  Displays all pages grouped by bookmarked status, with

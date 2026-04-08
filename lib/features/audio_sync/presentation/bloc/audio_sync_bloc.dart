@@ -2,11 +2,11 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:y2notes2/features/audio_sync/domain/entities/audio_recording.dart';
-import 'package:y2notes2/features/audio_sync/domain/entities/stroke_timestamp.dart';
-import 'package:y2notes2/features/audio_sync/domain/entities/transcription_segment.dart';
-import 'package:y2notes2/features/audio_sync/presentation/bloc/audio_sync_event.dart';
-import 'package:y2notes2/features/audio_sync/presentation/bloc/audio_sync_state.dart';
+import 'package:biscuits/features/audio_sync/domain/entities/audio_recording.dart';
+import 'package:biscuits/features/audio_sync/domain/entities/stroke_timestamp.dart';
+import 'package:biscuits/features/audio_sync/domain/entities/transcription_segment.dart';
+import 'package:biscuits/features/audio_sync/presentation/bloc/audio_sync_event.dart';
+import 'package:biscuits/features/audio_sync/presentation/bloc/audio_sync_state.dart';
 
 /// BLoC that manages audio recording, playback, and
 /// synchronisation with canvas strokes.

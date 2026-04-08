@@ -1,6 +1,6 @@
 import 'package:flutter/gestures.dart';
-import 'package:y2notes2/core/engine/stylus/stylus_adapter.dart';
-import 'package:y2notes2/core/engine/stylus/stylus_detector.dart';
+import 'package:biscuits/core/engine/stylus/stylus_adapter.dart';
+import 'package:biscuits/core/engine/stylus/stylus_detector.dart';
 
 /// Processes Apple Pencil input events on iOS / iPadOS.
 ///

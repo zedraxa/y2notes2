@@ -1,10 +1,10 @@
 import 'package:equatable/equatable.dart';
-import 'package:y2notes2/features/handwriting/domain/entities/recognition_result.dart';
-import 'package:y2notes2/features/handwriting/domain/entities/text_block.dart';
-import 'package:y2notes2/features/handwriting/domain/entities/writing_analytics.dart';
-import 'package:y2notes2/features/handwriting/domain/models/search_match.dart';
-import 'package:y2notes2/features/handwriting/engine/recognition_engine.dart';
-import 'package:y2notes2/features/handwriting/engine/math_recognizer.dart';
+import 'package:biscuits/features/handwriting/domain/entities/recognition_result.dart';
+import 'package:biscuits/features/handwriting/domain/entities/text_block.dart';
+import 'package:biscuits/features/handwriting/domain/entities/writing_analytics.dart';
+import 'package:biscuits/features/handwriting/domain/models/search_match.dart';
+import 'package:biscuits/features/handwriting/engine/recognition_engine.dart';
+import 'package:biscuits/features/handwriting/engine/math_recognizer.dart';
 
 class HandwritingState extends Equatable {
   const HandwritingState({

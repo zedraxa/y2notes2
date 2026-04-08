@@ -1,9 +1,9 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:y2notes2/features/collaboration/domain/entities/participant.dart';
-import 'package:y2notes2/features/collaboration/domain/entities/permission.dart';
-import 'package:y2notes2/features/collaboration/engine/sync_client.dart';
+import 'package:biscuits/features/collaboration/domain/entities/participant.dart';
+import 'package:biscuits/features/collaboration/domain/entities/permission.dart';
+import 'package:biscuits/features/collaboration/engine/sync_client.dart';
 
 /// Manages the live presence state of all remote participants.
 ///

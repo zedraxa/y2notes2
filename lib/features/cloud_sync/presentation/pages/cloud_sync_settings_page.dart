@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:y2notes2/features/cloud_sync/domain/entities/cloud_provider.dart';
-import 'package:y2notes2/features/cloud_sync/presentation/bloc/cloud_sync_bloc.dart';
-import 'package:y2notes2/features/cloud_sync/presentation/bloc/cloud_sync_event.dart';
-import 'package:y2notes2/features/cloud_sync/presentation/bloc/cloud_sync_state.dart';
+import 'package:biscuits/features/cloud_sync/domain/entities/cloud_provider.dart';
+import 'package:biscuits/features/cloud_sync/presentation/bloc/cloud_sync_bloc.dart';
+import 'package:biscuits/features/cloud_sync/presentation/bloc/cloud_sync_event.dart';
+import 'package:biscuits/features/cloud_sync/presentation/bloc/cloud_sync_state.dart';
 
 /// Full-page settings UI for configuring cloud synchronization.
 class CloudSyncSettingsPage extends StatelessWidget {
