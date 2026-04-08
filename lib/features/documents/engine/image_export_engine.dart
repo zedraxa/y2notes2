@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'dart:io' if (dart.library.html) 'package:biscuits/core/io/io_stub.dart';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 

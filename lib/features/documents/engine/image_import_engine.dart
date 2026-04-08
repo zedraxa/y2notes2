@@ -1,9 +1,8 @@
-import 'dart:io';
+import 'dart:io' if (dart.library.html) 'package:biscuits/core/io/io_stub.dart';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter/material.dart';
 import 'package:image/image.dart' as img;
 import 'package:path_provider/path_provider.dart';
 import 'package:biscuits/features/documents/domain/entities/import_result.dart';
