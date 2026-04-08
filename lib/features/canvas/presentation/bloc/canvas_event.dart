@@ -211,13 +211,23 @@ class StylusDetectedEvent extends CanvasEvent {
 
 /// Fired when the pen enters or moves through hover range (not touching).
 class HoverPositionChanged extends CanvasEvent {
-  const HoverPositionChanged(this.position);
+  const HoverPositionChanged(
+    this.position, {
+    this.tilt = 0.0,
+    this.azimuth = 0.0,
+  });
 
   /// Hover position in canvas logical pixels.
   final Offset position;
 
+  /// Altitude angle of the pen from the screen plane (0 = flat, π/2 = vertical).
+  final double tilt;
+
+  /// Azimuth angle of the pen in the screen plane (radians, 0 = pointing right).
+  final double azimuth;
+
   @override
-  List<Object?> get props => [position];
+  List<Object?> get props => [position, tilt, azimuth];
 }
 
 /// Fired when the pen leaves hover range.

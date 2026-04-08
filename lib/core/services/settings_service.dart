@@ -50,6 +50,13 @@ class SettingsService {
   /// [InteractiveViewer] because that layer sits outside the [Listener].
   final ValueNotifier<bool> pencilOnlyModeNotifier = ValueNotifier(false);
 
+  /// Whether the ghost-nib hover cursor is shown instead of the plain circle.
+  ///
+  /// When enabled, a stylus-nib teardrop shape is rendered at the hover
+  /// position and angled to match the pen's tilt and azimuth, giving a
+  /// preview of exactly where the ink will land.
+  final ValueNotifier<bool> ghostNibEnabledNotifier = ValueNotifier(true);
+
   /// Gesture→action mappings, stored as a JSON string.
   final Map<String, ValueNotifier<String>> gestureMappings = {};
 
@@ -107,6 +114,7 @@ class SettingsService {
   static const _palmRejectionKey = 'stylus_palm_rejection';
   static const _leftHandModeKey = 'stylus_left_hand';
   static const _pencilOnlyModeKey = 'stylus_pencil_only';
+  static const _ghostNibEnabledKey = 'stylus_ghost_nib';
   static const _gestureMappingPrefix = 'stylus_gesture_';
   static const _interactionEffectsEnabledKey = 'interaction_effects_enabled';
   static const _interactionTogglePrefix = 'interaction_toggle_';
@@ -199,6 +207,9 @@ class SettingsService {
 
     pencilOnlyModeNotifier.value =
         _prefs.getBool(_pencilOnlyModeKey) ?? false;
+
+    ghostNibEnabledNotifier.value =
+        _prefs.getBool(_ghostNibEnabledKey) ?? true;
 
     for (final gesture in StylusGesture.values) {
       final key = '$_gestureMappingPrefix${gesture.name}';
@@ -344,6 +355,12 @@ class SettingsService {
   Future<void> setPencilOnlyMode(bool value) async {
     pencilOnlyModeNotifier.value = value;
     await _prefs.setBool(_pencilOnlyModeKey, value);
+  }
+
+  /// Enables or disables the ghost-nib hover cursor.
+  Future<void> setGhostNibEnabled(bool value) async {
+    ghostNibEnabledNotifier.value = value;
+    await _prefs.setBool(_ghostNibEnabledKey, value);
   }
 
   /// Persists a gesture→action mapping.

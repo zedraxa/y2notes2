@@ -1,4 +1,3 @@
-// ignore_for_file: one_member_abstracts
 // Stub implementations of dart:io types used in this project.
 //
 // This file is imported via conditional imports on platforms where dart:io

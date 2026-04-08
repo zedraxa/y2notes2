@@ -320,6 +320,8 @@ class CanvasBloc extends Bloc<CanvasEvent, CanvasState> {
       emit(state.copyWith(
         hoverPosition: event.position,
         isHovering: true,
+        hoverTilt: event.tilt,
+        hoverAzimuth: event.azimuth,
       ));
 
   void _onHoverEnded(HoverEnded event, Emitter<CanvasState> emit) =>

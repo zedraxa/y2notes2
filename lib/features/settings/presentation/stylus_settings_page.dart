@@ -40,6 +40,8 @@ class StylusSettingsPage extends StatelessWidget {
           _SectionHeader('Input Options'),
           _PalmRejectionToggle(settings: settings),
           _HoverPreviewToggle(settings: settings),
+          _GhostNibToggle(settings: settings),
+          _PencilOnlyModeToggle(settings: settings),
           _LeftHandModeToggle(settings: settings),
         ],
       ),
@@ -399,3 +401,60 @@ class _LeftHandModeToggle extends StatelessWidget {
         ),
       );
 }
+
+// ─── Ghost-nib toggle ──────────────────────────────────────────────────────────
+
+/// Shows a realistic stylus-nib shape during hover instead of a plain circle.
+///
+/// The nib is tilted and rotated to match the physical angle of the pen,
+/// giving an accurate preview of where the ink will land.  Requires a stylus
+/// with hover support (Apple Pencil Pro / Gen 2, Samsung S Pen with hover,
+/// USI 2.0 pen).
+class _GhostNibToggle extends StatelessWidget {
+  const _GhostNibToggle({required this.settings});
+
+  final SettingsService settings;
+
+  @override
+  Widget build(BuildContext context) =>
+      ValueListenableBuilder<bool>(
+        valueListenable: settings.ghostNibEnabledNotifier,
+        builder: (context, enabled, _) => SwitchListTile(
+          secondary: const Icon(Icons.edit_outlined),
+          title: const Text('Ghost Nib'),
+          subtitle: const Text(
+            'Show a tilt-aware nib preview while hovering above the canvas '
+            '(Apple Pencil 2/Pro, S Pen)',
+          ),
+          value: enabled,
+          onChanged: settings.setGhostNibEnabled,
+        ),
+      );
+}
+
+// ─── Pencil-only mode toggle ───────────────────────────────────────────────────
+
+/// When enabled only stylus input is accepted for drawing; finger touches
+/// are ignored so accidental palm/finger strokes cannot occur.
+class _PencilOnlyModeToggle extends StatelessWidget {
+  const _PencilOnlyModeToggle({required this.settings});
+
+  final SettingsService settings;
+
+  @override
+  Widget build(BuildContext context) =>
+      ValueListenableBuilder<bool>(
+        valueListenable: settings.pencilOnlyModeNotifier,
+        builder: (context, enabled, _) => SwitchListTile(
+          secondary: const Icon(Icons.do_not_touch_outlined),
+          title: const Text('Pencil Only Drawing'),
+          subtitle: const Text(
+            'Reject finger/touch input on the canvas — only stylus strokes '
+            'are recorded (pan & zoom remain available)',
+          ),
+          value: enabled,
+          onChanged: settings.setPencilOnlyMode,
+        ),
+      );
+}
+
