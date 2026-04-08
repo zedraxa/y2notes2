@@ -93,6 +93,7 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
       config: const CanvasConfig(),
     );
     final notebook = Notebook(
+      id: event.id,
       title: event.title,
       pages: [firstPage],
     );
@@ -128,10 +129,21 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
           status: DocumentOperationStatus.idle,
         ));
       } else {
-        // Notebook not found in storage — emit an error state.
+        // Notebook not found in storage — create a new blank notebook so the
+        // user lands on an empty page rather than an error screen.
+        final firstPage = NotebookPage(
+          pageNumber: 1,
+          config: const CanvasConfig(),
+        );
+        final notebook = Notebook(
+          id: event.notebookId,
+          title: 'Untitled',
+          pages: [firstPage],
+        );
         emit(state.copyWith(
-          status: DocumentOperationStatus.error,
-          errorMessage: 'Notebook "${event.notebookId}" not found.',
+          notebook: notebook,
+          currentPageIndex: 0,
+          status: DocumentOperationStatus.idle,
         ));
       }
     } catch (e) {

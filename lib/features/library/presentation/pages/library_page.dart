@@ -5,6 +5,9 @@ import 'package:go_router/go_router.dart';
 import 'package:uuid/uuid.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:biscuits/app/route_names.dart';
+import 'package:biscuits/features/documents/presentation/bloc/document_bloc.dart';
+import 'package:biscuits/features/documents/presentation/bloc/document_event.dart';
+import 'package:biscuits/features/documents/domain/models/import_options.dart';
 import 'package:biscuits/features/library/domain/entities/folder.dart';
 import 'package:biscuits/features/library/domain/entities/library_item.dart';
 import 'package:biscuits/features/library/domain/entities/tag.dart';
@@ -504,6 +507,10 @@ class _LibraryPageState extends State<LibraryPage> {
     if (name.isEmpty) return;
     final id = const Uuid().v4();
     context.read<LibraryBloc>().add(CreateItem(id: id, name: name, type: type));
+    // Also create the actual notebook/canvas document so the page can load it.
+    if (type == LibraryItemType.notebook) {
+      context.read<DocumentBloc>().add(CreateNotebook(id: id, title: name));
+    }
     final typeName =
         type == LibraryItemType.notebook ? 'Notebook' : 'Canvas';
     AppleToast.show(
@@ -570,6 +577,10 @@ class _LibraryPageState extends State<LibraryPage> {
       context.read<LibraryBloc>().add(
             CreateItem(id: id, name: title, type: LibraryItemType.notebook),
           );
+      // Create the notebook document and import the scanned pages.
+      final docBloc = context.read<DocumentBloc>();
+      docBloc.add(CreateNotebook(id: id, title: title));
+      docBloc.add(ImportScannedDocument(scanResult: result));
       AppleToast.show(
         context,
         message: '"$title" saved (${result.pageCount} pages)',
@@ -597,6 +608,21 @@ class _LibraryPageState extends State<LibraryPage> {
       context.read<LibraryBloc>().add(
             CreateItem(id: id, name: fileName, type: LibraryItemType.notebook),
           );
+      // Create the notebook document and import the file contents.
+      final docBloc = context.read<DocumentBloc>();
+      docBloc.add(CreateNotebook(id: id, title: fileName));
+      final ext = file.name.split('.').last.toLowerCase();
+      if (ext == 'pdf') {
+        docBloc.add(ImportPdfFromPath(
+          filePath: file.path!,
+          options: const ImportOptions(mode: ImportMode.appendToCurrentNotebook),
+        ));
+      } else {
+        docBloc.add(ImportImageFromPath(
+          filePath: file.path!,
+          options: const ImportOptions(mode: ImportMode.appendToCurrentNotebook),
+        ));
+      }
       AppleToast.show(
         context,
         message: '"$fileName" imported',
