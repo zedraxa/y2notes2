@@ -26,6 +26,8 @@
 	<true/>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Biscuits uses the microphone to record voice notes that sync with your handwritten notes.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Biscuits accesses the photo library to let you import images into your notes.</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>
