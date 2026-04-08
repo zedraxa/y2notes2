@@ -5,10 +5,15 @@ import 'package:biscuits/features/canvas/domain/entities/point_data.dart';
 import 'package:biscuits/features/canvas/domain/entities/stroke.dart';
 import 'package:biscuits/features/effects/engine/effect_config.dart';
 
-/// Watercolor Bleed Effect — feathered, soft stroke edges.
+/// Watercolor Bleed Effect — organic, multi-pass feathered stroke edges.
 ///
-/// Adds slight random displacement to stroke edge points and reduces alpha
-/// at edges, creating a feathered watercolor look.
+/// Enhanced rendering with:
+/// - 4-pass bleed layers at different displacement scales for depth
+/// - Perlin-style noise displacement via pseudoRandom for organic shapes
+/// - Color diffusion: outer passes shift hue slightly toward neighbours
+/// - Wet-edge darkening along stroke edges
+/// - Animated expansion: bleed slowly spreads outward over the lifetime
+/// - Smooth fade-out with eased opacity curve
 class WatercolorBleedEffect implements WritingEffect {
   WatercolorBleedEffect();
 
@@ -45,22 +50,41 @@ class WatercolorBleedEffect implements WritingEffect {
   @override
   void onStrokeEnd(Stroke completedStroke) {
     if (completedStroke.points.isEmpty) return;
-    // Pre-bake bleed offsets for each point
-    final offsets = completedStroke.points
-        .map((p) => _randomOffset(intensity * 3.0))
-        .toList();
+
+    // Pre-bake noise-based offsets per point for multiple displacement layers
+    final pts = completedStroke.points;
+    final offsets1 = <Offset>[];
+    final offsets2 = <Offset>[];
+    final offsets3 = <Offset>[];
+    final offsets4 = <Offset>[];
+
+    for (int i = 0; i < pts.length; i++) {
+      final p = pts[i];
+      // Use different seeds for independent noise per layer
+      offsets1.add(_noiseOffset(p.x, p.y, 0, intensity * 2.5));
+      offsets2.add(_noiseOffset(p.x, p.y, 7, intensity * 5.0));
+      offsets3.add(_noiseOffset(p.x, p.y, 13, intensity * 8.0));
+      offsets4.add(_noiseOffset(p.x, p.y, 19, intensity * 12.0));
+    }
+
     _renders.add(_WatercolorStroke(
       stroke: completedStroke,
-      offsets: offsets,
+      layerOffsets: [offsets1, offsets2, offsets3, offsets4],
       age: 0.0,
-      lifetime: 2.0,
+      lifetime: 2.5,
     ));
   }
 
-  Offset _randomOffset(double maxDisplace) => Offset(
-        (_random.nextDouble() - 0.5) * 2 * maxDisplace,
-        (_random.nextDouble() - 0.5) * 2 * maxDisplace,
-      );
+  /// Generate a noise-based displacement offset using pseudoRandom.
+  Offset _noiseOffset(double x, double y, int seed, double maxDisplace) {
+    // Multi-octave pseudo-noise for more organic displacement
+    final n1 = MathUtils.pseudoRandom(x, y, seed);
+    final n2 = MathUtils.pseudoRandom(x * 0.5, y * 0.5, seed + 1);
+    final combined = (n1 * 0.7 + n2 * 0.3); // blend octaves
+    final angle = combined * math.pi * 2;
+    final magnitude = MathUtils.pseudoRandom(x + seed, y + seed, seed + 2) * maxDisplace;
+    return Offset(math.cos(angle) * magnitude, math.sin(angle) * magnitude);
+  }
 
   @override
   void update(double dt) {
@@ -79,36 +103,108 @@ class WatercolorBleedEffect implements WritingEffect {
 
   void _renderBleed(Canvas canvas, _WatercolorStroke r) {
     final t = (r.age / r.lifetime).clamp(0.0, 1.0);
-    final fade = (1.0 - t * 0.7).clamp(0.0, 1.0);
+    // Smooth fade: stays visible longer, then fades quickly at the end
+    final fade = (1.0 - t * t).clamp(0.0, 1.0);
     final pts = r.stroke.points;
     if (pts.length < 2) return;
 
-    for (int pass = 0; pass < 2; pass++) {
-      final path = Path();
-      final bleed = intensity * (pass == 0 ? 2.0 : 5.0);
-      final alpha = (pass == 0 ? 0.12 : 0.06) * fade * intensity;
+    // Animated expansion: bleed grows outward over time
+    final expansionFactor = 1.0 + t * 0.4;
 
+    // 4 bleed passes from tight to wide
+    const passConfigs = [
+      (widthMult: 1.0, alphaMult: 0.14, hueDrift: 0.0),
+      (widthMult: 1.4, alphaMult: 0.09, hueDrift: 5.0),
+      (widthMult: 1.9, alphaMult: 0.05, hueDrift: -8.0),
+      (widthMult: 2.5, alphaMult: 0.025, hueDrift: 12.0),
+    ];
+
+    for (int pass = 0; pass < passConfigs.length; pass++) {
+      final config = passConfigs[pass];
+      final offsets = r.layerOffsets[pass];
+      final alpha = config.alphaMult * fade * intensity;
+      if (alpha < 0.005) continue;
+
+      // Color diffusion: outer passes shift hue slightly
+      final bleedColor = config.hueDrift != 0.0
+          ? _shiftHue(r.stroke.color, config.hueDrift * intensity)
+          : r.stroke.color;
+
+      final path = Path();
       path.moveTo(
-        pts[0].x + r.offsets[0].dx * bleed,
-        pts[0].y + r.offsets[0].dy * bleed,
+        pts[0].x + offsets[0].dx * expansionFactor,
+        pts[0].y + offsets[0].dy * expansionFactor,
       );
       for (int i = 1; i < pts.length; i++) {
-        path.lineTo(
-          pts[i].x + r.offsets[i].dx * bleed,
-          pts[i].y + r.offsets[i].dy * bleed,
-        );
+        // Use quadratic bezier for smoother curves between displaced points
+        if (i < pts.length - 1) {
+          final midX = (pts[i].x + offsets[i].dx * expansionFactor +
+                  pts[i + 1].x + offsets[i + 1].dx * expansionFactor) *
+              0.5;
+          final midY = (pts[i].y + offsets[i].dy * expansionFactor +
+                  pts[i + 1].y + offsets[i + 1].dy * expansionFactor) *
+              0.5;
+          path.quadraticBezierTo(
+            pts[i].x + offsets[i].dx * expansionFactor,
+            pts[i].y + offsets[i].dy * expansionFactor,
+            midX,
+            midY,
+          );
+        } else {
+          path.lineTo(
+            pts[i].x + offsets[i].dx * expansionFactor,
+            pts[i].y + offsets[i].dy * expansionFactor,
+          );
+        }
       }
 
       final paint = Paint()
-        ..color = r.stroke.color
-            .withOpacity(alpha.clamp(0.0, 1.0))
+        ..color = bleedColor.withOpacity(alpha.clamp(0.0, 1.0))
         ..style = PaintingStyle.stroke
-        ..strokeWidth = r.stroke.baseWidth * (1.0 + pass * 0.6)
+        ..strokeWidth = r.stroke.baseWidth * config.widthMult * expansionFactor
         ..strokeCap = StrokeCap.round
         ..strokeJoin = StrokeJoin.round;
 
       canvas.drawPath(path, paint);
     }
+
+    // ── Wet-edge darkening: thin dark line along the stroke edge ──────────
+    final edgeAlpha = (0.08 * fade * intensity).clamp(0.0, 1.0);
+    if (edgeAlpha > 0.005) {
+      final edgePath = Path();
+      final edgeOffsets = r.layerOffsets[0]; // tightest layer
+      edgePath.moveTo(
+        pts[0].x + edgeOffsets[0].dx * 0.3,
+        pts[0].y + edgeOffsets[0].dy * 0.3,
+      );
+      for (int i = 1; i < pts.length; i++) {
+        edgePath.lineTo(
+          pts[i].x + edgeOffsets[i].dx * 0.3,
+          pts[i].y + edgeOffsets[i].dy * 0.3,
+        );
+      }
+      final edgePaint = Paint()
+        ..color = _darken(r.stroke.color, 0.3).withOpacity(edgeAlpha)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = r.stroke.baseWidth * 1.15
+        ..strokeCap = StrokeCap.round
+        ..strokeJoin = StrokeJoin.round;
+      canvas.drawPath(edgePath, edgePaint);
+    }
+  }
+
+  /// Shift the hue of [color] by [degrees].
+  Color _shiftHue(Color color, double degrees) {
+    final hsv = HSVColor.fromColor(color);
+    return hsv.withHue((hsv.hue + degrees) % 360).toColor();
+  }
+
+  /// Darken a colour by [amount] (0..1, where 1 = fully black).
+  Color _darken(Color color, double amount) {
+    final hsv = HSVColor.fromColor(color);
+    return hsv
+        .withValue((hsv.value * (1.0 - amount)).clamp(0.0, 1.0))
+        .toColor();
   }
 
   @override
@@ -118,13 +214,14 @@ class WatercolorBleedEffect implements WritingEffect {
 class _WatercolorStroke {
   _WatercolorStroke({
     required this.stroke,
-    required this.offsets,
+    required this.layerOffsets,
     required this.age,
     required this.lifetime,
   });
 
   final Stroke stroke;
-  final List<Offset> offsets;
+  /// Per-layer displacement offsets. layerOffsets[pass][pointIndex].
+  final List<List<Offset>> layerOffsets;
   double age;
   final double lifetime;
 }
