@@ -8,10 +8,15 @@ import 'package:y2notes2/features/audio_sync/presentation/bloc/audio_sync_bloc.d
 import 'package:y2notes2/features/canvas/domain/entities/tools/tool_preset.dart';
 import 'package:y2notes2/features/canvas/domain/entities/tools/tool_registry.dart';
 import 'package:y2notes2/features/canvas/presentation/bloc/canvas_bloc.dart';
+import 'package:y2notes2/features/cloud_sync/presentation/bloc/cloud_sync_bloc.dart';
 import 'package:y2notes2/features/collaboration/presentation/bloc/collaboration_bloc.dart';
 import 'package:y2notes2/features/documents/data/document_repository.dart';
+import 'package:y2notes2/features/flashcards/data/flash_card_repository.dart';
+import 'package:y2notes2/features/flashcards/presentation/bloc/flash_card_bloc.dart';
+import 'package:y2notes2/features/flashcards/presentation/bloc/flash_card_event.dart';
 import 'package:y2notes2/features/handwriting/presentation/bloc/handwriting_bloc.dart';
 import 'package:y2notes2/features/infinite_canvas/presentation/bloc/infinite_canvas_bloc.dart';
+import 'package:y2notes2/features/math_graph/presentation/bloc/graph_bloc.dart';
 import 'package:y2notes2/features/library/data/library_repository.dart';
 import 'package:y2notes2/features/media/presentation/bloc/media_bloc.dart';
 import 'package:y2notes2/features/rich_text/presentation/bloc/rich_text_bloc.dart';
@@ -34,6 +39,7 @@ void main() async {
   final documentRepository = DocumentRepository(prefs);
   final libraryRepository = LibraryRepository(prefs);
   final templateRepository = TemplateRepository(prefs);
+  final flashCardRepository = FlashCardRepository(prefs);
 
   // Register all plugin-based drawing tools.
   ToolRegistry.registerAll();
@@ -98,9 +104,22 @@ void main() async {
             BlocProvider(
               create: (_) => MediaBloc(),
             ),
+            // GraphBloc manages interactive math graphs.
+            BlocProvider(
+              create: (_) => GraphBloc(),
+            ),
             // RichTextBloc manages rich text elements on the canvas.
             BlocProvider(
               create: (_) => RichTextBloc(),
+            ),
+            // CloudSyncBloc manages cloud provider connections and syncing.
+            BlocProvider(
+              create: (_) => CloudSyncBloc(),
+            ),
+            // FlashCardBloc manages flash card decks, study sessions, and quizzes.
+            BlocProvider(
+              create: (_) => FlashCardBloc(repository: flashCardRepository)
+                ..add(const FlashCardsLoaded()),
             ),
           ],
           child: Y2NotesApp(

@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:y2notes2/features/widgets/domain/entities/smart_widget.dart';
 
@@ -6,7 +8,7 @@ class CalculatorWidget extends SmartWidget {
   CalculatorWidget({
     super.id,
     super.position = Offset.zero,
-    super.size = const Size(220, 320),
+    super.size = const Size(220, 340),
     super.config,
     Map<String, dynamic>? state,
   }) : super(
@@ -17,6 +19,7 @@ class CalculatorWidget extends SmartWidget {
                 'memory': 0.0,
                 'storedMemory': 0.0,
                 'history': <String>[],
+                'lastAnswer': 0.0,
               },
         );
 
@@ -64,7 +67,8 @@ class _CalculatorOverlay extends StatefulWidget {
       _CalculatorOverlayState();
 }
 
-class _CalculatorOverlayState extends State<_CalculatorOverlay> {
+class _CalculatorOverlayState
+    extends State<_CalculatorOverlay> {
   String _display = '0';
   double _mem = 0;
   double _storedMem = 0;
@@ -72,8 +76,10 @@ class _CalculatorOverlayState extends State<_CalculatorOverlay> {
   bool _clear = false;
   String _expression = '';
   List<String> _history = [];
+  double _lastAnswer = 0;
+  bool _hasError = false;
 
-  static const int _maxHistory = 10;
+  static const int _maxHistory = 20;
 
   @override
   void initState() {
@@ -81,7 +87,10 @@ class _CalculatorOverlayState extends State<_CalculatorOverlay> {
     final s = widget.widget.state;
     _display = s['display'] as String? ?? '0';
     _mem = (s['memory'] as num?)?.toDouble() ?? 0;
-    _storedMem = (s['storedMemory'] as num?)?.toDouble() ?? 0;
+    _storedMem =
+        (s['storedMemory'] as num?)?.toDouble() ?? 0;
+    _lastAnswer =
+        (s['lastAnswer'] as num?)?.toDouble() ?? 0;
     final rawHist = s['history'] as List?;
     _history = rawHist
             ?.map((e) => e.toString())
@@ -95,11 +104,13 @@ class _CalculatorOverlayState extends State<_CalculatorOverlay> {
       'memory': _mem,
       'storedMemory': _storedMem,
       'history': _history,
+      'lastAnswer': _lastAnswer,
     });
   }
 
   void _press(String key) {
     setState(() {
+      _hasError = false;
       if (key == 'C') {
         _display = '0';
         _mem = 0;
@@ -111,23 +122,67 @@ class _CalculatorOverlayState extends State<_CalculatorOverlay> {
         _display = _fmt(-v);
       } else if (key == '%') {
         final v = double.tryParse(_display) ?? 0;
-        _display = _fmt(v / 100);
-      } else if (key == '=') {
-        final cur = double.tryParse(_display) ?? 0;
-        final result = _calc(_mem, cur, _op);
-        final entry =
-            '${_fmt(_mem)} $_op ${_fmt(cur)} = ${_fmt(result)}';
-        _history.insert(0, entry);
-        if (_history.length > _maxHistory) {
-          _history = _history.sublist(0, _maxHistory);
+        if (_op.isNotEmpty) {
+          // Percentage of the first operand
+          _display = _fmt(_mem * v / 100);
+        } else {
+          _display = _fmt(v / 100);
         }
+      } else if (key == '√') {
+        final v = double.tryParse(_display) ?? 0;
+        if (v < 0) {
+          _hasError = true;
+          _display = 'Error';
+        } else {
+          final result = sqrt(v);
+          _expression = '√${_fmt(v)}';
+          _display = _fmt(result);
+          _clear = true;
+        }
+      } else if (key == 'x²') {
+        final v = double.tryParse(_display) ?? 0;
+        final result = v * v;
+        _expression = '${_fmt(v)}²';
         _display = _fmt(result);
+        _clear = true;
+      } else if (key == 'ANS') {
+        _display = _fmt(_lastAnswer);
+        _clear = true;
+      } else if (key == '=') {
+        final cur =
+            double.tryParse(_display) ?? 0;
+        final result = _calc(_mem, cur, _op);
+        if (result.isInfinite || result.isNaN) {
+          _hasError = true;
+          _display = 'Error';
+        } else {
+          final entry =
+              '${_fmt(_mem)} $_op ${_fmt(cur)}'
+              ' = ${_fmt(result)}';
+          _history.insert(0, entry);
+          if (_history.length > _maxHistory) {
+            _history =
+                _history.sublist(0, _maxHistory);
+          }
+          _display = _fmt(result);
+          _lastAnswer = result;
+          _mem = result;
+        }
         _expression = '';
-        _mem = result;
         _op = '';
         _clear = true;
       } else if ('+-×÷'.contains(key)) {
-        _mem = double.tryParse(_display) ?? 0;
+        if (_hasError) return;
+        // Chain operations: evaluate pending op
+        if (_op.isNotEmpty && !_clear) {
+          final cur =
+              double.tryParse(_display) ?? 0;
+          final result = _calc(_mem, cur, _op);
+          _display = _fmt(result);
+          _mem = result;
+        } else {
+          _mem = double.tryParse(_display) ?? 0;
+        }
         _expression = '${_fmt(_mem)} $key';
         _op = key;
         _clear = true;
@@ -150,7 +205,11 @@ class _CalculatorOverlayState extends State<_CalculatorOverlay> {
       } else if (key == 'MC') {
         _storedMem = 0;
       } else {
-        if (_clear || _display == '0') {
+        if (_hasError) {
+          _display = key;
+          _hasError = false;
+          _clear = false;
+        } else if (_clear || _display == '0') {
           _display = key;
           _clear = false;
         } else {
@@ -170,17 +229,17 @@ class _CalculatorOverlayState extends State<_CalculatorOverlay> {
       case '×':
         return a * b;
       case '÷':
-        return b != 0 ? a / b : 0;
+        return b != 0 ? a / b : double.infinity;
       default:
         return b;
     }
   }
 
   String _fmt(double v) {
-    if (v == v.roundToDouble()) {
+    if (v == v.roundToDouble() && !v.isInfinite) {
       return v.toInt().toString();
     }
-    final s = v.toStringAsFixed(6);
+    final s = v.toStringAsFixed(8);
     final dotIdx = s.indexOf('.');
     if (dotIdx == -1) return s;
     var end = s.length;
@@ -191,10 +250,15 @@ class _CalculatorOverlayState extends State<_CalculatorOverlay> {
     return s.substring(0, end);
   }
 
+  void _clearHistory() {
+    setState(() => _history.clear());
+    _notify();
+  }
+
   @override
   Widget build(BuildContext context) {
     const rows = [
-      ['C', '±', '%', '÷'],
+      ['C', '±', '√', '÷'],
       ['7', '8', '9', '×'],
       ['4', '5', '6', '-'],
       ['1', '2', '3', '+'],
@@ -239,38 +303,69 @@ class _CalculatorOverlayState extends State<_CalculatorOverlay> {
               alignment: Alignment.centerRight,
               child: Text(
                 _display,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
+                  color: _hasError
+                      ? Colors.red
+                      : null,
                 ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
             ),
-            // Memory indicator
-            if (_storedMem != 0)
-              Padding(
-                padding: const EdgeInsets.only(
-                  right: 12,
-                  bottom: 2,
-                ),
-                child: Align(
-                  alignment: Alignment.centerRight,
-                  child: Text(
-                    'M: ${_fmt(_storedMem)}',
-                    style: TextStyle(
-                      fontSize: 10,
-                      color: Colors.blue.shade400,
-                    ),
-                  ),
-                ),
+            // Memory + last answer indicator
+            Padding(
+              padding: const EdgeInsets.only(
+                left: 12,
+                right: 12,
+                bottom: 2,
               ),
+              child: Row(
+                mainAxisAlignment:
+                    MainAxisAlignment.end,
+                children: [
+                  if (_lastAnswer != 0)
+                    Padding(
+                      padding: const EdgeInsets.only(
+                        right: 8,
+                      ),
+                      child: GestureDetector(
+                        onTap: () => _press('ANS'),
+                        child: Text(
+                          'ANS=${_fmt(_lastAnswer)}',
+                          style: TextStyle(
+                            fontSize: 9,
+                            color:
+                                Colors.green.shade400,
+                          ),
+                        ),
+                      ),
+                    ),
+                  if (_storedMem != 0)
+                    Text(
+                      'M: ${_fmt(_storedMem)}',
+                      style: TextStyle(
+                        fontSize: 10,
+                        color: Colors.blue.shade400,
+                      ),
+                    ),
+                ],
+              ),
+            ),
             const Divider(height: 1),
-            // Memory row
+            // Memory + extra ops row
             SizedBox(
               height: 28,
               child: Row(
-                children: ['MC', 'MR', 'M-', 'M+'].map((k) {
+                children: [
+                  'MC',
+                  'MR',
+                  'M-',
+                  'M+',
+                  'x²',
+                  '%',
+                ].map((k) {
                   return Expanded(
                     child: InkWell(
                       onTap: () => _press(k),
@@ -278,8 +373,9 @@ class _CalculatorOverlayState extends State<_CalculatorOverlay> {
                         child: Text(
                           k,
                           style: TextStyle(
-                            fontSize: 11,
-                            color: Colors.blue.shade600,
+                            fontSize: 10,
+                            color:
+                                Colors.blue.shade600,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -301,32 +397,65 @@ class _CalculatorOverlayState extends State<_CalculatorOverlay> {
                               .map(
                                 (k) => Expanded(
                                   child: InkWell(
-                                    onTap: () => k == '⌫'
-                                        ? setState(() {
-                                            _display =
-                                                _display.length > 1
-                                                    ? _display.substring(
+                                    onTap: () =>
+                                        k == '⌫'
+                                            ? setState(
+                                                () {
+                                                _display = _display
+                                                            .length >
+                                                        1
+                                                    ? _display
+                                                        .substring(
                                                         0,
                                                         _display.length -
                                                             1,
                                                       )
                                                     : '0';
-                                            _notify();
-                                          })
-                                        : _press(k),
+                                                _hasError =
+                                                    false;
+                                                _notify();
+                                              })
+                                            : _press(k),
+                                    onLongPress:
+                                        k == '⌫'
+                                            ? () {
+                                                setState(
+                                                  () {
+                                                  _display =
+                                                      '0';
+                                                  _hasError =
+                                                      false;
+                                                },
+                                                );
+                                                _notify();
+                                              }
+                                            : null,
                                     child: Center(
                                       child: Text(
                                         k,
-                                        style: TextStyle(
+                                        style:
+                                            TextStyle(
                                           fontSize: 18,
-                                          fontWeight: k == '='
-                                              ? FontWeight.bold
-                                              : FontWeight.w400,
-                                          color:
-                                              '÷×-+='.contains(k)
-                                                  ? Colors.orange
-                                                  : k == 'C'
-                                                      ? Colors.red
+                                          fontWeight: k ==
+                                                  '='
+                                              ? FontWeight
+                                                  .bold
+                                              : FontWeight
+                                                  .w400,
+                                          color: '÷×-+='
+                                                  .contains(
+                                            k,
+                                          )
+                                              ? Colors
+                                                  .orange
+                                              : k ==
+                                                      'C'
+                                                  ? Colors
+                                                      .red
+                                                  : k ==
+                                                          '√'
+                                                      ? Colors
+                                                          .purple
                                                       : null,
                                         ),
                                       ),
@@ -341,7 +470,7 @@ class _CalculatorOverlayState extends State<_CalculatorOverlay> {
                     .toList(),
               ),
             ),
-            // History strip
+            // History strip with clear
             if (_history.isNotEmpty)
               Container(
                 height: 28,
@@ -351,25 +480,43 @@ class _CalculatorOverlayState extends State<_CalculatorOverlay> {
                 ),
                 decoration: BoxDecoration(
                   color: Colors.grey.shade50,
-                  borderRadius: const BorderRadius.only(
+                  borderRadius:
+                      const BorderRadius.only(
                     bottomLeft: Radius.circular(12),
                     bottomRight: Radius.circular(12),
                   ),
                 ),
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: _history.length,
-                  separatorBuilder: (_, __) =>
-                      const SizedBox(width: 12),
-                  itemBuilder: (_, i) => Center(
-                    child: Text(
-                      _history[i],
-                      style: TextStyle(
-                        fontSize: 10,
-                        color: Colors.grey.shade600,
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: ListView.separated(
+                        scrollDirection:
+                            Axis.horizontal,
+                        itemCount: _history.length,
+                        separatorBuilder: (_, __) =>
+                            const SizedBox(width: 12),
+                        itemBuilder: (_, i) =>
+                            Center(
+                          child: Text(
+                            _history[i],
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: Colors
+                                  .grey.shade600,
+                            ),
+                          ),
+                        ),
                       ),
                     ),
-                  ),
+                    GestureDetector(
+                      onTap: _clearHistory,
+                      child: Icon(
+                        Icons.delete_outline,
+                        size: 14,
+                        color: Colors.grey.shade400,
+                      ),
+                    ),
+                  ],
                 ),
               ),
           ],

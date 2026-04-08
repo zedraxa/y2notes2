@@ -4,6 +4,8 @@ import 'dart:ui' as ui;
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:y2notes2/features/documents/domain/entities/import_result.dart';
+import 'package:y2notes2/features/documents/domain/models/import_options.dart';
+import 'package:y2notes2/features/documents/engine/import_validator.dart';
 
 /// Handles importing PDF files from the device and converting each page into
 /// a rasterised [ImportedPage] that can be used as a canvas background.
@@ -61,19 +63,43 @@ class PdfImportEngine {
     return _createPlaceholderImage(width, height);
   }
 
+  // ── Validation ──────────────────────────────────────────────────────────────
+
+  /// Validates a PDF file at [filePath] before importing.
+  ///
+  /// Throws [FileTooLargeException], [UnsupportedImportFormatException], or
+  /// [FileSystemException] on failure.
+  Future<void> validate(String filePath, {int? maxFileSizeBytes}) =>
+      ImportValidator.validate(
+        filePath,
+        allowedExtensions: ImportValidator.pdfExtensions,
+        maxFileSizeBytes: maxFileSizeBytes,
+      );
+
+  /// Returns the file size in bytes of the PDF at [filePath].
+  Future<int> fileSize(String filePath) => File(filePath).length();
+
   // ── Public import API ───────────────────────────────────────────────────────
 
-  /// Imports all pages from the PDF at [filePath] and returns an
-  /// [ImportResult] containing one [ImportedPage] per PDF page.
+  /// Imports pages from the PDF at [filePath] and returns an [ImportResult]
+  /// containing one [ImportedPage] per imported page.
+  ///
+  /// When [pageRange] is provided, only pages within the range are imported;
+  /// otherwise all pages are imported.
   ///
   /// The [onProgress] callback is invoked with a 0.0–1.0 value as pages are
   /// processed.
   Future<ImportResult> importPdf(
     String filePath, {
     double scale = 2.0,
+    PageRange? pageRange,
+    int? maxFileSizeBytes,
     void Function(double)? onProgress,
   }) async {
     onProgress?.call(0.0);
+
+    // Validate before processing.
+    await validate(filePath, maxFileSizeBytes: maxFileSizeBytes);
 
     // Derive a notebook title from the file name.
     final fileName = filePath.split(Platform.pathSeparator).last;
@@ -84,10 +110,19 @@ class PdfImportEngine {
     // integrate a PDF rendering package (e.g. `pdfx`, `syncfusion_flutter_pdf`)
     // that exposes a native page count.  Until then, only the first page of
     // any imported PDF will be available.
-    const pageCount = 1;
+    const totalPages = 1;
+
+    // Determine effective page range (clamped to actual page count).
+    final startPage = pageRange != null
+        ? (pageRange.start - 1).clamp(0, totalPages - 1)
+        : 0;
+    final endPage = pageRange != null
+        ? (pageRange.end).clamp(1, totalPages)
+        : totalPages;
+    final effectivePageCount = endPage - startPage;
 
     final pages = <ImportedPage>[];
-    for (int i = 0; i < pageCount; i++) {
+    for (int i = startPage; i < endPage; i++) {
       final image = await renderPdfPage(filePath, i, scale: scale);
       pages.add(
         ImportedPage(
@@ -98,7 +133,7 @@ class PdfImportEngine {
           sourcePath: filePath,
         ),
       );
-      onProgress?.call((i + 1) / pageCount);
+      onProgress?.call((pages.length) / effectivePageCount);
     }
 
     onProgress?.call(1.0);
@@ -115,11 +150,19 @@ class PdfImportEngine {
   /// Returns `null` if the user cancelled file selection.
   Future<ImportResult?> pickAndImport({
     double scale = 2.0,
+    PageRange? pageRange,
+    int? maxFileSizeBytes,
     void Function(double)? onProgress,
   }) async {
     final path = await pickPdfFile();
     if (path == null) return null;
-    return importPdf(path, scale: scale, onProgress: onProgress);
+    return importPdf(
+      path,
+      scale: scale,
+      pageRange: pageRange,
+      maxFileSizeBytes: maxFileSizeBytes,
+      onProgress: onProgress,
+    );
   }
 
   // ── Helpers ─────────────────────────────────────────────────────────────────

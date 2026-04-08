@@ -76,17 +76,29 @@ class _PomodoroOverlayState
   late int _sessions;
   late int _dailyGoal;
   late int _totalWorkSeconds;
+  late bool _autoStart;
+  late int _workDuration;
+  late int _breakDuration;
+  late int _longBreakDuration;
   Timer? _timer;
+  bool _showSettings = false;
 
-  static const int _workDuration = 25 * 60;
-  static const int _breakDuration = 5 * 60;
-  static const int _longBreakDuration = 15 * 60;
+  static const int _defaultWorkDuration = 25 * 60;
+  static const int _defaultBreakDuration = 5 * 60;
+  static const int _defaultLongBreakDuration = 15 * 60;
   static const int _longBreakInterval = 4;
 
   @override
   void initState() {
     super.initState();
     final s = widget.widget.state;
+    _workDuration = s['workDuration'] as int? ??
+        _defaultWorkDuration;
+    _breakDuration = s['breakDuration'] as int? ??
+        _defaultBreakDuration;
+    _longBreakDuration =
+        s['longBreakDuration'] as int? ??
+            _defaultLongBreakDuration;
     _seconds = s['seconds'] as int? ?? _workDuration;
     _isRunning = s['isRunning'] as bool? ?? false;
     _isWork = s['isWork'] as bool? ?? true;
@@ -94,6 +106,7 @@ class _PomodoroOverlayState
     _dailyGoal = s['dailyGoal'] as int? ?? 8;
     _totalWorkSeconds =
         s['totalWorkSeconds'] as int? ?? 0;
+    _autoStart = s['autoStart'] as bool? ?? false;
     if (_isRunning) _start();
   }
 
@@ -136,6 +149,10 @@ class _PomodoroOverlayState
             _isRunning = false;
           });
           _notify();
+          // Auto-start next phase if enabled
+          if (_autoStart) {
+            _start();
+          }
           return;
         }
         setState(() {
@@ -192,6 +209,10 @@ class _PomodoroOverlayState
       'sessions': _sessions,
       'dailyGoal': _dailyGoal,
       'totalWorkSeconds': _totalWorkSeconds,
+      'autoStart': _autoStart,
+      'workDuration': _workDuration,
+      'breakDuration': _breakDuration,
+      'longBreakDuration': _longBreakDuration,
     });
   }
 
@@ -200,6 +221,14 @@ class _PomodoroOverlayState
     final sec = s % 60;
     return '${m.toString().padLeft(2, '0')}'
         ':${sec.toString().padLeft(2, '0')}';
+  }
+
+  String _formatMinutes(int s) {
+    final m = s ~/ 60;
+    final h = m ~/ 60;
+    final rm = m % 60;
+    if (h > 0) return '${h}h ${rm}m';
+    return '${m}m';
   }
 
   @override
@@ -225,18 +254,97 @@ class _PomodoroOverlayState
           mainAxisAlignment:
               MainAxisAlignment.center,
           children: [
-            // Phase label
-            Text(
-              _isWork
-                  ? '🍅 Work'
-                  : _isLongBreak
-                      ? '🌴 Long Break'
-                      : '☕ Break',
-              style: const TextStyle(
-                fontWeight: FontWeight.w600,
-              ),
+            // Phase label + settings
+            Row(
+              mainAxisAlignment:
+                  MainAxisAlignment.center,
+              children: [
+                Text(
+                  _isWork
+                      ? '🍅 Work'
+                      : _isLongBreak
+                          ? '🌴 Long Break'
+                          : '☕ Break',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(width: 4),
+                GestureDetector(
+                  onTap: () => setState(
+                    () => _showSettings =
+                        !_showSettings,
+                  ),
+                  child: Icon(
+                    Icons.settings,
+                    size: 14,
+                    color: Colors.grey.shade400,
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: 6),
+            // Settings panel
+            if (_showSettings) ...[
+              const SizedBox(height: 4),
+              _durationRow(
+                'Work',
+                _workDuration ~/ 60,
+                (m) {
+                  setState(
+                    () =>
+                        _workDuration = m * 60,
+                  );
+                  if (_isWork && !_isRunning) {
+                    setState(
+                      () => _seconds =
+                          _workDuration,
+                    );
+                  }
+                  _notify();
+                },
+              ),
+              _durationRow(
+                'Break',
+                _breakDuration ~/ 60,
+                (m) {
+                  setState(
+                    () =>
+                        _breakDuration = m * 60,
+                  );
+                  _notify();
+                },
+              ),
+              Row(
+                mainAxisAlignment:
+                    MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'Auto-start',
+                    style: TextStyle(
+                      fontSize: 10,
+                      color: Colors.grey.shade600,
+                    ),
+                  ),
+                  SizedBox(
+                    height: 20,
+                    width: 32,
+                    child: Switch(
+                      value: _autoStart,
+                      onChanged: (v) {
+                        setState(
+                          () => _autoStart = v,
+                        );
+                        _notify();
+                      },
+                      materialTapTargetSize:
+                          MaterialTapTargetSize
+                              .shrinkWrap,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+            const SizedBox(height: 4),
             // Progress circle
             SizedBox(
               width: 80,
@@ -284,7 +392,8 @@ class _PomodoroOverlayState
                       _isRunning ? _stop : _start,
                 ),
                 IconButton(
-                  icon: const Icon(Icons.restart_alt),
+                  icon:
+                      const Icon(Icons.restart_alt),
                   iconSize: 22,
                   onPressed: _reset,
                 ),
@@ -297,13 +406,27 @@ class _PomodoroOverlayState
                 ),
               ],
             ),
-            // Session counter
-            Text(
-              'Sessions: $_sessions',
-              style: const TextStyle(
-                fontSize: 11,
-                color: Colors.grey,
-              ),
+            // Session counter + total focus time
+            Row(
+              mainAxisAlignment:
+                  MainAxisAlignment.center,
+              children: [
+                Text(
+                  'Sessions: $_sessions',
+                  style: const TextStyle(
+                    fontSize: 11,
+                    color: Colors.grey,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  '⏱ ${_formatMinutes(_totalWorkSeconds)}',
+                  style: TextStyle(
+                    fontSize: 10,
+                    color: Colors.blue.shade400,
+                  ),
+                ),
+              ],
             ),
             // Daily goal progress
             const SizedBox(height: 4),
@@ -342,4 +465,66 @@ class _PomodoroOverlayState
       ),
     );
   }
+
+  Widget _durationRow(
+    String label,
+    int minutes,
+    ValueChanged<int> onChanged,
+  ) =>
+      Padding(
+        padding: const EdgeInsets.symmetric(
+          vertical: 1,
+        ),
+        child: Row(
+          mainAxisAlignment:
+              MainAxisAlignment.center,
+          children: [
+            SizedBox(
+              width: 40,
+              child: Text(
+                label,
+                style: TextStyle(
+                  fontSize: 10,
+                  color: Colors.grey.shade600,
+                ),
+              ),
+            ),
+            GestureDetector(
+              onTap: () {
+                if (minutes > 1) {
+                  onChanged(minutes - 1);
+                }
+              },
+              child: Icon(
+                Icons.remove_circle_outline,
+                size: 14,
+                color: Colors.grey.shade400,
+              ),
+            ),
+            SizedBox(
+              width: 30,
+              child: Text(
+                '${minutes}m',
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            GestureDetector(
+              onTap: () {
+                if (minutes < 60) {
+                  onChanged(minutes + 1);
+                }
+              },
+              child: Icon(
+                Icons.add_circle_outline,
+                size: 14,
+                color: Colors.grey.shade400,
+              ),
+            ),
+          ],
+        ),
+      );
 }

@@ -107,6 +107,8 @@ class _ProgressBarOverlayState
         _max > 0 ? (_value / _max * 100).round() : 0;
     final isComplete =
         _value >= _max && _max > 0;
+    final fraction =
+        _max > 0 ? _value / _max : 0.0;
 
     return Material(
       elevation: 2,
@@ -139,6 +141,21 @@ class _ProgressBarOverlayState
                   ),
                 ),
                 const Spacer(),
+                // Reset button
+                if (_value > 0)
+                  GestureDetector(
+                    onTap: () => _update(0),
+                    child: Padding(
+                      padding: const EdgeInsets.only(
+                        right: 6,
+                      ),
+                      child: Icon(
+                        Icons.restart_alt,
+                        size: 14,
+                        color: Colors.grey.shade400,
+                      ),
+                    ),
+                  ),
                 // Tappable percentage
                 GestureDetector(
                   onTap: () {
@@ -201,29 +218,102 @@ class _ProgressBarOverlayState
               ],
             ),
             const SizedBox(height: 6),
-            // Progress bar
-            ClipRRect(
-              borderRadius:
-                  BorderRadius.circular(6),
-              child: LinearProgressIndicator(
-                value:
-                    _max > 0 ? _value / _max : 0,
-                backgroundColor:
-                    barColor.withOpacity(0.15),
-                color: isComplete
-                    ? Colors.green
-                    : barColor,
-                minHeight: 14,
-              ),
+            // Progress bar with milestone markers
+            Stack(
+              children: [
+                ClipRRect(
+                  borderRadius:
+                      BorderRadius.circular(6),
+                  child: LinearProgressIndicator(
+                    value: fraction.clamp(0.0, 1.0),
+                    backgroundColor:
+                        barColor.withOpacity(0.15),
+                    color: isComplete
+                        ? Colors.green
+                        : barColor,
+                    minHeight: 14,
+                  ),
+                ),
+                // Milestone markers at 25%, 50%, 75%
+                Positioned.fill(
+                  child: LayoutBuilder(
+                    builder: (_, constraints) {
+                      final w = constraints.maxWidth;
+                      return Stack(
+                        children: [
+                          for (final m in [
+                            0.25,
+                            0.5,
+                            0.75,
+                          ])
+                            Positioned(
+                              left: w * m - 0.5,
+                              top: 0,
+                              bottom: 0,
+                              child: Container(
+                                width: 1,
+                                color: fraction >= m
+                                    ? Colors.white
+                                        .withOpacity(
+                                        0.5,
+                                      )
+                                    : Colors.grey
+                                        .shade300,
+                              ),
+                            ),
+                        ],
+                      );
+                    },
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 4),
-            // Value label
-            Text(
-              '${_value.round()} / ${_max.round()}',
-              style: TextStyle(
-                fontSize: 10,
-                color: Colors.grey.shade500,
-              ),
+            // Value label with milestone labels
+            Row(
+              mainAxisAlignment:
+                  MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  '${_value.round()} / ${_max.round()}',
+                  style: TextStyle(
+                    fontSize: 10,
+                    color: Colors.grey.shade500,
+                  ),
+                ),
+                if (pct >= 25 && pct < 50)
+                  Text(
+                    '¼ done',
+                    style: TextStyle(
+                      fontSize: 9,
+                      color: Colors.blue.shade300,
+                    ),
+                  )
+                else if (pct >= 50 && pct < 75)
+                  Text(
+                    'Halfway!',
+                    style: TextStyle(
+                      fontSize: 9,
+                      color: Colors.blue.shade400,
+                    ),
+                  )
+                else if (pct >= 75 && pct < 100)
+                  Text(
+                    'Almost there!',
+                    style: TextStyle(
+                      fontSize: 9,
+                      color: Colors.orange.shade400,
+                    ),
+                  )
+                else if (isComplete)
+                  Text(
+                    '🎉 Complete!',
+                    style: TextStyle(
+                      fontSize: 9,
+                      color: Colors.green.shade600,
+                    ),
+                  ),
+              ],
             ),
             const SizedBox(height: 4),
             // Slider + buttons
@@ -258,7 +348,8 @@ class _ProgressBarOverlayState
                       thumbColor: barColor,
                     ),
                     child: Slider(
-                      value: _value.clamp(0, _max),
+                      value:
+                          _value.clamp(0, _max),
                       max: _max,
                       onChanged: _update,
                     ),

@@ -87,7 +87,12 @@ class _WeatherOverlayState
   late String _condition;
   late String _icon;
   late int _humidity;
+  late int _windSpeed;
+  late int _feelsLike;
   late List<Map<String, dynamic>> _forecast;
+  late String _location;
+  bool _editingLocation = false;
+  final _locationCtrl = TextEditingController();
 
   static const _conditions = [
     {'condition': 'Sunny', 'icon': '☀️'},
@@ -116,6 +121,7 @@ class _WeatherOverlayState
     final s = widget.widget.state;
     final c = widget.widget.config;
     _unit = c['unit'] as String? ?? 'C';
+    _location = c['location'] as String? ?? 'Istanbul';
     _temp = s['temp'] as int? ?? 22;
     _high = s['high'] as int? ?? 26;
     _low = s['low'] as int? ?? 18;
@@ -123,6 +129,9 @@ class _WeatherOverlayState
         s['condition'] as String? ?? 'Sunny';
     _icon = s['icon'] as String? ?? '☀️';
     _humidity = s['humidity'] as int? ?? 55;
+    _windSpeed = s['windSpeed'] as int? ?? 12;
+    _feelsLike = s['feelsLike'] as int? ?? _temp;
+    _locationCtrl.text = _location;
     final rawForecast = s['forecast'] as List?;
     _forecast = rawForecast
             ?.map(
@@ -133,6 +142,12 @@ class _WeatherOverlayState
         [];
   }
 
+  @override
+  void dispose() {
+    _locationCtrl.dispose();
+    super.dispose();
+  }
+
   void _notify() {
     widget.onStateChanged({
       'temp': _temp,
@@ -141,8 +156,11 @@ class _WeatherOverlayState
       'condition': _condition,
       'icon': _icon,
       'humidity': _humidity,
+      'windSpeed': _windSpeed,
+      'feelsLike': _feelsLike,
       'forecast': _forecast,
       '_config_unit': _unit,
+      '_config_location': _location,
     });
   }
 
@@ -155,6 +173,8 @@ class _WeatherOverlayState
       _high = _temp + rng.nextInt(6) + 2;
       _low = _temp - rng.nextInt(6) - 2;
       _humidity = rng.nextInt(60) + 30;
+      _windSpeed = rng.nextInt(40) + 5;
+      _feelsLike = _temp + rng.nextInt(5) - 2;
       _condition = cond['condition']!;
       _icon = cond['icon']!;
 
@@ -183,6 +203,8 @@ class _WeatherOverlayState
         _temp = (_temp * 9 / 5 + 32).round();
         _high = (_high * 9 / 5 + 32).round();
         _low = (_low * 9 / 5 + 32).round();
+        _feelsLike =
+            (_feelsLike * 9 / 5 + 32).round();
         for (final f in _forecast) {
           f['high'] =
               ((f['high'] as int) * 9 / 5 + 32)
@@ -196,6 +218,8 @@ class _WeatherOverlayState
         _temp = ((_temp - 32) * 5 / 9).round();
         _high = ((_high - 32) * 5 / 9).round();
         _low = ((_low - 32) * 5 / 9).round();
+        _feelsLike =
+            ((_feelsLike - 32) * 5 / 9).round();
         for (final f in _forecast) {
           f['high'] =
               (((f['high'] as int) - 32) * 5 / 9)
@@ -210,181 +234,246 @@ class _WeatherOverlayState
   }
 
   @override
-  Widget build(BuildContext context) {
-    final loc = widget.widget.config['location']
-            as String? ??
-        'Unknown';
-
-    return Material(
-      elevation: 2,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Column(
-          mainAxisAlignment:
-              MainAxisAlignment.center,
-          children: [
-            // Location + controls row
-            Row(
-              mainAxisAlignment:
-                  MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.location_on,
-                  size: 12,
-                  color: Colors.grey.shade500,
-                ),
-                const SizedBox(width: 2),
-                Text(
-                  loc,
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: Colors.grey.shade600,
-                  ),
-                ),
-                const Spacer(),
-                // Unit toggle
-                GestureDetector(
-                  onTap: _toggleUnit,
-                  child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(
-                      horizontal: 6,
-                      vertical: 2,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade100,
-                      borderRadius:
-                          BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      '°$_unit',
-                      style: const TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 4),
-                GestureDetector(
-                  onTap: _refresh,
-                  child: Icon(
-                    Icons.refresh,
-                    size: 16,
-                    color: Colors.grey.shade500,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 4),
-            // Main weather display
-            Row(
-              mainAxisAlignment:
-                  MainAxisAlignment.center,
-              children: [
-                Text(
-                  _icon,
-                  style: const TextStyle(
-                    fontSize: 32,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Column(
-                  crossAxisAlignment:
-                      CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '$_temp°$_unit',
-                      style: const TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Text(
-                      _condition,
-                      style: const TextStyle(
-                        fontSize: 12,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-            const SizedBox(height: 2),
-            // High / Low / Humidity
-            Row(
-              mainAxisAlignment:
-                  MainAxisAlignment.center,
-              children: [
-                Text(
-                  'H:$_high°',
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: Colors.red.shade300,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  'L:$_low°',
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: Colors.blue.shade300,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  '💧 $_humidity%',
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: Colors.grey.shade500,
-                  ),
-                ),
-              ],
-            ),
-            // Forecast row
-            if (_forecast.isNotEmpty) ...[
-              const SizedBox(height: 6),
-              const Divider(height: 1),
-              const SizedBox(height: 4),
+  Widget build(BuildContext context) => Material(
+        elevation: 2,
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Column(
+            mainAxisAlignment:
+                MainAxisAlignment.center,
+            children: [
+              // Location + controls row
               Row(
                 mainAxisAlignment:
-                    MainAxisAlignment.spaceEvenly,
-                children: _forecast.map((f) {
-                  return Column(
+                    MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.location_on,
+                    size: 12,
+                    color: Colors.grey.shade500,
+                  ),
+                  const SizedBox(width: 2),
+                  if (_editingLocation)
+                    SizedBox(
+                      width: 80,
+                      height: 18,
+                      child: TextField(
+                        controller: _locationCtrl,
+                        autofocus: true,
+                        style: TextStyle(
+                          fontSize: 11,
+                          color:
+                              Colors.grey.shade600,
+                        ),
+                        decoration:
+                            const InputDecoration(
+                          isDense: true,
+                          border: InputBorder.none,
+                          contentPadding:
+                              EdgeInsets.zero,
+                        ),
+                        onSubmitted: (v) {
+                          setState(() {
+                            _location = v.isNotEmpty
+                                ? v
+                                : _location;
+                            _editingLocation =
+                                false;
+                          });
+                          _notify();
+                          _refresh();
+                        },
+                      ),
+                    )
+                  else
+                    GestureDetector(
+                      onTap: () => setState(
+                        () =>
+                            _editingLocation = true,
+                      ),
+                      child: Text(
+                        _location,
+                        style: TextStyle(
+                          fontSize: 11,
+                          color:
+                              Colors.grey.shade600,
+                        ),
+                      ),
+                    ),
+                  const Spacer(),
+                  // Unit toggle
+                  GestureDetector(
+                    onTap: _toggleUnit,
+                    child: Container(
+                      padding:
+                          const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color:
+                            Colors.grey.shade100,
+                        borderRadius:
+                            BorderRadius.circular(
+                          8,
+                        ),
+                      ),
+                      child: Text(
+                        '°$_unit',
+                        style: const TextStyle(
+                          fontSize: 10,
+                          fontWeight:
+                              FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  GestureDetector(
+                    onTap: _refresh,
+                    child: Icon(
+                      Icons.refresh,
+                      size: 16,
+                      color: Colors.grey.shade500,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 4),
+              // Main weather display
+              Row(
+                mainAxisAlignment:
+                    MainAxisAlignment.center,
+                children: [
+                  Text(
+                    _icon,
+                    style: const TextStyle(
+                      fontSize: 32,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Column(
+                    crossAxisAlignment:
+                        CrossAxisAlignment.start,
                     children: [
                       Text(
-                        f['day'] as String? ?? '',
-                        style: TextStyle(
-                          fontSize: 10,
-                          color: Colors
-                              .grey.shade500,
+                        '$_temp°$_unit',
+                        style: const TextStyle(
+                          fontSize: 24,
+                          fontWeight:
+                              FontWeight.bold,
                         ),
                       ),
                       Text(
-                        f['icon'] as String? ?? '',
+                        _condition,
                         style: const TextStyle(
-                          fontSize: 16,
-                        ),
-                      ),
-                      Text(
-                        '${f['high']}°/${f['low']}°',
-                        style: const TextStyle(
-                          fontSize: 9,
+                          fontSize: 12,
                         ),
                       ),
                     ],
-                  );
-                }).toList(),
+                  ),
+                ],
               ),
+              const SizedBox(height: 2),
+              // Details row: High/Low/Humidity/Wind
+              Row(
+                mainAxisAlignment:
+                    MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'H:$_high°',
+                    style: TextStyle(
+                      fontSize: 10,
+                      color: Colors.red.shade300,
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    'L:$_low°',
+                    style: TextStyle(
+                      fontSize: 10,
+                      color: Colors.blue.shade300,
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    '💧$_humidity%',
+                    style: TextStyle(
+                      fontSize: 10,
+                      color: Colors.grey.shade500,
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    '💨$_windSpeed km/h',
+                    style: TextStyle(
+                      fontSize: 10,
+                      color: Colors.grey.shade500,
+                    ),
+                  ),
+                ],
+              ),
+              // Feels like
+              if ((_feelsLike - _temp).abs() >= 2)
+                Padding(
+                  padding: const EdgeInsets.only(
+                    top: 2,
+                  ),
+                  child: Text(
+                    'Feels like $_feelsLike°$_unit',
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontStyle: FontStyle.italic,
+                      color: Colors.grey.shade500,
+                    ),
+                  ),
+                ),
+              // Forecast row
+              if (_forecast.isNotEmpty) ...[
+                const SizedBox(height: 4),
+                const Divider(height: 1),
+                const SizedBox(height: 4),
+                Row(
+                  mainAxisAlignment:
+                      MainAxisAlignment.spaceEvenly,
+                  children: _forecast.map((f) {
+                    return Column(
+                      children: [
+                        Text(
+                          f['day'] as String? ?? '',
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: Colors
+                                .grey.shade500,
+                          ),
+                        ),
+                        Text(
+                          f['icon']
+                                  as String? ??
+                              '',
+                          style: const TextStyle(
+                            fontSize: 16,
+                          ),
+                        ),
+                        Text(
+                          '${f['high']}°'
+                          '/${f['low']}°',
+                          style: const TextStyle(
+                            fontSize: 9,
+                          ),
+                        ),
+                      ],
+                    );
+                  }).toList(),
+                ),
+              ],
             ],
-          ],
+          ),
         ),
-      ),
-    );
-  }
+      );
 }

@@ -77,7 +77,12 @@ class _VoiceNoteOverlayState
   int _recordingSeconds = 0;
   int _playingIndex = -1;
   double _playbackProgress = 0;
+  double _playbackSpeed = 1.0;
   Timer? _timer;
+  int _renamingIndex = -1;
+  final _renameCtrl = TextEditingController();
+
+  static const _speeds = [0.5, 1.0, 1.5, 2.0];
 
   // Real audio backend
   AudioRecordingService? _audioService;
@@ -135,6 +140,7 @@ class _VoiceNoteOverlayState
   @override
   void dispose() {
     _timer?.cancel();
+    _renameCtrl.dispose();
     _ampSub?.cancel();
     _progressSub?.cancel();
     _audioService?.dispose();
@@ -147,6 +153,12 @@ class _VoiceNoteOverlayState
       'activeIndex': _playingIndex,
     });
   }
+
+  int get _totalDuration => _recordings.fold(
+        0,
+        (sum, r) =>
+            sum + (r['duration'] as int? ?? 0),
+      );
 
   // --------------- Recording ---------------
 
@@ -333,7 +345,9 @@ class _VoiceNoteOverlayState
       _playingIndex = index;
       _playbackProgress = 0;
     });
-    final steps = dur * 10;
+    // Adjust steps based on playback speed
+    final adjustedDur = (dur / _playbackSpeed).round();
+    final steps = adjustedDur * 10;
     int step = 0;
     _timer = Timer.periodic(
       const Duration(milliseconds: 100),
@@ -377,6 +391,14 @@ class _VoiceNoteOverlayState
     _notify();
   }
 
+  void _cycleSpeed() {
+    setState(() {
+      final idx = _speeds.indexOf(_playbackSpeed);
+      _playbackSpeed =
+          _speeds[(idx + 1) % _speeds.length];
+    });
+  }
+
   String _formatDuration(int s) =>
       '${(s ~/ 60).toString().padLeft(1, '0')}'
       ':${(s % 60).toString().padLeft(2, '0')}';
@@ -404,9 +426,42 @@ class _VoiceNoteOverlayState
                     ),
                   ),
                   const Spacer(),
+                  // Speed toggle
+                  GestureDetector(
+                    onTap: _cycleSpeed,
+                    child: Container(
+                      padding:
+                          const EdgeInsets.symmetric(
+                        horizontal: 4,
+                        vertical: 1,
+                      ),
+                      decoration: BoxDecoration(
+                        color: _playbackSpeed != 1.0
+                            ? Colors.blue.shade50
+                            : Colors.grey.shade100,
+                        borderRadius:
+                            BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        '${_playbackSpeed}x',
+                        style: TextStyle(
+                          fontSize: 9,
+                          fontWeight:
+                              FontWeight.w600,
+                          color: _playbackSpeed != 1.0
+                              ? Colors
+                                  .blue.shade600
+                              : Colors
+                                  .grey.shade500,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 6),
                   Text(
                     '${_recordings.length} clip'
-                    '${_recordings.length != 1 ? 's' : ''}',
+                    '${_recordings.length != 1 ? 's' : ''}'
+                    ' · ${_formatDuration(_totalDuration)}',
                     style: TextStyle(
                       fontSize: 10,
                       color: Colors.grey.shade500,
@@ -516,6 +571,8 @@ class _VoiceNoteOverlayState
     Map<String, dynamic> rec,
   ) {
     final dur = rec['duration'] as int? ?? 0;
+    final label =
+        rec['label'] as String? ?? 'Note';
     final waveform =
         (rec['waveform'] as List?)
                 ?.map(
@@ -524,67 +581,124 @@ class _VoiceNoteOverlayState
                 .toList() ??
             [];
     final isPlaying = _playingIndex == index;
+    final isRenaming = _renamingIndex == index;
 
     return Padding(
       padding:
           const EdgeInsets.symmetric(vertical: 2),
-      child: Row(
+      child: Column(
+        crossAxisAlignment:
+            CrossAxisAlignment.start,
         children: [
-          // Play/pause button
-          GestureDetector(
-            onTap: () => isPlaying
-                ? _stopPlayback()
-                : _play(index),
-            child: Icon(
-              isPlaying
-                  ? Icons.pause_circle_filled
-                  : Icons.play_circle_fill,
-              color: Colors.blue,
-              size: 24,
-            ),
-          ),
-          const SizedBox(width: 6),
-          // Waveform
-          Expanded(
-            child: SizedBox(
-              height: 20,
-              child: CustomPaint(
-                painter: _WaveformPainter(
-                  waveform: waveform,
-                  progress: isPlaying
-                      ? _playbackProgress
-                      : 0,
-                  activeColor: Colors.blue,
-                  inactiveColor:
-                      Colors.grey.shade300,
+          // Label row
+          if (isRenaming)
+            SizedBox(
+              height: 18,
+              child: TextField(
+                controller: _renameCtrl,
+                autofocus: true,
+                style: const TextStyle(
+                  fontSize: 10,
                 ),
-                size: const Size(
-                  double.infinity,
-                  20,
+                decoration:
+                    const InputDecoration(
+                  isDense: true,
+                  border: InputBorder.none,
+                  contentPadding:
+                      EdgeInsets.zero,
+                ),
+                onSubmitted: (v) {
+                  if (v.isNotEmpty) {
+                    setState(() {
+                      _recordings[index]
+                          ['label'] = v;
+                    });
+                    _notify();
+                  }
+                  setState(
+                    () => _renamingIndex = -1,
+                  );
+                },
+              ),
+            )
+          else
+            GestureDetector(
+              onDoubleTap: () {
+                setState(() {
+                  _renamingIndex = index;
+                  _renameCtrl.text = label;
+                });
+              },
+              child: Text(
+                label,
+                style: TextStyle(
+                  fontSize: 10,
+                  color: Colors.grey.shade600,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
             ),
-          ),
-          const SizedBox(width: 4),
-          // Duration
-          Text(
-            _formatDuration(dur),
-            style: TextStyle(
-              fontSize: 10,
-              color: Colors.grey.shade600,
-            ),
-          ),
-          // Delete
-          GestureDetector(
-            onTap: () => _deleteRecording(index),
-            child: Padding(
-              padding: const EdgeInsets.only(left: 4),
-              child: Icon(
-                Icons.close,
-                size: 14,
-                color: Colors.grey.shade400,
+          Row(
+            children: [
+              // Play/pause button
+              GestureDetector(
+                onTap: () => isPlaying
+                    ? _stopPlayback()
+                    : _play(index),
+                child: Icon(
+                  isPlaying
+                      ? Icons.pause_circle_filled
+                      : Icons.play_circle_fill,
+                  color: Colors.blue,
+                  size: 24,
+                ),
               ),
-            ),
+              const SizedBox(width: 6),
+              // Waveform
+              Expanded(
+                child: SizedBox(
+                  height: 20,
+                  child: CustomPaint(
+                    painter: _WaveformPainter(
+                      waveform: waveform,
+                      progress: isPlaying
+                          ? _playbackProgress
+                          : 0,
+                      activeColor: Colors.blue,
+                      inactiveColor:
+                          Colors.grey.shade300,
+                    ),
+                    size: const Size(
+                      double.infinity,
+                      20,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 4),
+              // Duration
+              Text(
+                _formatDuration(dur),
+                style: TextStyle(
+                  fontSize: 10,
+                  color: Colors.grey.shade600,
+                ),
+              ),
+              // Delete
+              GestureDetector(
+                onTap: () =>
+                    _deleteRecording(index),
+                child: Padding(
+                  padding:
+                      const EdgeInsets.only(left: 4),
+                  child: Icon(
+                    Icons.close,
+                    size: 14,
+                    color: Colors.grey.shade400,
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),

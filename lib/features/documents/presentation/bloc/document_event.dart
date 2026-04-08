@@ -2,7 +2,9 @@ import 'package:equatable/equatable.dart';
 import 'package:y2notes2/features/canvas/domain/entities/stroke.dart';
 import 'package:y2notes2/features/canvas/domain/models/canvas_config.dart';
 import 'package:y2notes2/features/documents/domain/models/export_options.dart';
+import 'package:y2notes2/features/documents/domain/models/import_options.dart';
 import 'package:y2notes2/features/media/domain/entities/media_element.dart';
+import 'package:y2notes2/features/pdf_annotation/domain/entities/pdf_annotation.dart';
 import 'package:y2notes2/features/scanner/domain/entities/scanned_document.dart';
 
 /// Base class for all document-feature events.
@@ -145,19 +147,59 @@ class ExportCurrentPageAsImage extends DocumentEvent {
 
 /// Open the file picker to select and import a PDF file.
 class ImportPdf extends DocumentEvent {
-  const ImportPdf({this.scale = 2.0});
-  final double scale;
+  const ImportPdf({this.options = const ImportOptions()});
+  final ImportOptions options;
   @override
-  List<Object?> get props => [scale];
+  List<Object?> get props => [options];
 }
 
-/// Open the file picker to select and import an image.
-class ImportImage extends DocumentEvent {
-  const ImportImage({this.maxWidth, this.maxHeight});
-  final double? maxWidth;
-  final double? maxHeight;
+/// Import a PDF from a known file path (e.g. from scanner or drag-and-drop).
+class ImportPdfFromPath extends DocumentEvent {
+  const ImportPdfFromPath({
+    required this.filePath,
+    this.options = const ImportOptions(),
+  });
+  final String filePath;
+  final ImportOptions options;
   @override
-  List<Object?> get props => [maxWidth, maxHeight];
+  List<Object?> get props => [filePath, options];
+}
+
+// ── Image import ───────────────────────────────────────────────────────────
+
+/// Open the file picker to select and import a single image.
+class ImportImage extends DocumentEvent {
+  const ImportImage({this.options = const ImportOptions()});
+  final ImportOptions options;
+  @override
+  List<Object?> get props => [options];
+}
+
+/// Open the file picker to select and import multiple images.
+class ImportMultipleImages extends DocumentEvent {
+  const ImportMultipleImages({this.options = const ImportOptions()});
+  final ImportOptions options;
+  @override
+  List<Object?> get props => [options];
+}
+
+/// Import an image from a known file path (e.g. from scanner or drag-and-drop).
+class ImportImageFromPath extends DocumentEvent {
+  const ImportImageFromPath({
+    required this.filePath,
+    this.options = const ImportOptions(),
+  });
+  final String filePath;
+  final ImportOptions options;
+  @override
+  List<Object?> get props => [filePath, options];
+}
+
+// ── Import history ─────────────────────────────────────────────────────────
+
+/// Clear the import history.
+class ClearImportHistory extends DocumentEvent {
+  const ClearImportHistory();
 }
 
 /// Import pages from a completed document scan session.
@@ -243,6 +285,20 @@ class UpdatePageMedia extends DocumentEvent {
   final List<MediaElement> mediaElements;
   @override
   List<Object?> get props => [pageIndex, mediaElements];
+}
+
+// ── PDF annotations ────────────────────────────────────────────────────────
+
+/// Update the list of PDF annotations for a specific page.
+class UpdatePagePdfAnnotations extends DocumentEvent {
+  const UpdatePagePdfAnnotations({
+    required this.pageIndex,
+    required this.annotations,
+  });
+  final int pageIndex;
+  final List<PdfAnnotation> annotations;
+  @override
+  List<Object?> get props => [pageIndex, annotations];
 }
 
 // ── Audio recordings ───────────────────────────────────────────────────────

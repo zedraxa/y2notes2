@@ -67,12 +67,20 @@ class _CounterOverlay extends StatefulWidget {
 
 class _CounterOverlayState extends State<_CounterOverlay> {
   late int _count;
+  bool _editingStep = false;
+  final _stepCtrl = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     _count =
         widget.widget.state['count'] as int? ?? 0;
+  }
+
+  @override
+  void dispose() {
+    _stepCtrl.dispose();
+    super.dispose();
   }
 
   int get _step =>
@@ -93,6 +101,9 @@ class _CounterOverlayState extends State<_CounterOverlay> {
   @override
   Widget build(BuildContext context) {
     final atTarget = _hasTarget && _count >= _target;
+    final targetProgress = _hasTarget && _target != 0
+        ? (_count / _target).clamp(0.0, 1.0)
+        : 0.0;
 
     return Material(
       elevation: 2,
@@ -116,17 +127,46 @@ class _CounterOverlayState extends State<_CounterOverlay> {
               ),
             ),
             const SizedBox(height: 4),
-            // Count display
-            Text(
-              '$_count',
-              style: TextStyle(
-                fontSize: 36,
-                fontWeight: FontWeight.bold,
-                color: atTarget
-                    ? Colors.green
-                    : null,
+            // Count display with optional ring
+            if (_hasTarget)
+              SizedBox(
+                width: 72,
+                height: 72,
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    CircularProgressIndicator(
+                      value: targetProgress,
+                      strokeWidth: 4,
+                      backgroundColor:
+                          Colors.grey.shade200,
+                      color: atTarget
+                          ? Colors.green
+                          : Colors.blue,
+                    ),
+                    Center(
+                      child: Text(
+                        '$_count',
+                        style: TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                          color: atTarget
+                              ? Colors.green
+                              : null,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            else
+              Text(
+                '$_count',
+                style: const TextStyle(
+                  fontSize: 36,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-            ),
             // Target indicator
             if (_hasTarget)
               Padding(
@@ -146,7 +186,8 @@ class _CounterOverlayState extends State<_CounterOverlay> {
             const SizedBox(height: 6),
             // Controls
             Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisAlignment:
+                  MainAxisAlignment.center,
               children: [
                 FloatingActionButton.small(
                   heroTag: null,
@@ -182,6 +223,64 @@ class _CounterOverlayState extends State<_CounterOverlay> {
                   child: const Icon(Icons.add),
                 ),
               ],
+            ),
+            const SizedBox(height: 4),
+            // Step size indicator
+            GestureDetector(
+              onTap: () {
+                setState(() {
+                  _editingStep = true;
+                  _stepCtrl.text = '$_step';
+                });
+              },
+              child: _editingStep
+                  ? SizedBox(
+                      width: 60,
+                      height: 20,
+                      child: TextField(
+                        controller: _stepCtrl,
+                        autofocus: true,
+                        keyboardType:
+                            TextInputType.number,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontSize: 10,
+                        ),
+                        decoration:
+                            const InputDecoration(
+                          isDense: true,
+                          contentPadding:
+                              EdgeInsets.symmetric(
+                            horizontal: 4,
+                            vertical: 2,
+                          ),
+                          border:
+                              OutlineInputBorder(),
+                        ),
+                        onSubmitted: (v) {
+                          final parsed =
+                              int.tryParse(v);
+                          if (parsed != null &&
+                              parsed > 0) {
+                            widget.onStateChanged({
+                              'count': _count,
+                              '_config_step': parsed,
+                            });
+                          }
+                          setState(
+                            () =>
+                                _editingStep = false,
+                          );
+                        },
+                      ),
+                    )
+                  : Text(
+                      'Step: $_step',
+                      style: TextStyle(
+                        fontSize: 10,
+                        color: Colors.grey.shade500,
+                      ),
+                    ),
             ),
           ],
         ),

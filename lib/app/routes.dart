@@ -2,11 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:y2notes2/features/canvas/presentation/pages/canvas_page.dart';
+import 'package:y2notes2/features/cloud_sync/presentation/pages/cloud_sync_settings_page.dart';
 import 'package:y2notes2/features/documents/presentation/bloc/document_bloc.dart';
 import 'package:y2notes2/features/documents/presentation/bloc/document_event.dart';
+import 'package:y2notes2/features/flashcards/presentation/pages/card_editor_page.dart';
+import 'package:y2notes2/features/flashcards/presentation/pages/deck_detail_page.dart';
+import 'package:y2notes2/features/flashcards/presentation/pages/deck_list_page.dart';
+import 'package:y2notes2/features/flashcards/presentation/pages/quiz_page.dart';
+import 'package:y2notes2/features/flashcards/presentation/pages/stats_page.dart';
+import 'package:y2notes2/features/flashcards/presentation/pages/study_session_page.dart';
 import 'package:y2notes2/features/handwriting/presentation/pages/recognition_settings_page.dart';
 import 'package:y2notes2/features/infinite_canvas/presentation/pages/infinite_canvas_page.dart';
 import 'package:y2notes2/features/library/presentation/pages/library_page.dart';
+import 'package:y2notes2/features/pdf_annotation/presentation/pages/pdf_annotation_page.dart';
 import 'package:y2notes2/features/rich_text/presentation/bloc/rich_text_bloc.dart';
 import 'package:y2notes2/features/rich_text/presentation/bloc/rich_text_event.dart';
 import 'package:y2notes2/features/rich_text/presentation/pages/rich_text_editor_page.dart';
@@ -18,6 +26,7 @@ import 'package:y2notes2/features/settings/presentation/effects_settings_page.da
 import 'package:y2notes2/features/settings/presentation/general_settings_page.dart';
 import 'package:y2notes2/features/settings/presentation/settings_home_page.dart';
 import 'package:y2notes2/features/settings/presentation/stylus_settings_page.dart';
+import 'package:y2notes2/features/math_graph/presentation/pages/graph_editor_page.dart';
 import 'package:y2notes2/features/workspace/presentation/pages/workspace_page.dart';
 
 /// Application router using GoRouter.
@@ -94,11 +103,74 @@ class AppRouter {
           return const WorkspacePage();
         },
       ),
+      // ── Math Graph editor ────────────────────────────────────────────────
+      GoRoute(
+        path: '/graph',
+        builder: (context, state) => const GraphEditorPage(),
+      ),
+      // ── PDF annotation viewer ─────────────────────────────────────────────
+      GoRoute(
+        path: '/pdf/annotate',
+        builder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>? ?? {};
+          return PdfAnnotationPage(
+            filePath: extra['filePath'] as String? ?? '',
+            title: extra['title'] as String?,
+            initialPageCount: extra['pageCount'] as int? ?? 1,
+          );
+        },
+      ),
       // ── Document Scanner ──────────────────────────────────────────────────
       GoRoute(
         path: '/scanner',
         builder: (context, state) =>
             const DocumentScannerPage(),
+      ),
+      // ── Flash Cards ──────────────────────────────────────────────────────
+      GoRoute(
+        path: '/flashcards',
+        builder: (context, state) => const DeckListPage(),
+        routes: [
+          GoRoute(
+            path: 'deck/:deckId',
+            builder: (context, state) => DeckDetailPage(
+              deckId: state.pathParameters['deckId']!,
+            ),
+            routes: [
+              GoRoute(
+                path: 'add',
+                builder: (context, state) => CardEditorPage(
+                  deckId: state.pathParameters['deckId']!,
+                ),
+              ),
+              GoRoute(
+                path: 'edit/:cardId',
+                builder: (context, state) => CardEditorPage(
+                  deckId: state.pathParameters['deckId']!,
+                  cardId: state.pathParameters['cardId'],
+                ),
+              ),
+              GoRoute(
+                path: 'study',
+                builder: (context, state) => StudySessionPage(
+                  deckId: state.pathParameters['deckId']!,
+                ),
+              ),
+              GoRoute(
+                path: 'quiz',
+                builder: (context, state) => QuizPage(
+                  deckId: state.pathParameters['deckId']!,
+                ),
+              ),
+              GoRoute(
+                path: 'stats',
+                builder: (context, state) => StatsPage(
+                  deckId: state.pathParameters['deckId']!,
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
       // ── Settings ─────────────────────────────────────────────────────────
       GoRoute(
@@ -129,6 +201,10 @@ class AppRouter {
           GoRoute(
             path: 'backup',
             builder: (context, state) => const BackupSettingsPage(),
+          ),
+          GoRoute(
+            path: 'cloud-sync',
+            builder: (context, state) => const CloudSyncSettingsPage(),
           ),
           GoRoute(
             path: 'about',
