@@ -82,6 +82,15 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
   final ImageImportEngine _imageImport;
   final _uuid = const Uuid();
 
+  /// Persists the current notebook (if any) to the repository.
+  /// This is fire-and-forget — errors are silently ignored to avoid
+  /// blocking the UI for non-critical persistence failures.
+  void _persistNotebook() {
+    final nb = state.notebook;
+    if (nb == null || _repository == null) return;
+    _repository!.saveNotebook(nb);
+  }
+
   // ── Notebook lifecycle ─────────────────────────────────────────────────────
 
   void _onCreateNotebook(
@@ -98,6 +107,7 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
       pages: [firstPage],
     );
     emit(state.copyWith(notebook: notebook, currentPageIndex: 0));
+    _persistNotebook();
   }
 
   Future<void> _onOpenNotebook(
@@ -115,11 +125,7 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
       Notebook? loaded;
       final repo = _repository;
       if (repo != null) {
-        loaded = await repo.loadNotebook();
-        // Verify the loaded notebook matches the requested ID.
-        if (loaded?.id != event.notebookId) {
-          loaded = null;
-        }
+        loaded = await repo.loadNotebook(event.notebookId);
       }
 
       if (loaded != null) {
@@ -145,6 +151,7 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
           currentPageIndex: 0,
           status: DocumentOperationStatus.idle,
         ));
+        _persistNotebook();
       }
     } catch (e) {
       emit(state.copyWith(
@@ -157,8 +164,11 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
   void _onCloseNotebook(
     CloseNotebook event,
     Emitter<DocumentState> emit,
-  ) =>
-      emit(state.copyWith(clearNotebook: true, currentPageIndex: 0));
+  ) {
+    // Persist before clearing in-memory state.
+    _persistNotebook();
+    emit(state.copyWith(clearNotebook: true, currentPageIndex: 0));
+  }
 
   // ── Page management ────────────────────────────────────────────────────────
 
@@ -194,9 +204,8 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
       notebook: updated,
       currentPageIndex: insertAt,
     ));
+    _persistNotebook();
   }
-
-  void _onDeletePage(
     DeletePage event,
     Emitter<DocumentState> emit,
   ) {
@@ -207,9 +216,8 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
     final newIndex =
         event.pageIndex >= updated.pageCount ? updated.pageCount - 1 : event.pageIndex;
     emit(state.copyWith(notebook: updated, currentPageIndex: newIndex));
+    _persistNotebook();
   }
-
-  void _onDuplicatePage(
     DuplicatePage event,
     Emitter<DocumentState> emit,
   ) {
@@ -239,6 +247,7 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
       notebook: nb.copyWith(pages: renumbered),
       currentPageIndex: event.pageIndex + 1,
     ));
+    _persistNotebook();
   }
 
   void _onMovePage(
@@ -256,9 +265,8 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
       notebook: nb.copyWith(pages: renumbered),
       currentPageIndex: event.toIndex,
     ));
+    _persistNotebook();
   }
-
-  void _onUpdatePageStrokes(
     UpdatePageStrokes event,
     Emitter<DocumentState> emit,
   ) {
@@ -266,9 +274,8 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
     if (nb == null) return;
     final page = nb.pages[event.pageIndex].copyWith(strokes: event.strokes);
     emit(state.copyWith(notebook: nb.updatePage(event.pageIndex, page)));
+    _persistNotebook();
   }
-
-  void _onUpdatePageConfig(
     UpdatePageConfig event,
     Emitter<DocumentState> emit,
   ) {
@@ -276,9 +283,8 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
     if (nb == null) return;
     final page = nb.pages[event.pageIndex].copyWith(config: event.config);
     emit(state.copyWith(notebook: nb.updatePage(event.pageIndex, page)));
-  }
-
-  // ── PDF export ─────────────────────────────────────────────────────────────
+    _persistNotebook();
+  } ─────────────────────────────────────────────────────────────
 
   Future<void> _onExportCurrentPageAsPdf(
     ExportCurrentPageAsPdf event,
@@ -728,6 +734,7 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
         status: DocumentOperationStatus.success,
         importProgress: 1.0,
       ));
+      _persistNotebook();
     } catch (e) {
       emit(state.copyWith(
         isImporting: false,
@@ -816,6 +823,7 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
         lastImportPageCount: newPages.length,
       ));
     }
+    _persistNotebook();
   }
 
   // ── Utility ────────────────────────────────────────────────────────────────
@@ -840,6 +848,7 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
     final nb = state.notebook;
     if (nb == null) return;
     emit(state.copyWith(notebook: nb.copyWith(title: event.title)));
+    _persistNotebook();
   }
 
   void _onUpdateNotebookDescription(
@@ -857,6 +866,7 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
         notebook: nb.copyWith(description: event.description),
       ));
     }
+    _persistNotebook();
   }
 
   void _onChangeNotebookCover(
@@ -866,6 +876,7 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
     final nb = state.notebook;
     if (nb == null) return;
     emit(state.copyWith(notebook: nb.copyWith(cover: event.cover)));
+    _persistNotebook();
   }
 
   // ── Page metadata ─────────────────────────────────────────────────────────
@@ -882,6 +893,7 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
         ? page.copyWith(clearTitle: true)
         : page.copyWith(title: event.title);
     emit(state.copyWith(notebook: nb.updatePage(event.pageIndex, updated)));
+    _persistNotebook();
   }
 
   void _onTogglePageBookmark(
@@ -894,6 +906,7 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
     final page = nb.pages[event.pageIndex];
     final updated = page.copyWith(isBookmarked: !page.isBookmarked);
     emit(state.copyWith(notebook: nb.updatePage(event.pageIndex, updated)));
+    _persistNotebook();
   }
 
   // ── Outline panel ─────────────────────────────────────────────────────────
@@ -917,6 +930,7 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
       pdfAnnotations: event.annotations,
     );
     emit(state.copyWith(notebook: nb.updatePage(event.pageIndex, page)));
+    _persistNotebook();
   }
 
   // ── Convenience navigation ─────────────────────────────────────────────
@@ -951,6 +965,7 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
     emit(state.copyWith(
       notebook: nb.updatePage(event.pageIndex, page),
     ));
+    _persistNotebook();
   }
 
   // ── Audio recordings ──────────────────────────────────────────────────────
@@ -970,6 +985,7 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
     emit(state.copyWith(
       notebook: nb.updatePage(event.pageIndex, page),
     ));
+    _persistNotebook();
   }
 
   // ── Shape elements ────────────────────────────────────────────────────────
@@ -986,6 +1002,7 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
     emit(state.copyWith(
       notebook: nb.updatePage(event.pageIndex, page),
     ));
+    _persistNotebook();
   }
 
   // ── Sticker elements ──────────────────────────────────────────────────────
@@ -1002,6 +1019,7 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
     emit(state.copyWith(
       notebook: nb.updatePage(event.pageIndex, page),
     ));
+    _persistNotebook();
   }
 
   // ── Graph elements ────────────────────────────────────────────────────────
@@ -1018,6 +1036,7 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
     emit(state.copyWith(
       notebook: nb.updatePage(event.pageIndex, page),
     ));
+    _persistNotebook();
   }
 
   // ── Rich text elements ────────────────────────────────────────────────────
@@ -1034,6 +1053,7 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
     emit(state.copyWith(
       notebook: nb.updatePage(event.pageIndex, page),
     ));
+    _persistNotebook();
   }
 
   List<NotebookPage> _renumber(List<NotebookPage> pages) => pages

@@ -1,12 +1,22 @@
 import 'dart:convert';
 
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:biscuits/features/audio_sync/domain/entities/audio_recording.dart';
 import 'package:biscuits/features/canvas/domain/entities/stroke.dart';
 import 'package:biscuits/features/canvas/domain/models/canvas_config.dart';
 import 'package:biscuits/features/documents/domain/entities/notebook.dart';
 import 'package:biscuits/features/documents/domain/entities/notebook_page.dart';
+import 'package:biscuits/features/math_graph/domain/entities/graph_element.dart';
+import 'package:biscuits/features/media/domain/entities/media_element.dart';
+import 'package:biscuits/features/pdf_annotation/domain/entities/pdf_annotation.dart';
+import 'package:biscuits/features/rich_text/domain/entities/rich_text_element.dart';
+import 'package:biscuits/features/shapes/domain/entities/shape_element.dart';
+import 'package:biscuits/features/stickers/domain/entities/sticker_element.dart';
 
 /// Handles persistence of [Notebook] data using [SharedPreferences].
+///
+/// Each notebook is stored under its own key (`document_notebook_{id}`) so
+/// multiple notebooks can be persisted simultaneously.
 ///
 /// Images (PDF background images) are *not* serialised — they will be absent
 /// after a cold start.  Callers should re-import the source file if the
@@ -22,20 +32,50 @@ class DocumentRepository {
 
   final SharedPreferences _prefs;
 
-  static const _notebookKey = 'document_notebook';
+  static const _keyPrefix = 'document_notebook_';
+
+  /// Returns the storage key for a given notebook [id].
+  static String _keyFor(String id) => '$_keyPrefix$id';
 
   // ── Persistence ─────────────────────────────────────────────────────────────
 
-  /// Saves the [notebook] to persistent storage.
+  /// Saves the [notebook] to persistent storage, keyed by its ID.
   Future<void> saveNotebook(Notebook notebook) async {
     final json = jsonEncode(_notebookToJson(notebook));
-    await _prefs.setString(_notebookKey, json);
+    await _prefs.setString(_keyFor(notebook.id), json);
   }
 
-  /// Loads and returns the persisted notebook, or `null` if none exists.
-  Future<Notebook?> loadNotebook() async {
-    final raw = _prefs.getString(_notebookKey);
-    if (raw == null) return null;
+  /// Loads a notebook by [id], or returns `null` if not found.
+  Future<Notebook?> loadNotebook([String? id]) async {
+    // If no id provided, try to load any notebook (legacy behaviour).
+    if (id == null) {
+      // Check legacy single-notebook key first.
+      final legacy = _prefs.getString('document_notebook');
+      if (legacy != null) {
+        try {
+          return _notebookFromJson(
+              jsonDecode(legacy) as Map<String, dynamic>);
+        } catch (_) {
+          return null;
+        }
+      }
+      return null;
+    }
+    final raw = _prefs.getString(_keyFor(id));
+    if (raw == null) {
+      // Fall back to legacy key if it matches.
+      final legacy = _prefs.getString('document_notebook');
+      if (legacy != null) {
+        try {
+          final nb = _notebookFromJson(
+              jsonDecode(legacy) as Map<String, dynamic>);
+          if (nb.id == id) return nb;
+        } catch (_) {
+          // Ignore corrupt legacy data.
+        }
+      }
+      return null;
+    }
     try {
       final map = jsonDecode(raw) as Map<String, dynamic>;
       return _notebookFromJson(map);
@@ -44,9 +84,13 @@ class DocumentRepository {
     }
   }
 
-  /// Removes the persisted notebook.
-  Future<void> deleteNotebook() async {
-    await _prefs.remove(_notebookKey);
+  /// Removes the persisted notebook with the given [id].
+  Future<void> deleteNotebook([String? id]) async {
+    if (id != null) {
+      await _prefs.remove(_keyFor(id));
+    } else {
+      await _prefs.remove('document_notebook');
+    }
   }
 
   // ── Serialisation helpers ────────────────────────────────────────────────────
@@ -79,6 +123,16 @@ class DocumentRepository {
         if (page.title != null) 'title': page.title,
         'isBookmarked': page.isBookmarked,
         'strokes': page.strokes.map((s) => s.toJson()).toList(),
+        'shapes': page.shapes.map((s) => s.toJson()).toList(),
+        'stickers': page.stickers.map((s) => s.toJson()).toList(),
+        'graphs': page.graphs.map((g) => g.toJson()).toList(),
+        'pdfAnnotations':
+            page.pdfAnnotations.map((a) => a.toJson()).toList(),
+        'mediaElements':
+            page.mediaElements.map((m) => m.toJson()).toList(),
+        'richTexts': page.richTexts.map((r) => r.toJson()).toList(),
+        'audioRecordings':
+            page.audioRecordings.map((a) => a.toJson()).toList(),
         'config': _configToJson(page.config),
         if (page.backgroundPdfPath != null)
           'backgroundPdfPath': page.backgroundPdfPath,
@@ -89,9 +143,45 @@ class DocumentRepository {
         pageNumber: json['pageNumber'] as int,
         title: json['title'] as String?,
         isBookmarked: json['isBookmarked'] as bool? ?? false,
-        strokes: (json['strokes'] as List<dynamic>)
-            .map((s) => Stroke.fromJson(s as Map<String, dynamic>))
-            .toList(),
+        strokes: (json['strokes'] as List<dynamic>?)
+                ?.map((s) => Stroke.fromJson(s as Map<String, dynamic>))
+                .toList() ??
+            const [],
+        shapes: (json['shapes'] as List<dynamic>?)
+                ?.map(
+                    (s) => ShapeElement.fromJson(s as Map<String, dynamic>))
+                .toList() ??
+            const [],
+        stickers: (json['stickers'] as List<dynamic>?)
+                ?.map((s) =>
+                    StickerElement.fromJson(s as Map<String, dynamic>))
+                .toList() ??
+            const [],
+        graphs: (json['graphs'] as List<dynamic>?)
+                ?.map(
+                    (g) => GraphElement.fromJson(g as Map<String, dynamic>))
+                .toList() ??
+            const [],
+        pdfAnnotations: (json['pdfAnnotations'] as List<dynamic>?)
+                ?.map(
+                    (a) => PdfAnnotation.fromJson(a as Map<String, dynamic>))
+                .toList() ??
+            const [],
+        mediaElements: (json['mediaElements'] as List<dynamic>?)
+                ?.map(
+                    (m) => MediaElement.fromJson(m as Map<String, dynamic>))
+                .toList() ??
+            const [],
+        richTexts: (json['richTexts'] as List<dynamic>?)
+                ?.map((r) =>
+                    RichTextElement.fromJson(r as Map<String, dynamic>))
+                .toList() ??
+            const [],
+        audioRecordings: (json['audioRecordings'] as List<dynamic>?)
+                ?.map((a) =>
+                    AudioRecording.fromJson(a as Map<String, dynamic>))
+                .toList() ??
+            const [],
         config: _configFromJson(json['config'] as Map<String, dynamic>),
         backgroundPdfPath: json['backgroundPdfPath'] as String?,
       );
