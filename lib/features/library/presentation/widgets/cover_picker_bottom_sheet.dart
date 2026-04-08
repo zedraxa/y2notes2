@@ -47,6 +47,8 @@ class CoverPickerBottomSheet extends StatefulWidget {
 class _CoverPickerBottomSheetState extends State<CoverPickerBottomSheet> {
   late Color _selectedColor;
   late CoverMaterial _selectedMaterial;
+  late CoverPattern _selectedPattern;
+  late CoverEmblem _selectedEmblem;
 
   // ── Color presets ─────────────────────────────────────────────────────────
 
@@ -93,17 +95,31 @@ class _CoverPickerBottomSheetState extends State<CoverPickerBottomSheet> {
     _selectedMaterial = matName != null
         ? CoverMaterial.values.byName(matName)
         : CoverMaterial.matte;
+
+    final patName = widget.item.coverPattern;
+    _selectedPattern = patName != null
+        ? CoverPattern.values.byName(patName)
+        : CoverPattern.none;
+
+    final embName = widget.item.coverEmblem;
+    _selectedEmblem = embName != null
+        ? CoverEmblem.values.byName(embName)
+        : CoverEmblem.none;
   }
 
   void _apply() {
     final cover = NotebookCoverConfig(
       color: _selectedColor,
       material: _selectedMaterial,
+      pattern: _selectedPattern,
+      emblem: _selectedEmblem,
     );
     context.read<LibraryBloc>().add(SetNotebookCover(
           itemId: widget.item.id,
           coverColor: _selectedColor.value,
           coverMaterial: _selectedMaterial.name,
+          coverPattern: _selectedPattern.name,
+          coverEmblem: _selectedEmblem.name,
         ));
     // If the notebook is currently open, update DocumentBloc too.
     final docBloc = context.read<DocumentBloc>();
@@ -115,146 +131,186 @@ class _CoverPickerBottomSheetState extends State<CoverPickerBottomSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final labelStyle = Theme.of(context).textTheme.labelSmall?.copyWith(
+          letterSpacing: 1.2,
+          fontWeight: FontWeight.w600,
+        );
+
     return SafeArea(
       child: Padding(
         padding: EdgeInsets.only(
           bottom: MediaQuery.of(context).viewInsets.bottom,
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // Drag handle
-            Center(
-              child: Container(
-                width: 36,
-                height: 4,
-                margin: const EdgeInsets.symmetric(vertical: 10),
-                decoration: BoxDecoration(
-                  color: Colors.grey[300],
-                  borderRadius: BorderRadius.circular(2),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Drag handle
+              Center(
+                child: Container(
+                  width: 36,
+                  height: 4,
+                  margin: const EdgeInsets.symmetric(vertical: 10),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(2),
+                  ),
                 ),
               ),
-            ),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16),
-              child: Text(
-                'Customise Cover',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16),
+                child: Text(
+                  'Customise Cover',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                ),
               ),
-            ),
-            const SizedBox(height: 16),
-            // ── Live preview ──────────────────────────────────────────────────
-            Center(
-              child: NotebookCoverWidget(
-                color: _selectedColor,
-                material: _selectedMaterial,
-                title: widget.item.name,
-                width: 100,
-                height: 136,
+              const SizedBox(height: 16),
+              // ── Live preview ────────────────────────────────────────────────
+              Center(
+                child: NotebookCoverWidget(
+                  color: _selectedColor,
+                  material: _selectedMaterial,
+                  pattern: _selectedPattern,
+                  emblem: _selectedEmblem,
+                  title: widget.item.name,
+                  width: 100,
+                  height: 136,
+                ),
               ),
-            ),
-            const SizedBox(height: 20),
-            // ── Color picker ───────────────────────────────────────────────────
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Text(
-                'COLOUR',
-                style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      letterSpacing: 1.2,
-                      fontWeight: FontWeight.w600,
-                    ),
-              ),
-            ),
-            const SizedBox(height: 8),
-            SizedBox(
-              height: 44,
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
+              const SizedBox(height: 20),
+              // ── Color picker ────────────────────────────────────────────────
+              Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                itemCount: _colors.length,
-                separatorBuilder: (_, __) => const SizedBox(width: 8),
-                itemBuilder: (context, index) {
-                  final c = _colors[index];
-                  final isSelected = c.value == _selectedColor.value;
-                  return GestureDetector(
-                    onTap: () => setState(() => _selectedColor = c),
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 150),
-                      width: 32,
-                      height: 32,
-                      decoration: BoxDecoration(
-                        color: c,
-                        shape: BoxShape.circle,
-                        border: isSelected
-                            ? Border.all(
-                                color: Theme.of(context).colorScheme.primary,
-                                width: 2.5,
-                              )
-                            : Border.all(
-                                color: Colors.transparent,
-                                width: 2.5,
+                child: Text('COLOUR', style: labelStyle),
+              ),
+              const SizedBox(height: 8),
+              SizedBox(
+                height: 44,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  itemCount: _colors.length,
+                  separatorBuilder: (_, __) => const SizedBox(width: 8),
+                  itemBuilder: (context, index) {
+                    final c = _colors[index];
+                    final isSelected = c.value == _selectedColor.value;
+                    return GestureDetector(
+                      onTap: () => setState(() => _selectedColor = c),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 150),
+                        width: 32,
+                        height: 32,
+                        decoration: BoxDecoration(
+                          color: c,
+                          shape: BoxShape.circle,
+                          border: isSelected
+                              ? Border.all(
+                                  color: Theme.of(context).colorScheme.primary,
+                                  width: 2.5,
+                                )
+                              : Border.all(
+                                  color: Colors.transparent,
+                                  width: 2.5,
+                                ),
+                          boxShadow: [
+                            if (isSelected)
+                              BoxShadow(
+                                color: c.withOpacity(0.5),
+                                blurRadius: 6,
                               ),
-                        boxShadow: [
-                          if (isSelected)
-                            BoxShadow(
-                              color: c.withOpacity(0.5),
-                              blurRadius: 6,
-                            ),
-                        ],
+                          ],
+                        ),
+                        child: isSelected
+                            ? const Icon(Icons.check, size: 16, color: Colors.white)
+                            : null,
                       ),
-                      child: isSelected
-                          ? const Icon(Icons.check, size: 16, color: Colors.white)
-                          : null,
-                    ),
-                  );
-                },
+                    );
+                  },
+                ),
               ),
-            ),
-            const SizedBox(height: 20),
-            // ── Material picker ───────────────────────────────────────────────
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Text(
-                'MATERIAL',
-                style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      letterSpacing: 1.2,
-                      fontWeight: FontWeight.w600,
-                    ),
+              const SizedBox(height: 20),
+              // ── Material picker ─────────────────────────────────────────────
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Text('MATERIAL', style: labelStyle),
               ),
-            ),
-            const SizedBox(height: 8),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: CoverMaterial.values.map((m) {
-                  return ChoiceChip(
-                    label: Text(_materialLabel(m)),
-                    selected: _selectedMaterial == m,
-                    onSelected: (_) => setState(() => _selectedMaterial = m),
-                  );
-                }).toList(),
+              const SizedBox(height: 8),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: CoverMaterial.values.map((m) {
+                    return ChoiceChip(
+                      label: Text(_materialLabel(m)),
+                      selected: _selectedMaterial == m,
+                      onSelected: (_) => setState(() => _selectedMaterial = m),
+                    );
+                  }).toList(),
+                ),
               ),
-            ),
-            const SizedBox(height: 24),
-            // ── Actions ───────────────────────────────────────────────────────
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-              child: FilledButton(
-                onPressed: _apply,
-                child: const Text('Apply'),
+              const SizedBox(height: 20),
+              // ── Pattern picker ──────────────────────────────────────────────
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Text('PATTERN', style: labelStyle),
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-              child: TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Cancel'),
+              const SizedBox(height: 8),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: CoverPattern.values.map((p) {
+                    return ChoiceChip(
+                      label: Text(_patternLabel(p)),
+                      selected: _selectedPattern == p,
+                      onSelected: (_) => setState(() => _selectedPattern = p),
+                    );
+                  }).toList(),
+                ),
               ),
-            ),
-          ],
+              const SizedBox(height: 20),
+              // ── Emblem picker ───────────────────────────────────────────────
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Text('EMBLEM', style: labelStyle),
+              ),
+              const SizedBox(height: 8),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: CoverEmblem.values.map((e) {
+                    return ChoiceChip(
+                      avatar: _emblemIcon(e),
+                      label: Text(_emblemLabel(e)),
+                      selected: _selectedEmblem == e,
+                      onSelected: (_) => setState(() => _selectedEmblem = e),
+                    );
+                  }).toList(),
+                ),
+              ),
+              const SizedBox(height: 24),
+              // ── Actions ─────────────────────────────────────────────────────
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                child: FilledButton(
+                  onPressed: _apply,
+                  child: const Text('Apply'),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                child: TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Cancel'),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -274,6 +330,70 @@ class _CoverPickerBottomSheetState extends State<CoverPickerBottomSheet> {
         return 'Kraft';
       case CoverMaterial.glossy:
         return 'Glossy';
+    }
+  }
+
+  String _patternLabel(CoverPattern p) {
+    switch (p) {
+      case CoverPattern.none:
+        return 'None';
+      case CoverPattern.stripes:
+        return 'Stripes';
+      case CoverPattern.dots:
+        return 'Dots';
+      case CoverPattern.chevron:
+        return 'Chevron';
+      case CoverPattern.diamond:
+        return 'Diamond';
+      case CoverPattern.plaid:
+        return 'Plaid';
+      case CoverPattern.moroccan:
+        return 'Moroccan';
+      case CoverPattern.herringbone:
+        return 'Herringbone';
+    }
+  }
+
+  String _emblemLabel(CoverEmblem e) {
+    switch (e) {
+      case CoverEmblem.none:
+        return 'None';
+      case CoverEmblem.star:
+        return 'Star';
+      case CoverEmblem.heart:
+        return 'Heart';
+      case CoverEmblem.leaf:
+        return 'Leaf';
+      case CoverEmblem.crown:
+        return 'Crown';
+      case CoverEmblem.compass:
+        return 'Compass';
+      case CoverEmblem.feather:
+        return 'Feather';
+      case CoverEmblem.moon:
+        return 'Moon';
+    }
+  }
+
+  Widget? _emblemIcon(CoverEmblem e) {
+    const size = 18.0;
+    switch (e) {
+      case CoverEmblem.none:
+        return const Icon(Icons.block, size: size);
+      case CoverEmblem.star:
+        return const Icon(Icons.star_outline, size: size);
+      case CoverEmblem.heart:
+        return const Icon(Icons.favorite_outline, size: size);
+      case CoverEmblem.leaf:
+        return const Icon(Icons.eco_outlined, size: size);
+      case CoverEmblem.crown:
+        return const Icon(Icons.shield_outlined, size: size);
+      case CoverEmblem.compass:
+        return const Icon(Icons.explore_outlined, size: size);
+      case CoverEmblem.feather:
+        return const Icon(Icons.edit_outlined, size: size);
+      case CoverEmblem.moon:
+        return const Icon(Icons.dark_mode_outlined, size: size);
     }
   }
 }

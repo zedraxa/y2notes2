@@ -124,14 +124,21 @@ class SetNotebookCover extends LibraryEvent {
     required this.itemId,
     required this.coverColor,
     required this.coverMaterial,
+    required this.coverPattern,
+    required this.coverEmblem,
   });
   final String itemId;
   /// ARGB color value for the cover.
   final int coverColor;
   /// [CoverMaterial.name] string.
   final String coverMaterial;
+  /// [CoverPattern.name] string.
+  final String coverPattern;
+  /// [CoverEmblem.name] string.
+  final String coverEmblem;
   @override
-  List<Object?> get props => [itemId, coverColor, coverMaterial];
+  List<Object?> get props =>
+      [itemId, coverColor, coverMaterial, coverPattern, coverEmblem];
 }
 
 // ── Tag management ────────────────────────────────────────────────────────────
