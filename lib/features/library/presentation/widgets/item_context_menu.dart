@@ -6,6 +6,9 @@ import 'package:biscuits/features/library/presentation/bloc/library_event.dart';
 import 'package:biscuits/features/library/presentation/bloc/library_state.dart';
 import 'package:biscuits/features/library/presentation/widgets/color_label_picker.dart';
 import 'package:biscuits/features/library/presentation/widgets/cover_picker_bottom_sheet.dart';
+import 'package:biscuits/shared/widgets/apple_toast.dart';
+import 'package:biscuits/shared/widgets/apple_sheet.dart';
+import 'package:biscuits/shared/widgets/confirm_action.dart';
 
 /// Context menu (bottom sheet) for a single [LibraryItem].
 ///
@@ -58,6 +61,13 @@ class ItemContextMenu extends StatelessWidget {
               onTap: () {
                 bloc.add(ToggleFavorite(item.id));
                 Navigator.pop(context);
+                AppleToast.show(
+                  context,
+                  message: item.isFavorite
+                      ? 'Removed from favourites'
+                      : 'Added to favourites',
+                  style: AppleToastStyle.success,
+                );
               },
             ),
             // Rename
@@ -114,9 +124,29 @@ class ItemContextMenu extends StatelessWidget {
               leading: const Icon(Icons.delete_outline, color: Colors.red),
               title: const Text('Move to Trash',
                   style: TextStyle(color: Colors.red)),
-              onTap: () {
-                bloc.add(DeleteItem(item.id));
+              onTap: () async {
                 Navigator.pop(context);
+                final confirmed = await confirmAction(
+                  context: context,
+                  title: 'Move to Trash?',
+                  message:
+                      '"${item.name}" will be moved to trash and automatically '
+                      'deleted after 30 days.',
+                  confirmLabel: 'Move to Trash',
+                  isDestructive: true,
+                );
+                if (confirmed == true && context.mounted) {
+                  bloc.add(DeleteItem(item.id));
+                  AppleToast.show(
+                    context,
+                    message: '"${item.name}" moved to trash',
+                    style: AppleToastStyle.success,
+                    actionLabel: 'Undo',
+                    onAction: () {
+                      bloc.add(RestoreItem(item.id));
+                    },
+                  );
+                }
               },
             ),
           ],
@@ -127,11 +157,12 @@ class ItemContextMenu extends StatelessWidget {
 
   void _showRenameDialog(BuildContext context, LibraryBloc bloc) {
     final controller = TextEditingController(text: item.name);
-    showDialog<void>(
+    showAppleDialog<void>(
       context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('Rename'),
-        content: TextField(
+      title: 'Rename',
+      contentWidget: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4),
+        child: TextField(
           controller: controller,
           autofocus: true,
           decoration: const InputDecoration(labelText: 'Name'),
@@ -139,24 +170,35 @@ class ItemContextMenu extends StatelessWidget {
             _submitRename(context, bloc, controller.text.trim());
           },
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            onPressed: () =>
-                _submitRename(context, bloc, controller.text.trim()),
-            child: const Text('Rename'),
-          ),
-        ],
       ),
+      actions: [
+        AppleDialogAction(
+          label: 'Cancel',
+          onPressed: () {},
+        ),
+        AppleDialogAction(
+          label: 'Rename',
+          isDefault: true,
+          onPressed: () {
+            _submitRename(context, bloc, controller.text.trim());
+          },
+        ),
+      ],
     ).then((_) => controller.dispose());
   }
 
   void _submitRename(BuildContext context, LibraryBloc bloc, String name) {
-    if (name.isNotEmpty) bloc.add(RenameItem(itemId: item.id, newName: name));
-    Navigator.pop(context);
+    if (name.isNotEmpty) {
+      bloc.add(RenameItem(itemId: item.id, newName: name));
+      Navigator.pop(context);
+      AppleToast.show(
+        context,
+        message: 'Renamed to "$name"',
+        style: AppleToastStyle.success,
+      );
+    } else {
+      Navigator.pop(context);
+    }
   }
 
   void _showMoveDialog(BuildContext context, LibraryBloc bloc) {

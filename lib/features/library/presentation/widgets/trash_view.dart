@@ -3,6 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:biscuits/features/library/presentation/bloc/library_bloc.dart';
 import 'package:biscuits/features/library/presentation/bloc/library_event.dart';
 import 'package:biscuits/features/library/presentation/bloc/library_state.dart';
+import 'package:biscuits/shared/widgets/apple_toast.dart';
+import 'package:biscuits/shared/widgets/confirm_action.dart';
 
 /// Shows items currently in the trash with restore / permanent-delete options.
 class TrashView extends StatelessWidget {
@@ -37,14 +39,45 @@ class TrashView extends StatelessWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.delete_outline, size: 64, color: Colors.grey),
+                  TweenAnimationBuilder<double>(
+                    tween: Tween(begin: 0.0, end: 1.0),
+                    duration: const Duration(milliseconds: 400),
+                    curve: Curves.easeOutCubic,
+                    builder: (_, value, child) => Opacity(
+                      opacity: value,
+                      child: Transform.translate(
+                        offset: Offset(0, 12 * (1 - value)),
+                        child: child,
+                      ),
+                    ),
+                    child: Icon(
+                      Icons.delete_sweep_outlined,
+                      size: 64,
+                      color: Theme.of(context)
+                          .colorScheme
+                          .onSurfaceVariant
+                          .withOpacity(0.35),
+                    ),
+                  ),
                   const SizedBox(height: 12),
                   Text(
                     'Trash is empty',
-                    style: Theme.of(context)
-                        .textTheme
-                        .bodyLarge
-                        ?.copyWith(color: Colors.grey),
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                          color: Theme.of(context)
+                              .colorScheme
+                              .onSurfaceVariant
+                              .withOpacity(0.5),
+                        ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Deleted items will appear here for 30 days',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Theme.of(context)
+                              .colorScheme
+                              .onSurfaceVariant
+                              .withOpacity(0.4),
+                        ),
                   ),
                 ],
               ),
@@ -93,54 +126,40 @@ class TrashView extends StatelessWidget {
   }
 
   Future<void> _confirmEmptyTrash(BuildContext context) async {
-    final confirm = await showDialog<bool>(
+    final confirm = await confirmAction(
       context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('Empty Trash?'),
-        content: const Text(
-          'All items in the trash will be permanently deleted. '
+      title: 'Empty Trash?',
+      message: 'All items in the trash will be permanently deleted. '
           'This action cannot be undone.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: Colors.red),
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Empty Trash'),
-          ),
-        ],
-      ),
+      confirmLabel: 'Empty Trash',
+      isDestructive: true,
     );
     if (confirm == true && context.mounted) {
       context.read<LibraryBloc>().add(const EmptyTrash());
+      AppleToast.show(
+        context,
+        message: 'Trash emptied',
+        style: AppleToastStyle.success,
+      );
     }
   }
 
   Future<void> _confirmPermanentDelete(
       BuildContext context, String itemId) async {
-    final confirm = await showDialog<bool>(
+    final confirm = await confirmAction(
       context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('Delete permanently?'),
-        content: const Text('This action cannot be undone.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: Colors.red),
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Delete'),
-          ),
-        ],
-      ),
+      title: 'Delete Permanently?',
+      message: 'This item will be gone forever. This action cannot be undone.',
+      confirmLabel: 'Delete',
+      isDestructive: true,
     );
     if (confirm == true && context.mounted) {
       context.read<LibraryBloc>().add(PermanentlyDeleteItem(itemId));
+      AppleToast.show(
+        context,
+        message: 'Item permanently deleted',
+        style: AppleToastStyle.success,
+      );
     }
   }
 }

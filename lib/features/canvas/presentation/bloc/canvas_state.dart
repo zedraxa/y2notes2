@@ -131,6 +131,8 @@ class CanvasState extends Equatable {
 
   bool get canUndo => strokes.isNotEmpty || shapeUndoStack.isNotEmpty;
   bool get canRedo => redoStack.isNotEmpty || shapeRedoStack.isNotEmpty;
+  int get undoCount => strokes.length + shapeUndoStack.length;
+  int get redoCount => redoStack.length + shapeRedoStack.length;
   bool get isDrawing => activeStroke != null;
 
   /// The currently selected ShapeElement.

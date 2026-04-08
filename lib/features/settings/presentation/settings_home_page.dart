@@ -1,100 +1,129 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:biscuits/shared/widgets/apple_list_tile.dart';
+import 'package:biscuits/app/theme/colors.dart';
+import 'package:biscuits/app/theme/elevation.dart';
 
 /// Main settings hub with navigation tiles to each settings category.
 class SettingsHomePage extends StatelessWidget {
   const SettingsHomePage({super.key});
 
-  static const _categories = [
-    _SettingsCategory(
-      icon: Icons.palette_outlined,
-      title: 'General',
-      subtitle: 'Appearance, haptics, and defaults',
-      route: '/settings/general',
-    ),
-    _SettingsCategory(
-      icon: Icons.note_alt_outlined,
-      title: 'Canvas',
-      subtitle: 'Page template, spacing, and margins',
-      route: '/settings/canvas',
-    ),
-    _SettingsCategory(
-      icon: Icons.auto_awesome_outlined,
-      title: 'Writing Effects',
-      subtitle: 'Ink effects and interaction animations',
-      route: '/settings/effects',
-    ),
-    _SettingsCategory(
-      icon: Icons.draw_outlined,
-      title: 'Stylus',
-      subtitle: 'Pressure, tilt, gestures, and palm rejection',
-      route: '/settings/stylus',
-    ),
-    _SettingsCategory(
-      icon: Icons.text_fields_outlined,
-      title: 'Recognition',
-      subtitle: 'Handwriting language, mode, and engine',
-      route: '/settings/recognition',
-    ),
-    _SettingsCategory(
-      icon: Icons.backup_outlined,
-      title: 'Backup & Data',
-      subtitle: 'Auto-save, export defaults, and storage',
-      route: '/settings/backup',
-    ),
-    _SettingsCategory(
-      icon: Icons.cloud_sync_outlined,
-      title: 'Cloud Sync',
-      subtitle: 'iCloud, Google Drive, OneDrive, Dropbox',
-      route: '/settings/cloud-sync',
-    ),
-    _SettingsCategory(
-      icon: Icons.info_outline,
-      title: 'About',
-      subtitle: 'Version, licenses, and credits',
-      route: '/settings/about',
-    ),
-  ];
-
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final iconColor = isDark ? AppColors.darkAccent : AppColors.accent;
+
     return Scaffold(
       appBar: AppBar(title: const Text('Settings')),
-      body: ListView.separated(
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        itemCount: _categories.length,
-        separatorBuilder: (_, __) =>
-            const Divider(height: 1, indent: 72, endIndent: 16),
-        itemBuilder: (context, index) {
-          final cat = _categories[index];
-          return ListTile(
-            leading: Icon(cat.icon, size: 28),
-            title: Text(cat.title),
-            subtitle: Text(
-              cat.subtitle,
-              style: Theme.of(context).textTheme.bodySmall,
-            ),
-            trailing: const Icon(Icons.chevron_right),
-            contentPadding:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-            onTap: () => context.push(cat.route),
-          );
-        },
+      body: ListView(
+        padding: const EdgeInsets.symmetric(vertical: AppleSpacing.md),
+        children: [
+          // ── App Settings ──────────────────────────────────────────────
+          AppleInsetGroup(
+            header: const Text('APP'),
+            children: [
+              AppleListTile(
+                leading: _SettingsIcon(Icons.palette_outlined, iconColor),
+                title: const Text('General'),
+                subtitle: const Text('Appearance, haptics, and defaults'),
+                onTap: () => context.push('/settings/general'),
+              ),
+              AppleListTile(
+                leading: _SettingsIcon(Icons.note_alt_outlined, iconColor),
+                title: const Text('Canvas'),
+                subtitle:
+                    const Text('Page template, spacing, and margins'),
+                onTap: () => context.push('/settings/canvas'),
+              ),
+              AppleListTile(
+                leading:
+                    _SettingsIcon(Icons.auto_awesome_outlined, iconColor),
+                title: const Text('Writing Effects'),
+                subtitle:
+                    const Text('Ink effects and interaction animations'),
+                onTap: () => context.push('/settings/effects'),
+              ),
+            ],
+          ),
+
+          // ── Input Settings ────────────────────────────────────────────
+          AppleInsetGroup(
+            header: const Text('INPUT'),
+            children: [
+              AppleListTile(
+                leading: _SettingsIcon(Icons.draw_outlined, iconColor),
+                title: const Text('Stylus'),
+                subtitle: const Text(
+                    'Pressure, tilt, gestures, and palm rejection'),
+                onTap: () => context.push('/settings/stylus'),
+              ),
+              AppleListTile(
+                leading:
+                    _SettingsIcon(Icons.text_fields_outlined, iconColor),
+                title: const Text('Recognition'),
+                subtitle: const Text(
+                    'Handwriting language, mode, and engine'),
+                onTap: () => context.push('/settings/recognition'),
+              ),
+            ],
+          ),
+
+          // ── Data & Cloud ──────────────────────────────────────────────
+          AppleInsetGroup(
+            header: const Text('DATA & CLOUD'),
+            children: [
+              AppleListTile(
+                leading: _SettingsIcon(Icons.backup_outlined, iconColor),
+                title: const Text('Backup & Data'),
+                subtitle: const Text(
+                    'Auto-save, export defaults, and storage'),
+                onTap: () => context.push('/settings/backup'),
+              ),
+              AppleListTile(
+                leading:
+                    _SettingsIcon(Icons.cloud_sync_outlined, iconColor),
+                title: const Text('Cloud Sync'),
+                subtitle: const Text(
+                    'iCloud, Google Drive, OneDrive, Dropbox'),
+                onTap: () => context.push('/settings/cloud-sync'),
+              ),
+            ],
+          ),
+
+          // ── About ─────────────────────────────────────────────────────
+          AppleInsetGroup(
+            children: [
+              AppleListTile(
+                leading: _SettingsIcon(Icons.info_outline, iconColor),
+                title: const Text('About'),
+                subtitle: const Text('Version, licenses, and credits'),
+                onTap: () => context.push('/settings/about'),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
 }
 
-class _SettingsCategory {
-  const _SettingsCategory({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-    required this.route,
-  });
+/// Rounded icon container for settings list tiles.
+class _SettingsIcon extends StatelessWidget {
+  const _SettingsIcon(this.icon, this.color);
 
   final IconData icon;
-  final String title;
-  final String subtitle;
-  final String route;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 32,
+      height: 32,
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.15),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Icon(icon, size: 20, color: color),
+    );
+  }
 }

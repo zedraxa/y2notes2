@@ -108,60 +108,73 @@ class _LibraryGridCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorLabel = item.colorLabel?.color;
-    return GestureDetector(
-      onLongPress: () => _showContextMenu(context),
-      child: Card(
-        clipBehavior: Clip.antiAlias,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // Thumbnail / placeholder
-            Expanded(
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  if (item.thumbnailPath != null)
-                    Image.asset(item.thumbnailPath!, fit: BoxFit.cover)
-                  else if (item.type == LibraryItemType.notebook)
-                    _NotebookCoverThumbnail(item: item)
-                  else
-                    Container(
-                      color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                      child: Icon(
-                        _iconFor(item.type),
-                        size: 40,
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+    return Semantics(
+      label: '${_typeLabel(item.type)}: ${item.name}'
+          '${item.isFavorite ? ", favourited" : ""}',
+      button: true,
+      child: GestureDetector(
+        onLongPress: () => _showContextMenu(context),
+        child: Card(
+          clipBehavior: Clip.antiAlias,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Thumbnail / placeholder
+              Expanded(
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    if (item.thumbnailPath != null)
+                      Image.asset(item.thumbnailPath!, fit: BoxFit.cover)
+                    else if (item.type == LibraryItemType.notebook)
+                      _NotebookCoverThumbnail(item: item)
+                    else
+                      Container(
+                        color: Theme.of(context)
+                            .colorScheme
+                            .surfaceContainerHighest,
+                        child: Icon(
+                          _iconFor(item.type),
+                          size: 40,
+                          color: Theme.of(context)
+                              .colorScheme
+                              .onSurfaceVariant,
+                        ),
                       ),
-                    ),
-                  // Color label stripe
-                  if (colorLabel != null)
-                    Positioned(
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      child: Container(height: 4, color: colorLabel),
-                    ),
-                  // Favourite indicator
-                  if (item.isFavorite)
-                    const Positioned(
-                      top: 6,
-                      right: 6,
-                      child: Icon(Icons.star, size: 16, color: Colors.amber),
-                    ),
-                ],
+                    // Color label stripe
+                    if (colorLabel != null)
+                      Positioned(
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        child: Container(height: 4, color: colorLabel),
+                      ),
+                    // Favourite indicator
+                    if (item.isFavorite)
+                      Positioned(
+                        top: 6,
+                        right: 6,
+                        child: Semantics(
+                          excludeSemantics: true,
+                          child: const Icon(
+                              Icons.star, size: 16, color: Colors.amber),
+                        ),
+                      ),
+                  ],
+                ),
               ),
-            ),
-            // Title
-            Padding(
-              padding: const EdgeInsets.all(8),
-              child: Text(
-                item.name,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: Theme.of(context).textTheme.bodySmall,
+              // Title
+              Padding(
+                padding: const EdgeInsets.all(8),
+                child: Text(
+                  item.name,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -182,6 +195,17 @@ class _LibraryGridCard extends StatelessWidget {
         return Icons.dashboard_outlined;
       case LibraryItemType.folder:
         return Icons.folder_outlined;
+    }
+  }
+
+  String _typeLabel(LibraryItemType type) {
+    switch (type) {
+      case LibraryItemType.notebook:
+        return 'Notebook';
+      case LibraryItemType.infiniteCanvas:
+        return 'Canvas';
+      case LibraryItemType.folder:
+        return 'Folder';
     }
   }
 }

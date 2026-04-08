@@ -20,6 +20,7 @@ class AppleButton extends StatefulWidget {
     this.fullWidth = false,
     this.enabled = true,
     this.icon,
+    this.isLoading = false,
   });
 
   final VoidCallback? onPressed;
@@ -29,6 +30,9 @@ class AppleButton extends StatefulWidget {
   final bool fullWidth;
   final bool enabled;
   final IconData? icon;
+
+  /// When true, displays a loading spinner and disables interaction.
+  final bool isLoading;
 
   @override
   State<AppleButton> createState() => _AppleButtonState();
@@ -63,7 +67,7 @@ class _AppleButtonState extends State<AppleButton>
   }
 
   void _handleTapDown(TapDownDetails details) {
-    if (!widget.enabled || widget.onPressed == null) return;
+    if (!widget.enabled || widget.onPressed == null || widget.isLoading) return;
     setState(() => _isPressed = true);
     _controller.forward();
   }
@@ -81,7 +85,7 @@ class _AppleButtonState extends State<AppleButton>
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final isEnabled = widget.enabled && widget.onPressed != null;
+    final isEnabled = widget.enabled && widget.onPressed != null && !widget.isLoading;
 
     // Size configuration
     final double height;
@@ -168,7 +172,17 @@ class _AppleButtonState extends State<AppleButton>
       mainAxisSize: widget.fullWidth ? MainAxisSize.max : MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        if (widget.icon != null) ...[
+        if (widget.isLoading) ...[
+          SizedBox(
+            width: fontSize,
+            height: fontSize,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              color: foregroundColor,
+            ),
+          ),
+          const SizedBox(width: 8),
+        ] else if (widget.icon != null) ...[
           Icon(widget.icon, size: fontSize + 2),
           const SizedBox(width: 8),
         ],
@@ -184,27 +198,31 @@ class _AppleButtonState extends State<AppleButton>
       ],
     );
 
-    return ScaleTransition(
-      scale: _scaleAnimation,
-      child: GestureDetector(
-        onTapDown: _handleTapDown,
-        onTapUp: _handleTapUp,
-        onTapCancel: _handleTapCancel,
-        onTap: isEnabled ? widget.onPressed : null,
-        child: AnimatedContainer(
-          duration: AppleDurations.quick,
-          curve: AppleCurves.standard,
-          height: height,
-          padding: padding,
-          decoration: BoxDecoration(
-            color: backgroundColor,
-            borderRadius: AppleRadius.pillRadius,
-            border: borderColor != null
-                ? Border.all(color: borderColor, width: 1.5)
-                : null,
-            boxShadow: shadows,
+    return Semantics(
+      button: true,
+      enabled: isEnabled,
+      child: ScaleTransition(
+        scale: _scaleAnimation,
+        child: GestureDetector(
+          onTapDown: _handleTapDown,
+          onTapUp: _handleTapUp,
+          onTapCancel: _handleTapCancel,
+          onTap: isEnabled ? widget.onPressed : null,
+          child: AnimatedContainer(
+            duration: AppleDurations.quick,
+            curve: AppleCurves.standard,
+            height: height,
+            padding: padding,
+            decoration: BoxDecoration(
+              color: backgroundColor,
+              borderRadius: AppleRadius.pillRadius,
+              border: borderColor != null
+                  ? Border.all(color: borderColor, width: 1.5)
+                  : null,
+              boxShadow: shadows,
+            ),
+            child: Center(child: buttonContent),
           ),
-          child: Center(child: buttonContent),
         ),
       ),
     );
