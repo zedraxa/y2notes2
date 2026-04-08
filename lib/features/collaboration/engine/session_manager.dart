@@ -1,8 +1,8 @@
 import 'dart:math' as math;
 
-import 'package:y2notes2/features/collaboration/domain/entities/participant.dart';
-import 'package:y2notes2/features/collaboration/domain/entities/permission.dart';
-import 'package:y2notes2/features/collaboration/domain/entities/session.dart';
+import 'package:biscuits/features/collaboration/domain/entities/participant.dart';
+import 'package:biscuits/features/collaboration/domain/entities/permission.dart';
+import 'package:biscuits/features/collaboration/domain/entities/session.dart';
 
 /// Manages session lifecycle: creating rooms, joining via code/link, and
 /// tracking participant permissions.

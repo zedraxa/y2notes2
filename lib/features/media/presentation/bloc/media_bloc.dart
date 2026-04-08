@@ -1,8 +1,8 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:y2notes2/features/media/domain/entities/media_element.dart';
-import 'package:y2notes2/features/media/engine/media_player_engine.dart';
-import 'package:y2notes2/features/media/presentation/bloc/media_event.dart';
-import 'package:y2notes2/features/media/presentation/bloc/media_state.dart';
+import 'package:biscuits/features/media/domain/entities/media_element.dart';
+import 'package:biscuits/features/media/engine/media_player_engine.dart';
+import 'package:biscuits/features/media/presentation/bloc/media_event.dart';
+import 'package:biscuits/features/media/presentation/bloc/media_state.dart';
 
 /// BLoC managing media elements and playback state.
 class MediaBloc extends Bloc<MediaEvent, MediaState> {

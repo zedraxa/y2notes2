@@ -1,7 +1,7 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
-import 'package:y2notes2/core/engine/stylus/stylus_adapter.dart';
-import 'package:y2notes2/core/engine/stylus/stylus_detector.dart';
+import 'package:biscuits/core/engine/stylus/stylus_adapter.dart';
+import 'package:biscuits/core/engine/stylus/stylus_detector.dart';
 
 /// Renders a hover cursor preview when the stylus is held above the screen.
 ///

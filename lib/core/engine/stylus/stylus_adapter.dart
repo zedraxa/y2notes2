@@ -1,7 +1,7 @@
 import 'dart:math' as math;
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:y2notes2/core/engine/stylus/stylus_detector.dart';
+import 'package:biscuits/core/engine/stylus/stylus_detector.dart';
 
 /// Unified data model produced by any [StylusAdapter] implementation.
 ///

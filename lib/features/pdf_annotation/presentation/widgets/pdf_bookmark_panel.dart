@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:y2notes2/features/pdf_annotation/domain/entities/pdf_bookmark.dart';
-import 'package:y2notes2/features/pdf_annotation/presentation/bloc/pdf_annotation_bloc.dart';
-import 'package:y2notes2/features/pdf_annotation/presentation/bloc/pdf_annotation_event.dart';
-import 'package:y2notes2/features/pdf_annotation/presentation/bloc/pdf_annotation_state.dart';
+import 'package:biscuits/features/pdf_annotation/domain/entities/pdf_bookmark.dart';
+import 'package:biscuits/features/pdf_annotation/presentation/bloc/pdf_annotation_bloc.dart';
+import 'package:biscuits/features/pdf_annotation/presentation/bloc/pdf_annotation_event.dart';
+import 'package:biscuits/features/pdf_annotation/presentation/bloc/pdf_annotation_state.dart';
 
 /// Side panel that lists PDF-specific bookmarks and allows the
 /// user to add, rename, annotate and delete bookmarks.

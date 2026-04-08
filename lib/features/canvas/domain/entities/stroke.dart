@@ -1,8 +1,8 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
-import 'package:y2notes2/features/canvas/domain/entities/point_data.dart';
-import 'package:y2notes2/features/canvas/domain/entities/tool.dart';
+import 'package:biscuits/features/canvas/domain/entities/point_data.dart';
+import 'package:biscuits/features/canvas/domain/entities/tool.dart';
 
 /// A single drawn stroke on the canvas.
 class Stroke extends Equatable {

@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:y2notes2/core/extensions/iterable_extensions.dart';
+import 'package:biscuits/core/extensions/iterable_extensions.dart';
 
 import '../../domain/entities/graph_element.dart';
 import '../../domain/entities/matrix_data.dart';

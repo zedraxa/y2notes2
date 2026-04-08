@@ -4,8 +4,8 @@
 definitions:
   environment:
     vars: &shared_vars
-      BUNDLE_ID: "com.y2notes.app"
-      APP_ORG: "com.y2notes"
+      BUNDLE_ID: "com.biscuits.app"
+      APP_ORG: "com.biscuits"
 
   scripts:
     # ── Setup ──
@@ -118,7 +118,7 @@ workflows:
       xcode: latest
       ios_signing:
         distribution_type: app_store
-        bundle_identifier: com.y2notes.app
+        bundle_identifier: com.biscuits.app
       vars:
         <<: *shared_vars
     cache:

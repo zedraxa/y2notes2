@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:y2notes2/features/library/presentation/bloc/library_bloc.dart';
-import 'package:y2notes2/features/library/presentation/bloc/library_event.dart';
-import 'package:y2notes2/features/library/presentation/bloc/library_state.dart';
+import 'package:biscuits/features/library/presentation/bloc/library_bloc.dart';
+import 'package:biscuits/features/library/presentation/bloc/library_event.dart';
+import 'package:biscuits/features/library/presentation/bloc/library_state.dart';
 
 /// Shows items currently in the trash with restore / permanent-delete options.
 class TrashView extends StatelessWidget {

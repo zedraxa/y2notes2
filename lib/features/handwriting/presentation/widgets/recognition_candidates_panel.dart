@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:y2notes2/features/handwriting/domain/entities/recognition_result.dart';
-import 'package:y2notes2/features/handwriting/presentation/bloc/handwriting_bloc.dart';
-import 'package:y2notes2/features/handwriting/presentation/bloc/handwriting_event.dart';
+import 'package:biscuits/features/handwriting/domain/entities/recognition_result.dart';
+import 'package:biscuits/features/handwriting/presentation/bloc/handwriting_bloc.dart';
+import 'package:biscuits/features/handwriting/presentation/bloc/handwriting_event.dart';
 
 /// Shows all recognition candidates with confidence bars.
 /// Tapping a candidate accepts it.

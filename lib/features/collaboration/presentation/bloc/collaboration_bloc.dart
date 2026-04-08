@@ -2,14 +2,14 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:y2notes2/features/collaboration/domain/entities/participant.dart';
-import 'package:y2notes2/features/collaboration/domain/entities/permission.dart';
-import 'package:y2notes2/features/collaboration/engine/crdt_engine.dart';
-import 'package:y2notes2/features/collaboration/engine/presence_manager.dart';
-import 'package:y2notes2/features/collaboration/engine/session_manager.dart';
-import 'package:y2notes2/features/collaboration/engine/sync_client.dart';
-import 'package:y2notes2/features/collaboration/presentation/bloc/collaboration_event.dart';
-import 'package:y2notes2/features/collaboration/presentation/bloc/collaboration_state.dart';
+import 'package:biscuits/features/collaboration/domain/entities/participant.dart';
+import 'package:biscuits/features/collaboration/domain/entities/permission.dart';
+import 'package:biscuits/features/collaboration/engine/crdt_engine.dart';
+import 'package:biscuits/features/collaboration/engine/presence_manager.dart';
+import 'package:biscuits/features/collaboration/engine/session_manager.dart';
+import 'package:biscuits/features/collaboration/engine/sync_client.dart';
+import 'package:biscuits/features/collaboration/presentation/bloc/collaboration_event.dart';
+import 'package:biscuits/features/collaboration/presentation/bloc/collaboration_state.dart';
 
 export 'collaboration_event.dart';
 export 'collaboration_state.dart';

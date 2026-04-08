@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:y2notes2/features/scanner/domain/entities/scanned_document.dart';
+import 'package:biscuits/features/scanner/domain/entities/scanned_document.dart';
 
 /// A horizontal row of filter chips that lets the user
 /// preview and select a scan filter.

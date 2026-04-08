@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:uuid/uuid.dart';
-import 'package:y2notes2/features/library/domain/entities/library_item.dart';
+import 'package:biscuits/features/library/domain/entities/library_item.dart';
 
 /// The rule that determines which items appear in a smart collection.
 enum SmartCollectionRule {

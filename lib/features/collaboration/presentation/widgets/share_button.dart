@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:y2notes2/features/collaboration/presentation/bloc/collaboration_bloc.dart';
-import 'package:y2notes2/features/collaboration/presentation/widgets/join_dialog.dart';
-import 'package:y2notes2/features/collaboration/presentation/widgets/participants_panel.dart';
+import 'package:biscuits/features/collaboration/presentation/bloc/collaboration_bloc.dart';
+import 'package:biscuits/features/collaboration/presentation/widgets/join_dialog.dart';
+import 'package:biscuits/features/collaboration/presentation/widgets/participants_panel.dart';
 
 /// Toolbar button that opens the share / collaboration menu.
 ///

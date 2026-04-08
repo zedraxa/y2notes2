@@ -1,10 +1,10 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
-import 'package:y2notes2/features/canvas/domain/entities/point_data.dart';
-import 'package:y2notes2/features/canvas/domain/entities/tools/drawing_tool.dart';
-import 'package:y2notes2/features/canvas/domain/entities/tools/tool_category.dart';
-import 'package:y2notes2/features/canvas/domain/entities/tools/tool_setting_definition.dart';
-import 'package:y2notes2/features/canvas/domain/entities/tools/tool_settings.dart';
+import 'package:biscuits/features/canvas/domain/entities/point_data.dart';
+import 'package:biscuits/features/canvas/domain/entities/tools/drawing_tool.dart';
+import 'package:biscuits/features/canvas/domain/entities/tools/tool_category.dart';
+import 'package:biscuits/features/canvas/domain/entities/tools/tool_setting_definition.dart';
+import 'package:biscuits/features/canvas/domain/entities/tools/tool_settings.dart';
 
 class SprayPaintTool implements DrawingTool {
   @override String get id => 'spray_paint';

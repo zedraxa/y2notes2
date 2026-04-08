@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:y2notes2/core/services/settings_service.dart';
-import 'package:y2notes2/features/canvas/domain/models/canvas_config.dart';
-import 'package:y2notes2/features/canvas/presentation/bloc/canvas_bloc.dart';
-import 'package:y2notes2/features/canvas/presentation/bloc/canvas_event.dart';
-import 'package:y2notes2/features/canvas/presentation/bloc/canvas_state.dart';
-import 'package:y2notes2/shared/widgets/service_provider.dart';
+import 'package:biscuits/core/services/settings_service.dart';
+import 'package:biscuits/features/canvas/domain/models/canvas_config.dart';
+import 'package:biscuits/features/canvas/presentation/bloc/canvas_bloc.dart';
+import 'package:biscuits/features/canvas/presentation/bloc/canvas_event.dart';
+import 'package:biscuits/features/canvas/presentation/bloc/canvas_state.dart';
+import 'package:biscuits/shared/widgets/service_provider.dart';
 
 /// Canvas settings: page template, line/grid/dot spacing, and margin toggle.
 class CanvasSettingsPage extends StatelessWidget {

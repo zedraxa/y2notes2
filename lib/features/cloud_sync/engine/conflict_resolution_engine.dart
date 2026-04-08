@@ -1,5 +1,5 @@
-import 'package:y2notes2/features/cloud_sync/domain/entities/sync_conflict.dart';
-import 'package:y2notes2/features/cloud_sync/domain/entities/sync_metadata.dart';
+import 'package:biscuits/features/cloud_sync/domain/entities/sync_conflict.dart';
+import 'package:biscuits/features/cloud_sync/domain/entities/sync_metadata.dart';
 
 /// Engine that detects and resolves synchronization conflicts between
 /// local and remote notebook versions.

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:y2notes2/features/audio_sync/domain/entities/audio_recording.dart';
-import 'package:y2notes2/features/audio_sync/presentation/bloc/audio_sync_bloc.dart';
-import 'package:y2notes2/features/audio_sync/presentation/bloc/audio_sync_event.dart';
-import 'package:y2notes2/features/audio_sync/presentation/bloc/audio_sync_state.dart';
-import 'package:y2notes2/features/audio_sync/presentation/widgets/audio_timeline_widget.dart';
+import 'package:biscuits/features/audio_sync/domain/entities/audio_recording.dart';
+import 'package:biscuits/features/audio_sync/presentation/bloc/audio_sync_bloc.dart';
+import 'package:biscuits/features/audio_sync/presentation/bloc/audio_sync_event.dart';
+import 'package:biscuits/features/audio_sync/presentation/bloc/audio_sync_state.dart';
+import 'package:biscuits/features/audio_sync/presentation/widgets/audio_timeline_widget.dart';
 
 /// Enhanced voice-note widget with stroke-synchronised
 /// recording and timeline playback.

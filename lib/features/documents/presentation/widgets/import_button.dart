@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:y2notes2/features/documents/domain/models/import_options.dart';
-import 'package:y2notes2/features/documents/presentation/bloc/document_bloc.dart';
-import 'package:y2notes2/features/documents/presentation/bloc/document_event.dart';
-import 'package:y2notes2/features/documents/presentation/bloc/document_state.dart';
-import 'package:y2notes2/features/scanner/domain/entities/scanned_document.dart';
-import 'package:y2notes2/features/scanner/presentation/pages/document_scanner_page.dart';
+import 'package:biscuits/features/documents/domain/models/import_options.dart';
+import 'package:biscuits/features/documents/presentation/bloc/document_bloc.dart';
+import 'package:biscuits/features/documents/presentation/bloc/document_event.dart';
+import 'package:biscuits/features/documents/presentation/bloc/document_state.dart';
+import 'package:biscuits/features/scanner/domain/entities/scanned_document.dart';
+import 'package:biscuits/features/scanner/presentation/pages/document_scanner_page.dart';
 
 /// A toolbar button that triggers PDF or image imports. Shows a popup menu
 /// with options for scanning, PDF, single image, and multiple images. Displays an

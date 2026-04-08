@@ -1,6 +1,6 @@
 import 'dart:math' as math;
-import 'package:y2notes2/features/handwriting/data/math_templates.dart';
-import 'package:y2notes2/features/handwriting/domain/entities/recognition_result.dart';
+import 'package:biscuits/features/handwriting/data/math_templates.dart';
+import 'package:biscuits/features/handwriting/domain/entities/recognition_result.dart';
 
 /// Result of math expression recognition.
 class MathRecognitionResult {

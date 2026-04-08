@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:y2notes2/features/stickers/domain/entities/sticker_element.dart';
-import 'package:y2notes2/features/stickers/engine/stamp_brush_engine.dart';
-import 'package:y2notes2/features/stickers/engine/sticker_hit_tester.dart';
-import 'package:y2notes2/features/stickers/presentation/bloc/sticker_bloc.dart';
-import 'package:y2notes2/features/stickers/presentation/bloc/sticker_event.dart';
-import 'package:y2notes2/features/stickers/presentation/bloc/sticker_state.dart';
-import 'package:y2notes2/features/stickers/presentation/widgets/sticker_context_menu.dart';
+import 'package:biscuits/features/stickers/domain/entities/sticker_element.dart';
+import 'package:biscuits/features/stickers/engine/stamp_brush_engine.dart';
+import 'package:biscuits/features/stickers/engine/sticker_hit_tester.dart';
+import 'package:biscuits/features/stickers/presentation/bloc/sticker_bloc.dart';
+import 'package:biscuits/features/stickers/presentation/bloc/sticker_event.dart';
+import 'package:biscuits/features/stickers/presentation/bloc/sticker_state.dart';
+import 'package:biscuits/features/stickers/presentation/widgets/sticker_context_menu.dart';
 
 /// Overlay widget that handles pointer events for sticker placement & interaction.
 class StickerInteractionHandler extends StatefulWidget {

@@ -2,13 +2,13 @@ import 'dart:ui' as ui;
 
 import 'package:equatable/equatable.dart';
 import 'package:uuid/uuid.dart';
-import 'package:y2notes2/features/audio_sync/domain/entities/audio_recording.dart';
-import 'package:y2notes2/features/canvas/domain/entities/stroke.dart';
-import 'package:y2notes2/features/canvas/domain/models/canvas_config.dart';
-import 'package:y2notes2/features/documents/domain/entities/canvas_elements.dart';
-import 'package:y2notes2/features/media/domain/entities/media_element.dart';
-import 'package:y2notes2/features/pdf_annotation/domain/entities/pdf_annotation.dart';
-import 'package:y2notes2/features/rich_text/domain/entities/rich_text_element.dart';
+import 'package:biscuits/features/audio_sync/domain/entities/audio_recording.dart';
+import 'package:biscuits/features/canvas/domain/entities/stroke.dart';
+import 'package:biscuits/features/canvas/domain/models/canvas_config.dart';
+import 'package:biscuits/features/documents/domain/entities/canvas_elements.dart';
+import 'package:biscuits/features/media/domain/entities/media_element.dart';
+import 'package:biscuits/features/pdf_annotation/domain/entities/pdf_annotation.dart';
+import 'package:biscuits/features/rich_text/domain/entities/rich_text_element.dart';
 
 /// A single page in a [Notebook].
 class NotebookPage extends Equatable {

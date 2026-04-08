@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:y2notes2/features/library/domain/entities/smart_collection.dart';
+import 'package:biscuits/features/library/domain/entities/smart_collection.dart';
 
 /// A compact card representing a single [SmartCollection].
 class SmartCollectionCard extends StatelessWidget {

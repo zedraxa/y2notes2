@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:y2notes2/features/audio_sync/domain/entities/audio_recording.dart';
-import 'package:y2notes2/features/audio_sync/domain/entities/stroke_timestamp.dart';
-import 'package:y2notes2/features/audio_sync/domain/entities/transcription_segment.dart';
+import 'package:biscuits/features/audio_sync/domain/entities/audio_recording.dart';
+import 'package:biscuits/features/audio_sync/domain/entities/stroke_timestamp.dart';
+import 'package:biscuits/features/audio_sync/domain/entities/transcription_segment.dart';
 
 /// Visualises the audio timeline for a single recording,
 /// showing stroke markers and transcription segments.

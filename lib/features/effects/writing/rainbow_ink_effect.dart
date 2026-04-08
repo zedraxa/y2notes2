@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:y2notes2/core/constants/app_constants.dart';
-import 'package:y2notes2/core/utils/math_utils.dart';
-import 'package:y2notes2/features/canvas/domain/entities/point_data.dart';
-import 'package:y2notes2/features/canvas/domain/entities/stroke.dart';
-import 'package:y2notes2/features/effects/engine/effect_config.dart';
+import 'package:biscuits/core/constants/app_constants.dart';
+import 'package:biscuits/core/utils/math_utils.dart';
+import 'package:biscuits/features/canvas/domain/entities/point_data.dart';
+import 'package:biscuits/features/canvas/domain/entities/stroke.dart';
+import 'package:biscuits/features/effects/engine/effect_config.dart';
 
 /// Rainbow Ink Effect — hue cycles along the stroke path.
 ///

@@ -1,4 +1,4 @@
-import 'package:y2notes2/features/media/domain/entities/media_element.dart';
+import 'package:biscuits/features/media/domain/entities/media_element.dart';
 
 /// Lightweight abstraction over platform media playback.
 ///

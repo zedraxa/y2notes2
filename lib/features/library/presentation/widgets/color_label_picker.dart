@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:y2notes2/features/library/domain/entities/library_item.dart';
+import 'package:biscuits/features/library/domain/entities/library_item.dart';
 
 /// A row of colour-label circles for quick item labelling.
 class ColorLabelPicker extends StatelessWidget {

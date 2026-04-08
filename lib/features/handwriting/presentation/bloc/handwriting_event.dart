@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
-import 'package:y2notes2/features/canvas/domain/entities/stroke.dart';
-import 'package:y2notes2/features/handwriting/domain/entities/text_block.dart';
-import 'package:y2notes2/features/handwriting/engine/recognition_engine.dart';
+import 'package:biscuits/features/canvas/domain/entities/stroke.dart';
+import 'package:biscuits/features/handwriting/domain/entities/text_block.dart';
+import 'package:biscuits/features/handwriting/engine/recognition_engine.dart';
 
 abstract class HandwritingEvent extends Equatable {
   const HandwritingEvent();

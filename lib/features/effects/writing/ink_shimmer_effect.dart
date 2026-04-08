@@ -1,11 +1,11 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-import 'package:y2notes2/core/constants/app_constants.dart';
-import 'package:y2notes2/core/engine/particle_system.dart';
-import 'package:y2notes2/features/canvas/domain/entities/point_data.dart';
-import 'package:y2notes2/features/canvas/domain/entities/stroke.dart';
-import 'package:y2notes2/features/effects/engine/effect_config.dart';
+import 'package:biscuits/core/constants/app_constants.dart';
+import 'package:biscuits/core/engine/particle_system.dart';
+import 'package:biscuits/features/canvas/domain/entities/point_data.dart';
+import 'package:biscuits/features/canvas/domain/entities/stroke.dart';
+import 'package:biscuits/features/effects/engine/effect_config.dart';
 
 /// Ink Shimmer Effect — sparkle particles along a completed stroke.
 ///

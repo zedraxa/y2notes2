@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:y2notes2/features/stickers/domain/models/stamp_shape.dart';
-import 'package:y2notes2/features/stickers/domain/models/washi_pattern.dart';
+import 'package:biscuits/features/stickers/domain/models/stamp_shape.dart';
+import 'package:biscuits/features/stickers/domain/models/washi_pattern.dart';
 
 class StickerPacks {
   StickerPacks._();

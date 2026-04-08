@@ -2,8 +2,8 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:y2notes2/core/services/audio_recording_service.dart';
-import 'package:y2notes2/features/widgets/domain/entities/smart_widget.dart';
+import 'package:biscuits/core/services/audio_recording_service.dart';
+import 'package:biscuits/features/widgets/domain/entities/smart_widget.dart';
 
 /// Voice note widget with real microphone recording and audio playback.
 ///

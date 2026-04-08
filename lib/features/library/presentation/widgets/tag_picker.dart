@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:y2notes2/features/library/domain/entities/tag.dart';
+import 'package:biscuits/features/library/domain/entities/tag.dart';
 
 /// A chip-based tag picker that lets the user toggle tags on/off.
 class TagPicker extends StatelessWidget {

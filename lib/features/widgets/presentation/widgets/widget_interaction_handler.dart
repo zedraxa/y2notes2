@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:y2notes2/features/widgets/domain/entities/smart_widget.dart';
-import 'package:y2notes2/features/widgets/presentation/bloc/widget_bloc.dart';
-import 'package:y2notes2/features/widgets/presentation/bloc/widget_event.dart';
-import 'package:y2notes2/features/widgets/presentation/bloc/widget_state.dart';
+import 'package:biscuits/features/widgets/domain/entities/smart_widget.dart';
+import 'package:biscuits/features/widgets/presentation/bloc/widget_bloc.dart';
+import 'package:biscuits/features/widgets/presentation/bloc/widget_event.dart';
+import 'package:biscuits/features/widgets/presentation/bloc/widget_state.dart';
 
 /// Overlays interactive smart widgets on the canvas.
 class WidgetInteractionHandler extends StatelessWidget {

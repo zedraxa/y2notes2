@@ -1,5 +1,5 @@
-import 'package:y2notes2/features/cloud_sync/domain/entities/cloud_provider.dart';
-import 'package:y2notes2/features/cloud_sync/domain/entities/sync_metadata.dart';
+import 'package:biscuits/features/cloud_sync/domain/entities/cloud_provider.dart';
+import 'package:biscuits/features/cloud_sync/domain/entities/sync_metadata.dart';
 
 /// Abstract interface for cloud storage provider implementations.
 ///

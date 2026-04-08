@@ -1,9 +1,9 @@
 import 'package:equatable/equatable.dart';
-import 'package:y2notes2/features/collaboration/domain/entities/participant.dart';
-import 'package:y2notes2/features/collaboration/domain/entities/permission.dart';
-import 'package:y2notes2/features/collaboration/domain/entities/session.dart';
-import 'package:y2notes2/features/collaboration/engine/crdt_engine.dart';
-import 'package:y2notes2/features/collaboration/engine/sync_client.dart';
+import 'package:biscuits/features/collaboration/domain/entities/participant.dart';
+import 'package:biscuits/features/collaboration/domain/entities/permission.dart';
+import 'package:biscuits/features/collaboration/domain/entities/session.dart';
+import 'package:biscuits/features/collaboration/engine/crdt_engine.dart';
+import 'package:biscuits/features/collaboration/engine/sync_client.dart';
 
 /// Immutable snapshot of the collaboration subsystem.
 class CollaborationState extends Equatable {

@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:y2notes2/features/widgets/domain/entities/smart_widget.dart';
+import 'package:biscuits/features/widgets/domain/entities/smart_widget.dart';
 
 class TimerWidget extends SmartWidget {
   TimerWidget({

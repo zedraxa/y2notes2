@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:y2notes2/core/constants/app_constants.dart';
+import 'package:biscuits/core/constants/app_constants.dart';
 
 /// Page background template types.
 enum PageTemplate { blank, lined, grid, dotted, chalkboard }

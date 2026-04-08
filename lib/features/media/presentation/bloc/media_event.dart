@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
-import 'package:y2notes2/features/media/domain/entities/media_element.dart';
+import 'package:biscuits/features/media/domain/entities/media_element.dart';
 
 /// Base class for all media-feature events.
 abstract class MediaEvent extends Equatable {

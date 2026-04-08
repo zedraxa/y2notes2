@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:uuid/uuid.dart';
-import 'package:y2notes2/features/audio_sync/domain/entities/stroke_timestamp.dart';
-import 'package:y2notes2/features/audio_sync/domain/entities/transcription_segment.dart';
+import 'package:biscuits/features/audio_sync/domain/entities/stroke_timestamp.dart';
+import 'package:biscuits/features/audio_sync/domain/entities/transcription_segment.dart';
 
 /// Status of an audio recording session.
 enum RecordingStatus {

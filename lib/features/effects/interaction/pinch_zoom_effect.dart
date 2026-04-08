@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:y2notes2/core/engine/particle_system.dart';
-import 'package:y2notes2/features/effects/interaction/interaction_effect.dart';
+import 'package:biscuits/core/engine/particle_system.dart';
+import 'package:biscuits/features/effects/interaction/interaction_effect.dart';
 
 /// Pinch Zoom Effect — visual feedback during canvas pinch-zoom gestures.
 ///

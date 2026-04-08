@@ -25,7 +25,7 @@ class AboutPage extends StatelessWidget {
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  'Y2Notes',
+                  'Biscuits',
                   style: theme.textTheme.headlineMedium,
                 ),
                 const SizedBox(height: 4),
@@ -66,7 +66,7 @@ class AboutPage extends StatelessWidget {
             trailing: const Icon(Icons.chevron_right),
             onTap: () => showLicensePage(
               context: context,
-              applicationName: 'Y2Notes',
+              applicationName: 'Biscuits',
               applicationVersion: '1.0.0',
               applicationIcon: Padding(
                 padding: const EdgeInsets.all(8),

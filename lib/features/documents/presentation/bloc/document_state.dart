@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
-import 'package:y2notes2/features/documents/domain/entities/import_history_entry.dart';
-import 'package:y2notes2/features/documents/domain/entities/notebook.dart';
+import 'package:biscuits/features/documents/domain/entities/import_history_entry.dart';
+import 'package:biscuits/features/documents/domain/entities/notebook.dart';
 
 /// Status of an ongoing or completed export/import operation.
 enum DocumentOperationStatus {

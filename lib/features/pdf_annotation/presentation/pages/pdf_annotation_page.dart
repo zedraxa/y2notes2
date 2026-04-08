@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:y2notes2/features/pdf_annotation/domain/entities/pdf_annotation.dart';
-import 'package:y2notes2/features/pdf_annotation/domain/entities/pdf_bookmark.dart';
-import 'package:y2notes2/features/pdf_annotation/presentation/bloc/pdf_annotation_bloc.dart';
-import 'package:y2notes2/features/pdf_annotation/presentation/bloc/pdf_annotation_event.dart';
-import 'package:y2notes2/features/pdf_annotation/presentation/bloc/pdf_annotation_state.dart';
-import 'package:y2notes2/features/pdf_annotation/presentation/widgets/pdf_annotation_list_panel.dart';
-import 'package:y2notes2/features/pdf_annotation/presentation/widgets/pdf_annotation_renderer.dart';
-import 'package:y2notes2/features/pdf_annotation/presentation/widgets/pdf_annotation_toolbar.dart';
-import 'package:y2notes2/features/pdf_annotation/presentation/widgets/pdf_bookmark_panel.dart';
-import 'package:y2notes2/features/pdf_annotation/presentation/widgets/pdf_text_selection_overlay.dart';
+import 'package:biscuits/features/pdf_annotation/domain/entities/pdf_annotation.dart';
+import 'package:biscuits/features/pdf_annotation/domain/entities/pdf_bookmark.dart';
+import 'package:biscuits/features/pdf_annotation/presentation/bloc/pdf_annotation_bloc.dart';
+import 'package:biscuits/features/pdf_annotation/presentation/bloc/pdf_annotation_event.dart';
+import 'package:biscuits/features/pdf_annotation/presentation/bloc/pdf_annotation_state.dart';
+import 'package:biscuits/features/pdf_annotation/presentation/widgets/pdf_annotation_list_panel.dart';
+import 'package:biscuits/features/pdf_annotation/presentation/widgets/pdf_annotation_renderer.dart';
+import 'package:biscuits/features/pdf_annotation/presentation/widgets/pdf_annotation_toolbar.dart';
+import 'package:biscuits/features/pdf_annotation/presentation/widgets/pdf_bookmark_panel.dart';
+import 'package:biscuits/features/pdf_annotation/presentation/widgets/pdf_text_selection_overlay.dart';
 
 /// Full-screen page for viewing and annotating a PDF document.
 ///

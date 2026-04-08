@@ -1,16 +1,16 @@
 import 'dart:convert';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:y2notes2/features/cloud_sync/data/cloud_sync_service.dart';
-import 'package:y2notes2/features/cloud_sync/data/dropbox_sync_service.dart';
-import 'package:y2notes2/features/cloud_sync/data/google_drive_sync_service.dart';
-import 'package:y2notes2/features/cloud_sync/data/icloud_sync_service.dart';
-import 'package:y2notes2/features/cloud_sync/data/onedrive_sync_service.dart';
-import 'package:y2notes2/features/cloud_sync/domain/entities/cloud_provider.dart';
-import 'package:y2notes2/features/cloud_sync/domain/entities/sync_metadata.dart';
-import 'package:y2notes2/features/cloud_sync/engine/conflict_resolution_engine.dart';
-import 'package:y2notes2/features/cloud_sync/presentation/bloc/cloud_sync_event.dart';
-import 'package:y2notes2/features/cloud_sync/presentation/bloc/cloud_sync_state.dart';
+import 'package:biscuits/features/cloud_sync/data/cloud_sync_service.dart';
+import 'package:biscuits/features/cloud_sync/data/dropbox_sync_service.dart';
+import 'package:biscuits/features/cloud_sync/data/google_drive_sync_service.dart';
+import 'package:biscuits/features/cloud_sync/data/icloud_sync_service.dart';
+import 'package:biscuits/features/cloud_sync/data/onedrive_sync_service.dart';
+import 'package:biscuits/features/cloud_sync/domain/entities/cloud_provider.dart';
+import 'package:biscuits/features/cloud_sync/domain/entities/sync_metadata.dart';
+import 'package:biscuits/features/cloud_sync/engine/conflict_resolution_engine.dart';
+import 'package:biscuits/features/cloud_sync/presentation/bloc/cloud_sync_event.dart';
+import 'package:biscuits/features/cloud_sync/presentation/bloc/cloud_sync_state.dart';
 
 /// BLoC that manages cloud synchronization state, provider connections,
 /// sync operations, and conflict resolution.

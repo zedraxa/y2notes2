@@ -1,7 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:y2notes2/features/widgets/domain/entities/smart_widget.dart';
+import 'package:biscuits/features/widgets/domain/entities/smart_widget.dart';
 
 /// Weather widget with simulated data and interactive controls.
 class WeatherWidget extends SmartWidget {

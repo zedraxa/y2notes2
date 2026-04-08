@@ -1,18 +1,18 @@
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
-import 'package:y2notes2/core/engine/stroke_renderer.dart';
-import 'package:y2notes2/features/canvas/domain/entities/stroke.dart';
-import 'package:y2notes2/features/canvas/domain/entities/tools/tool_settings.dart';
-import 'package:y2notes2/features/canvas/domain/models/canvas_config.dart';
-import 'package:y2notes2/features/effects/interaction/interaction_effects_engine.dart';
-import 'package:y2notes2/features/effects/writing/writing_effects_engine.dart';
-import 'package:y2notes2/features/handwriting/domain/entities/text_block.dart';
-import 'package:y2notes2/features/rich_text/domain/entities/rich_text_element.dart';
-import 'package:y2notes2/features/rich_text/engine/rich_text_renderer.dart';
-import 'package:y2notes2/features/shapes/domain/entities/shape_element.dart';
-import 'package:y2notes2/features/shapes/engine/shape_renderer.dart';
-import 'package:y2notes2/features/stickers/domain/entities/sticker_element.dart';
-import 'package:y2notes2/features/stickers/engine/sticker_renderer.dart';
+import 'package:biscuits/core/engine/stroke_renderer.dart';
+import 'package:biscuits/features/canvas/domain/entities/stroke.dart';
+import 'package:biscuits/features/canvas/domain/entities/tools/tool_settings.dart';
+import 'package:biscuits/features/canvas/domain/models/canvas_config.dart';
+import 'package:biscuits/features/effects/interaction/interaction_effects_engine.dart';
+import 'package:biscuits/features/effects/writing/writing_effects_engine.dart';
+import 'package:biscuits/features/handwriting/domain/entities/text_block.dart';
+import 'package:biscuits/features/rich_text/domain/entities/rich_text_element.dart';
+import 'package:biscuits/features/rich_text/engine/rich_text_renderer.dart';
+import 'package:biscuits/features/shapes/domain/entities/shape_element.dart';
+import 'package:biscuits/features/shapes/engine/shape_renderer.dart';
+import 'package:biscuits/features/stickers/domain/entities/sticker_element.dart';
+import 'package:biscuits/features/stickers/engine/sticker_renderer.dart';
 
 /// Composites all rendering layers in the correct order.
 ///

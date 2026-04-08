@@ -1,23 +1,23 @@
 import 'package:flutter/material.dart';
-import 'package:y2notes2/core/engine/particle_system.dart';
-import 'package:y2notes2/features/effects/engine/effect_budget.dart';
-import 'package:y2notes2/features/effects/interaction/delete_animation_effect.dart';
-import 'package:y2notes2/features/effects/interaction/drag_shadow_effect.dart';
-import 'package:y2notes2/features/effects/interaction/edge_bounce_effect.dart';
-import 'package:y2notes2/features/effects/interaction/interaction_effect.dart';
-import 'package:y2notes2/features/effects/interaction/page_turn_effect.dart';
-import 'package:y2notes2/features/effects/interaction/pinch_zoom_effect.dart';
-import 'package:y2notes2/features/effects/interaction/selection_pulse_effect.dart';
-import 'package:y2notes2/features/effects/interaction/snap_glow_effect.dart';
-import 'package:y2notes2/features/effects/interaction/tool_switch_effect.dart';
-import 'package:y2notes2/features/effects/interaction/touch_ripple_effect.dart';
-import 'package:y2notes2/features/effects/interaction/undo_redo_effect.dart';
+import 'package:biscuits/core/engine/particle_system.dart';
+import 'package:biscuits/features/effects/engine/effect_budget.dart';
+import 'package:biscuits/features/effects/interaction/delete_animation_effect.dart';
+import 'package:biscuits/features/effects/interaction/drag_shadow_effect.dart';
+import 'package:biscuits/features/effects/interaction/edge_bounce_effect.dart';
+import 'package:biscuits/features/effects/interaction/interaction_effect.dart';
+import 'package:biscuits/features/effects/interaction/page_turn_effect.dart';
+import 'package:biscuits/features/effects/interaction/pinch_zoom_effect.dart';
+import 'package:biscuits/features/effects/interaction/selection_pulse_effect.dart';
+import 'package:biscuits/features/effects/interaction/snap_glow_effect.dart';
+import 'package:biscuits/features/effects/interaction/tool_switch_effect.dart';
+import 'package:biscuits/features/effects/interaction/touch_ripple_effect.dart';
+import 'package:biscuits/features/effects/interaction/undo_redo_effect.dart';
 
-export 'package:y2notes2/features/effects/interaction/delete_animation_effect.dart'
+export 'package:biscuits/features/effects/interaction/delete_animation_effect.dart'
     show DeleteStyle;
-export 'package:y2notes2/features/effects/interaction/edge_bounce_effect.dart'
+export 'package:biscuits/features/effects/interaction/edge_bounce_effect.dart'
     show EdgeDirection;
-export 'package:y2notes2/features/effects/interaction/interaction_effect.dart'
+export 'package:biscuits/features/effects/interaction/interaction_effect.dart'
     show InteractionEffect;
 
 /// Orchestrates all 10 interaction effects.

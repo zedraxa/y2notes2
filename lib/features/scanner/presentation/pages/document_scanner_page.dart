@@ -3,13 +3,13 @@ import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:y2notes2/features/scanner/domain/entities/scanned_document.dart';
-import 'package:y2notes2/features/scanner/presentation/bloc/scanner_bloc.dart';
-import 'package:y2notes2/features/scanner/presentation/bloc/scanner_event.dart';
-import 'package:y2notes2/features/scanner/presentation/bloc/scanner_state.dart';
-import 'package:y2notes2/features/scanner/presentation/widgets/edge_detection_overlay.dart';
-import 'package:y2notes2/features/scanner/presentation/widgets/scanner_filter_bar.dart';
-import 'package:y2notes2/features/scanner/presentation/widgets/scanned_page_thumbnails.dart';
+import 'package:biscuits/features/scanner/domain/entities/scanned_document.dart';
+import 'package:biscuits/features/scanner/presentation/bloc/scanner_bloc.dart';
+import 'package:biscuits/features/scanner/presentation/bloc/scanner_event.dart';
+import 'package:biscuits/features/scanner/presentation/bloc/scanner_state.dart';
+import 'package:biscuits/features/scanner/presentation/widgets/edge_detection_overlay.dart';
+import 'package:biscuits/features/scanner/presentation/widgets/scanner_filter_bar.dart';
+import 'package:biscuits/features/scanner/presentation/widgets/scanned_page_thumbnails.dart';
 
 /// Full-screen document scanner page.
 ///

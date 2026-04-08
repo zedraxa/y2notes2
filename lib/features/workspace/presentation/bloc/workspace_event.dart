@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:y2notes2/features/workspace/domain/tab_session.dart';
+import 'package:biscuits/features/workspace/domain/tab_session.dart';
 
 abstract class WorkspaceEvent extends Equatable {
   const WorkspaceEvent();

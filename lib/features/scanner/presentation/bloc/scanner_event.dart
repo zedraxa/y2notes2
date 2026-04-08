@@ -2,8 +2,8 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:equatable/equatable.dart';
-import 'package:y2notes2/features/scanner/domain/entities/scanned_document.dart';
-import 'package:y2notes2/features/scanner/domain/models/scanner_options.dart';
+import 'package:biscuits/features/scanner/domain/entities/scanned_document.dart';
+import 'package:biscuits/features/scanner/domain/models/scanner_options.dart';
 
 /// Base class for scanner events.
 abstract class ScannerEvent extends Equatable {

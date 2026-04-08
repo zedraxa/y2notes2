@@ -5,11 +5,11 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:image/image.dart' as img;
 import 'package:path_provider/path_provider.dart';
-import 'package:y2notes2/features/canvas/domain/entities/stroke.dart';
-import 'package:y2notes2/features/canvas/domain/models/canvas_config.dart';
-import 'package:y2notes2/features/documents/domain/entities/canvas_elements.dart';
-import 'package:y2notes2/features/documents/domain/models/export_options.dart';
-import 'package:y2notes2/features/shapes/domain/entities/shape_type.dart';
+import 'package:biscuits/features/canvas/domain/entities/stroke.dart';
+import 'package:biscuits/features/canvas/domain/models/canvas_config.dart';
+import 'package:biscuits/features/documents/domain/entities/canvas_elements.dart';
+import 'package:biscuits/features/documents/domain/models/export_options.dart';
+import 'package:biscuits/features/shapes/domain/entities/shape_type.dart';
 
 /// Rasterises canvas content as PNG or JPEG.
 class ImageExportEngine {
@@ -256,7 +256,7 @@ class ImageExportEngine {
   /// Saves exported image bytes to the application documents directory.
   Future<String> saveToFile({
     required Uint8List bytes,
-    String fileName = 'y2notes_export',
+    String fileName = 'biscuits_export',
     ImageExportFormat format = ImageExportFormat.png,
   }) async {
     final ext = format == ImageExportFormat.png ? 'png' : 'jpg';

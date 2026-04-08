@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:y2notes2/features/collaboration/engine/sync_client.dart';
-import 'package:y2notes2/features/collaboration/presentation/bloc/collaboration_bloc.dart';
+import 'package:biscuits/features/collaboration/engine/sync_client.dart';
+import 'package:biscuits/features/collaboration/presentation/bloc/collaboration_bloc.dart';
 
 /// Banner shown when the WebSocket connection is lost.
 ///

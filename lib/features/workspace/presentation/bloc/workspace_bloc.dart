@@ -1,8 +1,8 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uuid/uuid.dart';
-import 'package:y2notes2/features/workspace/domain/tab_session.dart';
-import 'package:y2notes2/features/workspace/presentation/bloc/workspace_event.dart';
-import 'package:y2notes2/features/workspace/presentation/bloc/workspace_state.dart';
+import 'package:biscuits/features/workspace/domain/tab_session.dart';
+import 'package:biscuits/features/workspace/presentation/bloc/workspace_event.dart';
+import 'package:biscuits/features/workspace/presentation/bloc/workspace_state.dart';
 
 /// Maximum number of tabs allowed at once.
 const int kMaxTabs = 8;

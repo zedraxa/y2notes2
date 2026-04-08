@@ -6,8 +6,8 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:image/image.dart' as img;
 import 'package:path_provider/path_provider.dart';
-import 'package:y2notes2/features/documents/domain/entities/import_result.dart';
-import 'package:y2notes2/features/documents/engine/import_validator.dart';
+import 'package:biscuits/features/documents/domain/entities/import_result.dart';
+import 'package:biscuits/features/documents/engine/import_validator.dart';
 
 /// Handles importing image files (PNG, JPEG, HEIC) from the device and
 /// converting them into canvas-ready [ImportedPage] objects.
@@ -245,7 +245,7 @@ class ImageImportEngine {
   /// Saves image bytes to the application documents directory.
   Future<String> saveToFile({
     required Uint8List bytes,
-    String fileName = 'y2notes_import',
+    String fileName = 'biscuits_import',
     String extension = 'png',
   }) async {
     final dir = await getApplicationDocumentsDirectory();

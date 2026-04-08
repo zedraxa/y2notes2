@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:y2notes2/features/stickers/data/sticker_packs.dart';
-import 'package:y2notes2/features/stickers/domain/entities/sticker_element.dart';
+import 'package:biscuits/features/stickers/data/sticker_packs.dart';
+import 'package:biscuits/features/stickers/domain/entities/sticker_element.dart';
 
 typedef OnStickerSelected = void Function(StickerElement template);
 

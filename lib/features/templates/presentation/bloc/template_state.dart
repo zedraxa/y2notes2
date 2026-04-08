@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:y2notes2/features/templates/domain/entities/page_template.dart';
+import 'package:biscuits/features/templates/domain/entities/page_template.dart';
 
 class TemplateState extends Equatable {
   const TemplateState({

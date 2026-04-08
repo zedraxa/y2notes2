@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
-import 'package:y2notes2/features/cloud_sync/domain/entities/cloud_provider.dart';
-import 'package:y2notes2/features/cloud_sync/domain/entities/sync_conflict.dart';
+import 'package:biscuits/features/cloud_sync/domain/entities/cloud_provider.dart';
+import 'package:biscuits/features/cloud_sync/domain/entities/sync_conflict.dart';
 
 /// Base class for all cloud sync events.
 abstract class CloudSyncEvent extends Equatable {
