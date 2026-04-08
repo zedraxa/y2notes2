@@ -7,6 +7,7 @@ import 'package:biscuits/features/library/presentation/bloc/library_state.dart';
 import 'package:biscuits/features/library/presentation/widgets/color_label_picker.dart';
 import 'package:biscuits/features/library/presentation/widgets/cover_picker_bottom_sheet.dart';
 import 'package:biscuits/shared/widgets/apple_toast.dart';
+import 'package:biscuits/shared/widgets/apple_sheet.dart';
 import 'package:biscuits/shared/widgets/confirm_action.dart';
 
 /// Context menu (bottom sheet) for a single [LibraryItem].
@@ -156,11 +157,12 @@ class ItemContextMenu extends StatelessWidget {
 
   void _showRenameDialog(BuildContext context, LibraryBloc bloc) {
     final controller = TextEditingController(text: item.name);
-    showDialog<void>(
+    showAppleDialog<void>(
       context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('Rename'),
-        content: TextField(
+      title: 'Rename',
+      contentWidget: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4),
+        child: TextField(
           controller: controller,
           autofocus: true,
           decoration: const InputDecoration(labelText: 'Name'),
@@ -168,18 +170,20 @@ class ItemContextMenu extends StatelessWidget {
             _submitRename(context, bloc, controller.text.trim());
           },
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            onPressed: () =>
-                _submitRename(context, bloc, controller.text.trim()),
-            child: const Text('Rename'),
-          ),
-        ],
       ),
+      actions: [
+        AppleDialogAction(
+          label: 'Cancel',
+          onPressed: () {},
+        ),
+        AppleDialogAction(
+          label: 'Rename',
+          isDefault: true,
+          onPressed: () {
+            _submitRename(context, bloc, controller.text.trim());
+          },
+        ),
+      ],
     ).then((_) => controller.dispose());
   }
 

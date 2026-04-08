@@ -17,6 +17,7 @@ import 'package:biscuits/features/library/presentation/widgets/spotlight_search.
 import 'package:biscuits/features/library/presentation/widgets/tag_cloud.dart';
 import 'package:biscuits/features/library/presentation/widgets/trash_view.dart';
 import 'package:biscuits/shared/widgets/apple_toast.dart';
+import 'package:biscuits/shared/widgets/apple_sheet.dart';
 import 'package:biscuits/shared/widgets/keyboard_shortcuts_overlay.dart';
 import 'package:biscuits/shared/widgets/skeleton_loader.dart';
 
@@ -418,55 +419,39 @@ class _LibraryPageState extends State<LibraryPage> {
   // ── Dialogs ────────────────────────────────────────────────────────────────
 
   void _showCreateMenu(BuildContext context) {
-    showModalBottomSheet<void>(
+    showAppleActionSheet<void>(
       context: context,
-      builder: (ctx) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.menu_book_outlined),
-              title: const Text('New Notebook'),
-              onTap: () {
-                Navigator.pop(ctx);
-                _showCreateItemDialog(context, LibraryItemType.notebook);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.dashboard_outlined),
-              title: const Text('New Canvas'),
-              onTap: () {
-                Navigator.pop(ctx);
-                _showCreateItemDialog(context, LibraryItemType.infiniteCanvas);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.create_new_folder_outlined),
-              title: const Text('New Folder'),
-              onTap: () {
-                Navigator.pop(ctx);
-                _showCreateFolderDialog(context);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.style_outlined),
-              title: const Text('Flash Cards'),
-              onTap: () {
-                Navigator.pop(ctx);
-                GoRouter.of(context).go('/flashcards');
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.document_scanner_outlined),
-              title: const Text('Scan Document'),
-              onTap: () {
-                Navigator.pop(ctx);
-                GoRouter.of(context).go('/scanner');
-              },
-            ),
-          ],
+      title: 'Create New',
+      actions: [
+        AppleActionSheetAction(
+          label: 'New Notebook',
+          icon: Icons.menu_book_outlined,
+          onPressed: () =>
+              _showCreateItemDialog(context, LibraryItemType.notebook),
         ),
-      ),
+        AppleActionSheetAction(
+          label: 'New Canvas',
+          icon: Icons.dashboard_outlined,
+          onPressed: () =>
+              _showCreateItemDialog(context, LibraryItemType.infiniteCanvas),
+        ),
+        AppleActionSheetAction(
+          label: 'New Folder',
+          icon: Icons.create_new_folder_outlined,
+          onPressed: () => _showCreateFolderDialog(context),
+        ),
+        AppleActionSheetAction(
+          label: 'Flash Cards',
+          icon: Icons.style_outlined,
+          onPressed: () => GoRouter.of(context).go('/flashcards'),
+        ),
+        AppleActionSheetAction(
+          label: 'Scan Document',
+          icon: Icons.document_scanner_outlined,
+          onPressed: () => GoRouter.of(context).go('/scanner'),
+        ),
+      ],
+      cancelAction: const AppleActionSheetAction(label: 'Cancel'),
     );
   }
 
@@ -474,11 +459,12 @@ class _LibraryPageState extends State<LibraryPage> {
     final typeName =
         type == LibraryItemType.notebook ? 'Notebook' : 'Canvas';
     final controller = TextEditingController();
-    showDialog<void>(
+    showAppleDialog<void>(
       context: context,
-      builder: (_) => AlertDialog(
-        title: Text('New $typeName'),
-        content: TextField(
+      title: 'New $typeName',
+      contentWidget: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4),
+        child: TextField(
           controller: controller,
           decoration: InputDecoration(hintText: 'Untitled $typeName'),
           autofocus: true,
@@ -487,20 +473,20 @@ class _LibraryPageState extends State<LibraryPage> {
             Navigator.pop(context);
           },
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            onPressed: () {
-              _submitCreateItem(context, controller.text.trim(), type);
-              Navigator.pop(context);
-            },
-            child: const Text('Create'),
-          ),
-        ],
       ),
+      actions: [
+        AppleDialogAction(
+          label: 'Cancel',
+          onPressed: () {},
+        ),
+        AppleDialogAction(
+          label: 'Create',
+          isDefault: true,
+          onPressed: () {
+            _submitCreateItem(context, controller.text.trim(), type);
+          },
+        ),
+      ],
     ).then((_) => controller.dispose());
   }
 
@@ -519,11 +505,12 @@ class _LibraryPageState extends State<LibraryPage> {
 
   void _showCreateFolderDialog(BuildContext context) {
     final controller = TextEditingController();
-    showDialog<void>(
+    showAppleDialog<void>(
       context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('New Folder'),
-        content: TextField(
+      title: 'New Folder',
+      contentWidget: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4),
+        child: TextField(
           controller: controller,
           decoration: const InputDecoration(hintText: 'Folder name'),
           autofocus: true,
@@ -532,20 +519,20 @@ class _LibraryPageState extends State<LibraryPage> {
             Navigator.pop(context);
           },
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            onPressed: () {
-              _submitCreateFolder(context, controller.text.trim());
-              Navigator.pop(context);
-            },
-            child: const Text('Create'),
-          ),
-        ],
       ),
+      actions: [
+        AppleDialogAction(
+          label: 'Cancel',
+          onPressed: () {},
+        ),
+        AppleDialogAction(
+          label: 'Create',
+          isDefault: true,
+          onPressed: () {
+            _submitCreateFolder(context, controller.text.trim());
+          },
+        ),
+      ],
     ).then((_) => controller.dispose());
   }
 
