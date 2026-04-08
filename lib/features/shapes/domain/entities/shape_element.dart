@@ -107,6 +107,53 @@ class ShapeElement extends Equatable {
         fillPattern: fillPattern ?? this.fillPattern,
       );
 
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'type': type.name,
+        'bounds': {
+          'left': bounds.left,
+          'top': bounds.top,
+          'width': bounds.width,
+          'height': bounds.height,
+        },
+        'rotation': rotation,
+        'fillColor': fillColor.value,
+        'strokeColor': strokeColor.value,
+        'strokeWidth': strokeWidth,
+        'cornerRadius': cornerRadius,
+        'opacity': opacity,
+        'vertices':
+            vertices.map((v) => {'dx': v.dx, 'dy': v.dy}).toList(),
+        'isFilled': isFilled,
+        'fillPattern': fillPattern.name,
+      };
+
+  factory ShapeElement.fromJson(Map<String, dynamic> json) => ShapeElement(
+        id: json['id'] as String,
+        type: ShapeType.values.byName(json['type'] as String),
+        bounds: Rect.fromLTWH(
+          (json['bounds']['left'] as num).toDouble(),
+          (json['bounds']['top'] as num).toDouble(),
+          (json['bounds']['width'] as num).toDouble(),
+          (json['bounds']['height'] as num).toDouble(),
+        ),
+        rotation: (json['rotation'] as num).toDouble(),
+        fillColor: Color(json['fillColor'] as int),
+        strokeColor: Color(json['strokeColor'] as int),
+        strokeWidth: (json['strokeWidth'] as num).toDouble(),
+        cornerRadius: (json['cornerRadius'] as num).toDouble(),
+        opacity: (json['opacity'] as num).toDouble(),
+        vertices: (json['vertices'] as List<dynamic>)
+            .map((v) => Offset(
+                  (v['dx'] as num).toDouble(),
+                  (v['dy'] as num).toDouble(),
+                ))
+            .toList(),
+        isFilled: json['isFilled'] as bool,
+        fillPattern:
+            ShapeFillPattern.values.byName(json['fillPattern'] as String),
+      );
+
   @override
   List<Object?> get props => [
         id,

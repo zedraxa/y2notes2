@@ -75,6 +75,34 @@ class GraphFunction extends Equatable {
         errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
       );
 
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'expression': expression,
+        'type': type.name,
+        'style': style.toJson(),
+        'isVisible': isVisible,
+        if (label != null) 'label': label,
+        'plotPoints':
+            plotPoints.map((p) => [p.$1, p.$2]).toList(),
+        if (errorMessage != null) 'errorMessage': errorMessage,
+      };
+
+  factory GraphFunction.fromJson(Map<String, dynamic> json) => GraphFunction(
+        id: json['id'] as String,
+        expression: json['expression'] as String,
+        type: GraphType.values.byName(json['type'] as String),
+        style: GraphStyle.fromJson(json['style'] as Map<String, dynamic>),
+        isVisible: json['isVisible'] as bool? ?? true,
+        label: json['label'] as String?,
+        plotPoints: (json['plotPoints'] as List<dynamic>)
+            .map((p) => (
+                  (p[0] as num).toDouble(),
+                  (p[1] as num).toDouble(),
+                ))
+            .toList(),
+        errorMessage: json['errorMessage'] as String?,
+      );
+
   @override
   List<Object?> get props => [
         id,

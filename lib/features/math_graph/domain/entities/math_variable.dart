@@ -42,6 +42,22 @@ class MathVariable extends Equatable {
         step: clearRange ? null : (step ?? this.step),
       );
 
+  Map<String, dynamic> toJson() => {
+        'name': name,
+        'value': value,
+        if (min != null) 'min': min,
+        if (max != null) 'max': max,
+        if (step != null) 'step': step,
+      };
+
+  factory MathVariable.fromJson(Map<String, dynamic> json) => MathVariable(
+        name: json['name'] as String,
+        value: (json['value'] as num).toDouble(),
+        min: (json['min'] as num?)?.toDouble(),
+        max: (json['max'] as num?)?.toDouble(),
+        step: (json['step'] as num?)?.toDouble(),
+      );
+
   @override
   List<Object?> get props => [name, value, min, max, step];
 }
