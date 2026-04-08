@@ -2,6 +2,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:biscuits/app/error_page.dart';
+import 'package:biscuits/app/route_names.dart';
 import 'package:biscuits/features/canvas/presentation/pages/canvas_page.dart';
 import 'package:biscuits/features/cloud_sync/presentation/pages/cloud_sync_settings_page.dart';
 import 'package:biscuits/features/documents/presentation/bloc/document_bloc.dart';
@@ -33,7 +35,10 @@ import 'package:biscuits/features/workspace/presentation/pages/workspace_page.da
 /// Application router using GoRouter.
 class AppRouter {
   late final GoRouter router = GoRouter(
-    initialLocation: '/',
+    initialLocation: AppRoutes.library,
+    errorBuilder: (context, state) => ErrorPage(
+      message: 'Could not find "${state.uri}".',
+    ),
     routes: [
       // ── Library (new root) ──────────────────────────────────────────────
       GoRoute(
