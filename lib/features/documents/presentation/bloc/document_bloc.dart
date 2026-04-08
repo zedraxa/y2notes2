@@ -1,10 +1,16 @@
+import 'dart:io';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uuid/uuid.dart';
+import 'package:y2notes2/features/audio_sync/domain/entities/audio_recording.dart';
 import 'package:y2notes2/features/canvas/domain/models/canvas_config.dart';
 import 'package:y2notes2/features/documents/data/document_repository.dart';
+import 'package:y2notes2/features/documents/domain/entities/import_history_entry.dart';
+import 'package:y2notes2/features/documents/domain/entities/import_result.dart';
 import 'package:y2notes2/features/documents/domain/entities/notebook.dart';
 import 'package:y2notes2/features/documents/domain/entities/notebook_page.dart';
 import 'package:y2notes2/features/documents/domain/models/export_options.dart';
+import 'package:y2notes2/features/documents/domain/models/import_options.dart';
 import 'package:y2notes2/features/documents/engine/image_export_engine.dart';
 import 'package:y2notes2/features/documents/engine/image_import_engine.dart';
 import 'package:y2notes2/features/documents/engine/pdf_export_engine.dart';
@@ -42,8 +48,24 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
     on<ShareCurrentPageAsPdf>(_onShareCurrentPageAsPdf);
     on<ExportCurrentPageAsImage>(_onExportCurrentPageAsImage);
     on<ImportPdf>(_onImportPdf);
+    on<ImportPdfFromPath>(_onImportPdfFromPath);
     on<ImportImage>(_onImportImage);
+    on<ImportMultipleImages>(_onImportMultipleImages);
+    on<ImportImageFromPath>(_onImportImageFromPath);
+    on<ClearImportHistory>(_onClearImportHistory);
+    on<ImportScannedDocument>(_onImportScannedDocument);
     on<ClearDocumentStatus>(_onClearStatus);
+    on<RenameNotebook>(_onRenameNotebook);
+    on<UpdateNotebookDescription>(_onUpdateNotebookDescription);
+    on<UpdatePageTitle>(_onUpdatePageTitle);
+    on<TogglePageBookmark>(_onTogglePageBookmark);
+    on<ToggleOutlinePanel>(_onToggleOutlinePanel);
+    on<UpdatePagePdfAnnotations>(_onUpdatePagePdfAnnotations);
+    on<GoToNextPage>(_onGoToNextPage);
+    on<GoToPreviousPage>(_onGoToPreviousPage);
+    on<UpdatePageAudioRecordings>(
+      _onUpdatePageAudioRecordings,
+    );
   }
 
   /// Optional repository for persisting/loading notebooks.
@@ -180,9 +202,11 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
     final duplicate = NotebookPage(
       id: _uuid.v4(),
       pageNumber: source.pageNumber + 1,
+      title: source.title,
       strokes: List.of(source.strokes),
       shapes: List.of(source.shapes),
       stickers: List.of(source.stickers),
+      richTexts: List.of(source.richTexts),
       config: source.config,
     );
 
@@ -427,7 +451,9 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
 
     try {
       final result = await _pdfImport.pickAndImport(
-        scale: event.scale,
+        scale: event.options.scale,
+        pageRange: event.options.pageRange,
+        maxFileSizeBytes: event.options.maxFileSizeBytes,
         onProgress: (p) => emit(state.copyWith(importProgress: p)),
       );
 
@@ -440,34 +466,7 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
         return;
       }
 
-      // Build notebook pages from imported PDF pages.
-      final pages = result.pages
-          .map(
-            (imported) => NotebookPage(
-              pageNumber: imported.pageNumber,
-              backgroundImage: imported.renderedImage,
-              backgroundPdfPath: imported.sourcePath,
-              config: CanvasConfig(
-                width: imported.width,
-                height: imported.height,
-                template: PageTemplate.blank,
-              ),
-            ),
-          )
-          .toList();
-
-      final notebook = Notebook(
-        title: result.title ?? 'Imported PDF',
-        pages: pages,
-      );
-
-      emit(state.copyWith(
-        notebook: notebook,
-        currentPageIndex: 0,
-        isImporting: false,
-        status: DocumentOperationStatus.success,
-        importProgress: 1.0,
-      ));
+      _applyImportResult(result, event.options.mode, ImportFileType.pdf, emit);
     } catch (e) {
       emit(state.copyWith(
         isImporting: false,
@@ -476,6 +475,37 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
       ));
     }
   }
+
+  Future<void> _onImportPdfFromPath(
+    ImportPdfFromPath event,
+    Emitter<DocumentState> emit,
+  ) async {
+    emit(state.copyWith(
+      isImporting: true,
+      status: DocumentOperationStatus.inProgress,
+      importProgress: 0.0,
+    ));
+
+    try {
+      final result = await _pdfImport.importPdf(
+        event.filePath,
+        scale: event.options.scale,
+        pageRange: event.options.pageRange,
+        maxFileSizeBytes: event.options.maxFileSizeBytes,
+        onProgress: (p) => emit(state.copyWith(importProgress: p)),
+      );
+
+      _applyImportResult(result, event.options.mode, ImportFileType.pdf, emit);
+    } catch (e) {
+      emit(state.copyWith(
+        isImporting: false,
+        status: DocumentOperationStatus.error,
+        errorMessage: 'PDF import failed: $e',
+      ));
+    }
+  }
+
+  // ── Image import ──────────────────────────────────────────────────────────
 
   Future<void> _onImportImage(
     ImportImage event,
@@ -489,8 +519,9 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
 
     try {
       final result = await _imageImport.pickAndImport(
-        maxWidth: event.maxWidth,
-        maxHeight: event.maxHeight,
+        maxWidth: event.options.maxWidth,
+        maxHeight: event.options.maxHeight,
+        maxFileSizeBytes: event.options.maxFileSizeBytes,
       );
 
       if (result == null) {
@@ -510,21 +541,163 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
         return;
       }
 
-      final imported = result.pages.first;
-      final newPage = NotebookPage(
-        pageNumber: (state.notebook?.pageCount ?? 0) + 1,
-        backgroundImage: imported.renderedImage,
-        config: CanvasConfig(
-          width: imported.width,
-          height: imported.height,
-          template: PageTemplate.blank,
-        ),
+      _applyImportResult(result, event.options.mode, ImportFileType.image, emit);
+    } catch (e) {
+      emit(state.copyWith(
+        isImporting: false,
+        status: DocumentOperationStatus.error,
+        errorMessage: 'Image import failed: $e',
+      ));
+    }
+  }
+
+  Future<void> _onImportMultipleImages(
+    ImportMultipleImages event,
+    Emitter<DocumentState> emit,
+  ) async {
+    emit(state.copyWith(
+      isImporting: true,
+      status: DocumentOperationStatus.inProgress,
+      importProgress: 0.0,
+    ));
+
+    try {
+      final result = await _imageImport.pickAndImportMultiple(
+        maxWidth: event.options.maxWidth,
+        maxHeight: event.options.maxHeight,
+        maxFileSizeBytes: event.options.maxFileSizeBytes,
+        onProgress: (p) => emit(state.copyWith(importProgress: p)),
       );
 
+      if (result == null) {
+        emit(state.copyWith(
+          isImporting: false,
+          status: DocumentOperationStatus.idle,
+        ));
+        return;
+      }
+
+      if (result.pages.isEmpty) {
+        emit(state.copyWith(
+          isImporting: false,
+          status: DocumentOperationStatus.error,
+          errorMessage: 'No images were imported.',
+        ));
+        return;
+      }
+
+      _applyImportResult(result, event.options.mode, ImportFileType.image, emit);
+    } catch (e) {
+      emit(state.copyWith(
+        isImporting: false,
+        status: DocumentOperationStatus.error,
+        errorMessage: 'Image import failed: $e',
+      ));
+    }
+  }
+
+  Future<void> _onImportImageFromPath(
+    ImportImageFromPath event,
+    Emitter<DocumentState> emit,
+  ) async {
+    emit(state.copyWith(
+      isImporting: true,
+      status: DocumentOperationStatus.inProgress,
+      importProgress: 0.0,
+    ));
+
+    try {
+      final page = await _imageImport.importImage(
+        event.filePath,
+        maxWidth: event.options.maxWidth,
+        maxHeight: event.options.maxHeight,
+        maxFileSizeBytes: event.options.maxFileSizeBytes,
+      );
+
+      final fileName =
+          event.filePath.split(Platform.pathSeparator).last;
+      final result = ImportResult(
+        pages: [page],
+        sourcePath: event.filePath,
+        importedAt: DateTime.now(),
+        title: fileName,
+      );
+
+      _applyImportResult(result, event.options.mode, ImportFileType.image, emit);
+    } catch (e) {
+      emit(state.copyWith(
+        isImporting: false,
+        status: DocumentOperationStatus.error,
+        errorMessage: 'Image import failed: $e',
+      ));
+    }
+  }
+
+  // ── Import history ────────────────────────────────────────────────────────
+
+  void _onClearImportHistory(
+    ClearImportHistory event,
+    Emitter<DocumentState> emit,
+  ) =>
+      emit(state.copyWith(importHistory: []));
+
+  // ── Scanner import ────────────────────────────────────────────────────────
+
+  Future<void> _onImportScannedDocument(
+    ImportScannedDocument event,
+    Emitter<DocumentState> emit,
+  ) async {
+    final scanResult = event.scanResult;
+    if (!scanResult.hasPages) {
+      emit(state.copyWith(
+        status: DocumentOperationStatus.error,
+        errorMessage: 'No pages in scanned document.',
+      ));
+      return;
+    }
+
+    emit(state.copyWith(
+      isImporting: true,
+      status: DocumentOperationStatus.inProgress,
+      importProgress: 0.0,
+    ));
+
+    try {
+      final pages = <NotebookPage>[];
+      for (var i = 0; i < scanResult.pages.length; i++) {
+        final scanned = scanResult.pages[i];
+        pages.add(NotebookPage(
+          pageNumber: (state.notebook?.pageCount ?? 0) +
+              i +
+              1,
+          backgroundImage: scanned.processedImage,
+          config: CanvasConfig(
+            width: scanned.width,
+            height: scanned.height,
+            template: PageTemplate.blank,
+          ),
+        ));
+
+        emit(state.copyWith(
+          importProgress:
+              (i + 1) / scanResult.pages.length,
+        ));
+      }
+
       final nb = state.notebook;
-      final updated = nb != null
-          ? nb.addPage(newPage)
-          : Notebook(title: result.title ?? 'Imported Image', pages: [newPage]);
+      Notebook updated;
+      if (nb != null) {
+        var result = nb;
+        for (final page in pages) {
+          result = result.addPage(page);
+        }
+        updated = result;
+      } else {
+        updated = Notebook(
+          title: scanResult.title ?? 'Scanned Document',
+          pages: pages,
+        );
+      }
 
       emit(state.copyWith(
         notebook: updated,
@@ -537,7 +710,88 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
       emit(state.copyWith(
         isImporting: false,
         status: DocumentOperationStatus.error,
-        errorMessage: 'Image import failed: $e',
+        errorMessage: 'Scan import failed: $e',
+      ));
+    }
+  }
+
+  // ── Shared import helper ──────────────────────────────────────────────────
+
+  /// Converts an [ImportResult] into notebook pages and applies them
+  /// according to the chosen [ImportMode], then records the import in
+  /// the history.
+  void _applyImportResult(
+    ImportResult result,
+    ImportMode mode,
+    ImportFileType fileType,
+    Emitter<DocumentState> emit,
+  ) {
+    // Build notebook pages from imported pages.
+    final newPages = result.pages
+        .map(
+          (imported) => NotebookPage(
+            pageNumber: imported.pageNumber,
+            backgroundImage: imported.renderedImage,
+            backgroundPdfPath:
+                fileType == ImportFileType.pdf ? imported.sourcePath : null,
+            config: CanvasConfig(
+              width: imported.width,
+              height: imported.height,
+              template: PageTemplate.blank,
+            ),
+          ),
+        )
+        .toList();
+
+    // Record in import history.
+    final fileName = result.sourcePath.split(Platform.pathSeparator).last;
+    int? fileSizeBytes;
+    try {
+      fileSizeBytes = File(result.sourcePath).lengthSync();
+    } catch (_) {
+      // Ignore — file size is best-effort.
+    }
+    final historyEntry = ImportHistoryEntry(
+      fileName: fileName,
+      filePath: result.sourcePath,
+      fileType: fileType,
+      importedAt: result.importedAt,
+      pageCount: newPages.length,
+      fileSizeBytes: fileSizeBytes,
+    );
+    final updatedHistory = [
+      historyEntry,
+      ...state.importHistory,
+    ].take(DocumentState.maxHistoryEntries).toList();
+
+    final nb = state.notebook;
+    if (mode == ImportMode.appendToCurrentNotebook && nb != null) {
+      // Append pages to current notebook.
+      final renumbered = _renumber([...nb.pages, ...newPages]);
+      final updated = nb.copyWith(pages: renumbered);
+      emit(state.copyWith(
+        notebook: updated,
+        currentPageIndex: updated.pageCount - newPages.length,
+        isImporting: false,
+        status: DocumentOperationStatus.success,
+        importProgress: 1.0,
+        importHistory: updatedHistory,
+        lastImportPageCount: newPages.length,
+      ));
+    } else {
+      // Create new notebook.
+      final notebook = Notebook(
+        title: result.title ?? 'Imported ${fileType.name}',
+        pages: newPages,
+      );
+      emit(state.copyWith(
+        notebook: notebook,
+        currentPageIndex: 0,
+        isImporting: false,
+        status: DocumentOperationStatus.success,
+        importProgress: 1.0,
+        importHistory: updatedHistory,
+        lastImportPageCount: newPages.length,
       ));
     }
   }
@@ -554,6 +808,122 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
         exportProgress: 0.0,
         importProgress: 0.0,
       ));
+
+  // ── Notebook metadata ─────────────────────────────────────────────────────
+
+  void _onRenameNotebook(
+    RenameNotebook event,
+    Emitter<DocumentState> emit,
+  ) {
+    final nb = state.notebook;
+    if (nb == null) return;
+    emit(state.copyWith(notebook: nb.copyWith(title: event.title)));
+  }
+
+  void _onUpdateNotebookDescription(
+    UpdateNotebookDescription event,
+    Emitter<DocumentState> emit,
+  ) {
+    final nb = state.notebook;
+    if (nb == null) return;
+    if (event.description == null) {
+      emit(state.copyWith(
+        notebook: nb.copyWith(clearDescription: true),
+      ));
+    } else {
+      emit(state.copyWith(
+        notebook: nb.copyWith(description: event.description),
+      ));
+    }
+  }
+
+  // ── Page metadata ─────────────────────────────────────────────────────────
+
+  void _onUpdatePageTitle(
+    UpdatePageTitle event,
+    Emitter<DocumentState> emit,
+  ) {
+    final nb = state.notebook;
+    if (nb == null) return;
+
+    final page = nb.pages[event.pageIndex];
+    final updated = event.title == null
+        ? page.copyWith(clearTitle: true)
+        : page.copyWith(title: event.title);
+    emit(state.copyWith(notebook: nb.updatePage(event.pageIndex, updated)));
+  }
+
+  void _onTogglePageBookmark(
+    TogglePageBookmark event,
+    Emitter<DocumentState> emit,
+  ) {
+    final nb = state.notebook;
+    if (nb == null) return;
+
+    final page = nb.pages[event.pageIndex];
+    final updated = page.copyWith(isBookmarked: !page.isBookmarked);
+    emit(state.copyWith(notebook: nb.updatePage(event.pageIndex, updated)));
+  }
+
+  // ── Outline panel ─────────────────────────────────────────────────────────
+
+  void _onToggleOutlinePanel(
+    ToggleOutlinePanel event,
+    Emitter<DocumentState> emit,
+  ) =>
+      emit(state.copyWith(isOutlineOpen: !state.isOutlineOpen));
+
+  // ── PDF annotations ──────────────────────────────────────────────────────
+
+  void _onUpdatePagePdfAnnotations(
+    UpdatePagePdfAnnotations event,
+    Emitter<DocumentState> emit,
+  ) {
+    final nb = state.notebook;
+    if (nb == null) return;
+    if (event.pageIndex < 0 || event.pageIndex >= nb.pages.length) return;
+    final page = nb.pages[event.pageIndex].copyWith(
+      pdfAnnotations: event.annotations,
+    );
+    emit(state.copyWith(notebook: nb.updatePage(event.pageIndex, page)));
+  }
+
+  // ── Convenience navigation ─────────────────────────────────────────────
+
+  void _onGoToNextPage(
+    GoToNextPage event,
+    Emitter<DocumentState> emit,
+  ) {
+    if (!state.canGoForward) return;
+    emit(state.copyWith(currentPageIndex: state.currentPageIndex + 1));
+  }
+
+  void _onGoToPreviousPage(
+    GoToPreviousPage event,
+    Emitter<DocumentState> emit,
+  ) {
+    if (!state.canGoBack) return;
+    emit(state.copyWith(currentPageIndex: state.currentPageIndex - 1));
+  }
+
+  // ── Audio recordings ──────────────────────────────────────────────────────
+
+  void _onUpdatePageAudioRecordings(
+    UpdatePageAudioRecordings event,
+    Emitter<DocumentState> emit,
+  ) {
+    final nb = state.notebook;
+    if (nb == null) return;
+    final recordings = event.recordings
+        .whereType<AudioRecording>()
+        .toList();
+    final page = nb.pages[event.pageIndex].copyWith(
+      audioRecordings: recordings,
+    );
+    emit(state.copyWith(
+      notebook: nb.updatePage(event.pageIndex, page),
+    ));
+  }
 
   List<NotebookPage> _renumber(List<NotebookPage> pages) => pages
       .asMap()

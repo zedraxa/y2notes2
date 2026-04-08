@@ -5,3 +5,4 @@
 // authoritative implementations.
 export 'package:y2notes2/features/shapes/domain/entities/shape_element.dart';
 export 'package:y2notes2/features/stickers/domain/entities/sticker_element.dart';
+export 'package:y2notes2/features/math_graph/domain/entities/graph_element.dart';

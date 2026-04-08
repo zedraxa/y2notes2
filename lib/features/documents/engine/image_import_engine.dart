@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:image/image.dart' as img;
 import 'package:path_provider/path_provider.dart';
 import 'package:y2notes2/features/documents/domain/entities/import_result.dart';
+import 'package:y2notes2/features/documents/engine/import_validator.dart';
 
 /// Handles importing image files (PNG, JPEG, HEIC) from the device and
 /// converting them into canvas-ready [ImportedPage] objects.
@@ -37,6 +38,22 @@ class ImageImportEngine {
             .toList() ??
         [];
   }
+
+  // ── Validation ──────────────────────────────────────────────────────────────
+
+  /// Validates an image file at [filePath] before importing.
+  ///
+  /// Throws [FileTooLargeException], [UnsupportedImportFormatException], or
+  /// [FileSystemException] on failure.
+  Future<void> validate(String filePath, {int? maxFileSizeBytes}) =>
+      ImportValidator.validate(
+        filePath,
+        allowedExtensions: ImportValidator.imageExtensions,
+        maxFileSizeBytes: maxFileSizeBytes,
+      );
+
+  /// Returns the file size in bytes of the image at [filePath].
+  Future<int> fileSize(String filePath) => File(filePath).length();
 
   // ── Image loading & resizing ────────────────────────────────────────────────
 
@@ -111,13 +128,16 @@ class ImageImportEngine {
     String filePath, {
     double? maxWidth,
     double? maxHeight,
+    int? maxFileSizeBytes,
   }) async {
+    // Validate before processing.
+    await validate(filePath, maxFileSizeBytes: maxFileSizeBytes);
+
     final image = await loadImage(
       filePath,
       maxWidth: maxWidth,
       maxHeight: maxHeight,
     );
-    final fileName = filePath.split(Platform.pathSeparator).last;
     return ImportedPage(
       pageNumber: 1,
       width: image.width.toDouble(),
@@ -132,17 +152,93 @@ class ImageImportEngine {
   Future<ImportResult?> pickAndImport({
     double? maxWidth,
     double? maxHeight,
+    int? maxFileSizeBytes,
   }) async {
     final path = await pickImageFile();
     if (path == null) return null;
 
-    final page = await importImage(path, maxWidth: maxWidth, maxHeight: maxHeight);
+    final page = await importImage(
+      path,
+      maxWidth: maxWidth,
+      maxHeight: maxHeight,
+      maxFileSizeBytes: maxFileSizeBytes,
+    );
     final fileName = path.split(Platform.pathSeparator).last;
     return ImportResult(
       pages: [page],
       sourcePath: path,
       importedAt: DateTime.now(),
       title: fileName,
+    );
+  }
+
+  /// Opens the file picker for multiple images and imports them all as
+  /// separate pages in a single [ImportResult].
+  ///
+  /// Returns `null` if the user cancelled. The [onProgress] callback is
+  /// invoked with a 0.0–1.0 value as images are processed.
+  Future<ImportResult?> pickAndImportMultiple({
+    double? maxWidth,
+    double? maxHeight,
+    int? maxFileSizeBytes,
+    void Function(double)? onProgress,
+  }) async {
+    final paths = await pickMultipleImages();
+    if (paths.isEmpty) return null;
+
+    return importMultiple(
+      paths,
+      maxWidth: maxWidth,
+      maxHeight: maxHeight,
+      maxFileSizeBytes: maxFileSizeBytes,
+      onProgress: onProgress,
+    );
+  }
+
+  /// Imports multiple images from [filePaths] as pages in a single
+  /// [ImportResult].
+  ///
+  /// The [onProgress] callback is invoked with a 0.0–1.0 value as images
+  /// are processed.
+  Future<ImportResult> importMultiple(
+    List<String> filePaths, {
+    double? maxWidth,
+    double? maxHeight,
+    int? maxFileSizeBytes,
+    void Function(double)? onProgress,
+  }) async {
+    onProgress?.call(0.0);
+    final pages = <ImportedPage>[];
+
+    for (int i = 0; i < filePaths.length; i++) {
+      final page = await importImage(
+        filePaths[i],
+        maxWidth: maxWidth,
+        maxHeight: maxHeight,
+        maxFileSizeBytes: maxFileSizeBytes,
+      );
+      pages.add(ImportedPage(
+        pageNumber: i + 1,
+        width: page.width,
+        height: page.height,
+        renderedImage: page.renderedImage,
+        sourcePath: filePaths[i],
+      ));
+      onProgress?.call((i + 1) / filePaths.length);
+    }
+
+    onProgress?.call(1.0);
+
+    final firstFileName = filePaths.first.split(Platform.pathSeparator).last;
+    final title = filePaths.length == 1
+        ? firstFileName
+        : '$firstFileName (+${filePaths.length - 1} more)';
+
+    return ImportResult(
+      pages: pages,
+      sourcePath: filePaths.first,
+      importedAt: DateTime.now(),
+      title: title,
     );
   }
 

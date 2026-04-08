@@ -54,6 +54,7 @@ class DocumentRepository {
   Map<String, dynamic> _notebookToJson(Notebook nb) => {
         'id': nb.id,
         'title': nb.title,
+        if (nb.description != null) 'description': nb.description,
         'createdAt': nb.createdAt.toIso8601String(),
         'updatedAt': nb.updatedAt.toIso8601String(),
         'cover': nb.cover.name,
@@ -63,6 +64,7 @@ class DocumentRepository {
   Notebook _notebookFromJson(Map<String, dynamic> json) => Notebook(
         id: json['id'] as String,
         title: json['title'] as String,
+        description: json['description'] as String?,
         createdAt: DateTime.parse(json['createdAt'] as String),
         updatedAt: DateTime.parse(json['updatedAt'] as String),
         cover: NotebookCover.values.byName(json['cover'] as String),
@@ -74,6 +76,8 @@ class DocumentRepository {
   Map<String, dynamic> _pageToJson(NotebookPage page) => {
         'id': page.id,
         'pageNumber': page.pageNumber,
+        if (page.title != null) 'title': page.title,
+        'isBookmarked': page.isBookmarked,
         'strokes': page.strokes.map((s) => s.toJson()).toList(),
         'config': _configToJson(page.config),
         if (page.backgroundPdfPath != null)
@@ -83,6 +87,8 @@ class DocumentRepository {
   NotebookPage _pageFromJson(Map<String, dynamic> json) => NotebookPage(
         id: json['id'] as String,
         pageNumber: json['pageNumber'] as int,
+        title: json['title'] as String?,
+        isBookmarked: json['isBookmarked'] as bool? ?? false,
         strokes: (json['strokes'] as List<dynamic>)
             .map((s) => Stroke.fromJson(s as Map<String, dynamic>))
             .toList(),

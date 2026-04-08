@@ -20,8 +20,10 @@ class BallpointTool extends BaseFreehandTool {
     if (points.isEmpty) return;
     final inkDensity = (settings.custom['inkDensity'] as double?) ?? 0.8;
     final skipThreshold = (settings.custom['skipThreshold'] as double?) ?? 0.7;
+    final thinning = (settings.custom['thinning'] as double?) ?? 0.3;
+    final smoothing = (settings.custom['smoothing'] as double?) ?? 0.5;
 
-    final path = buildFreehandPath(points, settings, thinning: 0.3, smoothing: 0.5, streamline: 0.5);
+    final path = buildFreehandPath(points, settings, thinning: thinning, smoothing: smoothing);
     canvas.drawPath(path, Paint()
       ..color = settings.color.withOpacity(settings.opacity * inkDensity)
       ..style = PaintingStyle.fill
@@ -67,8 +69,10 @@ class BallpointTool extends BaseFreehandTool {
   List<ToolSettingDefinition> get settingsSchema => const [
     ToolSettingDefinition(key: 'inkDensity', label: 'Ink Density', type: ToolSettingType.slider, defaultValue: 0.8, min: 0.3, max: 1.0),
     ToolSettingDefinition(key: 'skipThreshold', label: 'Skip Threshold', type: ToolSettingType.slider, defaultValue: 0.7, min: 0.2, max: 1.0),
+    ToolSettingDefinition(key: 'smoothing', label: 'Smoothing', type: ToolSettingType.slider, defaultValue: 0.5, min: 0.0, max: 1.0),
+    ToolSettingDefinition(key: 'thinning', label: 'Thinning', type: ToolSettingType.slider, defaultValue: 0.3, min: 0.0, max: 1.0),
   ];
 
   @override
-  ToolSettings get defaultSettings => const ToolSettings(size: 2.0, opacity: 1.0, custom: {'inkDensity': 0.8, 'skipThreshold': 0.7});
+  ToolSettings get defaultSettings => const ToolSettings(size: 2.0, opacity: 1.0, custom: {'inkDensity': 0.8, 'skipThreshold': 0.7, 'smoothing': 0.5, 'thinning': 0.3});
 }

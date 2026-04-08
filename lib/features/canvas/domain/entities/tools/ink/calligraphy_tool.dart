@@ -7,6 +7,13 @@ import 'package:y2notes2/features/canvas/domain/entities/tools/tool_setting_defi
 import 'package:y2notes2/features/canvas/domain/entities/tools/tool_settings.dart';
 
 class CalligraphyTool extends BaseFreehandTool {
+  // ── Flexibility tuning ─────────────────────────────────────────────────
+  /// Pressure value treated as neutral (no boost/reduction).
+  static const double _pressureNeutralPoint = 0.5;
+
+  /// How strongly flexibility maps pressure to width variation.
+  static const double _flexibilityScale = 0.8;
+
   @override String get id => 'calligraphy';
   @override String get name => 'Calligraphy';
   @override String get description => 'Angle-sensitive calligraphy nib with ink pooling';
@@ -18,7 +25,7 @@ class CalligraphyTool extends BaseFreehandTool {
   void renderStroke(Canvas canvas, List<PointData> points, ToolSettings settings) {
     if (points.length < 2) return;
     final nibAngle = ((settings.custom['nibAngle'] as double?) ?? 45.0) * math.pi / 180.0;
-    final flexibility = (settings.custom['flexibility'] as double?) ?? 0.5;
+    final flexibility = ((settings.custom['flexibility'] as double?) ?? 0.5).clamp(0.0, 1.0);
     final hairlineEntry = (settings.custom['hairlineEntry'] as bool?) ?? true;
     final paint = Paint()
       ..color = settings.color
@@ -45,10 +52,14 @@ class CalligraphyTool extends BaseFreehandTool {
       final tiltOffset = (p2.tilt - math.pi / 4) * 0.3 * flexibility;
       final effectiveNibAngle = nibAngle + tiltOffset;
       final angleDiff = (angle - effectiveNibAngle).abs();
-      final minWidth = 0.1 + 0.15 * (1.0 - flexibility);
-      final width = settings.size * (minWidth + (1.0 - minWidth) * math.sin(angleDiff).abs().clamp(0.0, 1.0));
-      final pressureWidth = width * (0.6 + 0.4 * p2.pressure);
-      final perp = Offset(-math.sin(angle) * pressureWidth * 0.5, math.cos(angle) * pressureWidth * 0.5);
+      // Base width from nib angle
+      final angleWidth = 0.15 + 0.85 * math.sin(angleDiff).abs().clamp(0.0, 1.0);
+      // Flexibility adds pressure-based width variation: pressing harder
+      // opens the nib wider, like a flexible broad-edge pen.
+      final pressureBoost =
+          1.0 + flexibility * (p2.pressure - _pressureNeutralPoint) * _flexibilityScale;
+      final width = settings.size * angleWidth * pressureBoost.clamp(0.5, 1.8);
+      final perp = Offset(-math.sin(angle) * width * 0.5, math.cos(angle) * width * 0.5);
       final path = Path()
         ..moveTo(p1.x + perp.dx, p1.y + perp.dy)
         ..lineTo(p2.x + perp.dx, p2.y + perp.dy)

@@ -19,9 +19,11 @@ class ClassicHighlighterTool extends BaseFreehandTool {
     if (points.isEmpty) return;
     final chiselAngle = (settings.custom['chiselAngle'] as double?) ?? 15.0;
     final overlapDarkening = (settings.custom['overlapDarkening'] as double?) ?? 0.3;
+    final straighten = (settings.custom['straighten'] as double?) ?? 0.5;
+    final streamline = 0.5 + straighten * 0.4;
 
     // Layer 1: Main flat marker stroke
-    final path = buildFreehandPath(points, settings, thinning: 0.0, smoothing: 0.6, streamline: 0.8, simulatePressure: false);
+    final path = buildFreehandPath(points, settings, thinning: 0.0, smoothing: 0.6, streamline: streamline, simulatePressure: false);
     canvas.drawPath(path, Paint()
       ..color = settings.color.withOpacity(settings.opacity)
       ..style = PaintingStyle.fill..isAntiAlias = true..blendMode = blendMode);
@@ -53,8 +55,9 @@ class ClassicHighlighterTool extends BaseFreehandTool {
   List<ToolSettingDefinition> get settingsSchema => const [
     ToolSettingDefinition(key: 'chiselAngle', label: 'Chisel Angle', type: ToolSettingType.slider, defaultValue: 15.0, min: 0.0, max: 45.0),
     ToolSettingDefinition(key: 'overlapDarkening', label: 'Overlap Darkening', type: ToolSettingType.slider, defaultValue: 0.3, min: 0.0, max: 1.0),
+    ToolSettingDefinition(key: 'straighten', label: 'Straighten', type: ToolSettingType.slider, defaultValue: 0.5, min: 0.0, max: 1.0),
   ];
 
   @override
-  ToolSettings get defaultSettings => const ToolSettings(size: 20.0, opacity: 0.35, custom: {'chiselAngle': 15.0, 'overlapDarkening': 0.3});
+  ToolSettings get defaultSettings => const ToolSettings(size: 20.0, opacity: 0.35, custom: {'chiselAngle': 15.0, 'overlapDarkening': 0.3, 'straighten': 0.5});
 }

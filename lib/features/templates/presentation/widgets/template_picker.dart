@@ -66,7 +66,7 @@ class _TemplatePickerState extends State<TemplatePicker>
                   height: 4,
                   margin: const EdgeInsets.symmetric(vertical: 12),
                   decoration: BoxDecoration(
-                    color: Colors.grey.shade300,
+                    color: Theme.of(context).colorScheme.outlineVariant,
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -114,7 +114,11 @@ class _TemplatePickerState extends State<TemplatePicker>
                 // Content
                 Expanded(
                   child: state.isLoading
-                      ? const Center(child: CircularProgressIndicator())
+                      ? Center(
+                          child: CircularProgressIndicator(
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                        )
                       : ListView(
                           padding: const EdgeInsets.all(12),
                           children: [

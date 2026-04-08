@@ -21,9 +21,11 @@ class GouacheTool extends BaseFreehandTool {
     final coverage = (settings.custom['coverage'] as double?) ?? 0.9;
     final matteFinish = (settings.custom['matteFinish'] as double?) ?? 0.7;
     final rewetting = (settings.custom['rewetting'] as double?) ?? 0.3;
+    final flatness = (settings.custom['flatness'] as double?) ?? 0.7;
+    final streamline = 0.5 + flatness * 0.3;
 
     // Layer 1: Flat opaque base
-    final path = buildFreehandPath(points, settings, thinning: 0.0, smoothing: 0.4, streamline: 0.7);
+    final path = buildFreehandPath(points, settings, thinning: 0.0, smoothing: 0.4, streamline: streamline);
     canvas.drawPath(path, Paint()
       ..color = settings.color.withOpacity(settings.opacity * coverage)
       ..style = PaintingStyle.fill..isAntiAlias = true..blendMode = blendMode);
@@ -77,8 +79,9 @@ class GouacheTool extends BaseFreehandTool {
     ToolSettingDefinition(key: 'coverage', label: 'Coverage', type: ToolSettingType.slider, defaultValue: 0.9, min: 0.4, max: 1.0),
     ToolSettingDefinition(key: 'matteFinish', label: 'Matte Finish', type: ToolSettingType.slider, defaultValue: 0.7, min: 0.0, max: 1.0),
     ToolSettingDefinition(key: 'rewetting', label: 'Rewetting', type: ToolSettingType.slider, defaultValue: 0.3, min: 0.0, max: 1.0),
+    ToolSettingDefinition(key: 'flatness', label: 'Flatness', type: ToolSettingType.slider, defaultValue: 0.7, min: 0.0, max: 1.0),
   ];
 
   @override
-  ToolSettings get defaultSettings => const ToolSettings(size: 10.0, opacity: 1.0, custom: {'coverage': 0.9, 'matteFinish': 0.7, 'rewetting': 0.3});
+  ToolSettings get defaultSettings => const ToolSettings(size: 10.0, opacity: 1.0, custom: {'coverage': 0.9, 'matteFinish': 0.7, 'rewetting': 0.3, 'flatness': 0.7});
 }

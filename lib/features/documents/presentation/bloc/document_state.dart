@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:y2notes2/features/documents/domain/entities/import_history_entry.dart';
 import 'package:y2notes2/features/documents/domain/entities/notebook.dart';
 
 /// Status of an ongoing or completed export/import operation.
@@ -21,6 +22,9 @@ class DocumentState extends Equatable {
     this.errorMessage,
     this.isExporting = false,
     this.isImporting = false,
+    this.importHistory = const [],
+    this.lastImportPageCount = 0,
+    this.isOutlineOpen = false,
   });
 
   /// The currently open notebook, or `null` when none is open.
@@ -47,12 +51,24 @@ class DocumentState extends Equatable {
   final bool isExporting;
   final bool isImporting;
 
+  /// History of recently completed imports (most recent first).
+  final List<ImportHistoryEntry> importHistory;
+
+  /// Number of pages created in the most recent import.
+  final int lastImportPageCount;
+
+  /// Whether the outline/table-of-contents panel is visible.
+  final bool isOutlineOpen;
+
   bool get hasNotebook => notebook != null;
 
   int get pageCount => notebook?.pageCount ?? 0;
 
   bool get canGoBack => currentPageIndex > 0;
   bool get canGoForward => currentPageIndex < pageCount - 1;
+
+  /// Maximum number of import history entries to retain.
+  static const maxHistoryEntries = 20;
 
   DocumentState copyWith({
     Notebook? notebook,
@@ -67,6 +83,9 @@ class DocumentState extends Equatable {
     bool clearError = false,
     bool? isExporting,
     bool? isImporting,
+    List<ImportHistoryEntry>? importHistory,
+    int? lastImportPageCount,
+    bool? isOutlineOpen,
   }) =>
       DocumentState(
         notebook: clearNotebook ? null : (notebook ?? this.notebook),
@@ -80,6 +99,9 @@ class DocumentState extends Equatable {
         errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
         isExporting: isExporting ?? this.isExporting,
         isImporting: isImporting ?? this.isImporting,
+        importHistory: importHistory ?? this.importHistory,
+        lastImportPageCount: lastImportPageCount ?? this.lastImportPageCount,
+        isOutlineOpen: isOutlineOpen ?? this.isOutlineOpen,
       );
 
   @override
@@ -93,5 +115,8 @@ class DocumentState extends Equatable {
         errorMessage,
         isExporting,
         isImporting,
+        importHistory,
+        lastImportPageCount,
+        isOutlineOpen,
       ];
 }
