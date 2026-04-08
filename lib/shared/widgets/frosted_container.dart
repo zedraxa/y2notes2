@@ -1,16 +1,20 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:biscuits/app/theme/elevation.dart';
+import 'package:biscuits/app/theme/colors.dart';
 
 /// A frosted-glass / vibrancy container — Apple-ish toolbar style.
 ///
 /// Uses [BackdropFilter] with a blur to simulate the translucent effect
 /// seen in iOS navigation bars and tool palettes.
+///
+/// Now enhanced with Apple design tokens for consistent spacing and radius.
 class FrostedContainer extends StatelessWidget {
   const FrostedContainer({
     super.key,
     required this.child,
-    this.borderRadius = 16,
+    this.borderRadius,
     this.padding,
     this.blurSigma = 20,
     this.opacity,
@@ -18,7 +22,7 @@ class FrostedContainer extends StatelessWidget {
   });
 
   final Widget child;
-  final double borderRadius;
+  final double? borderRadius;
   final EdgeInsetsGeometry? padding;
   final double blurSigma;
 
@@ -33,14 +37,15 @@ class FrostedContainer extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bgOpacity = opacity ?? (isDark ? 0.70 : 0.80);
     final bgColor = isDark
-        ? const Color(0xFF2C2420).withOpacity(bgOpacity)
-        : const Color(0xFFFFFBF6).withOpacity(bgOpacity);
+        ? AppColors.darkSurface.withOpacity(bgOpacity)
+        : AppColors.toolbarBg.withOpacity(bgOpacity);
     final borderColor = isDark
-        ? const Color(0xFF4A3F38).withOpacity(0.4)
-        : const Color(0xFFEDE3D8).withOpacity(0.6);
+        ? AppColors.darkDivider.withOpacity(0.4)
+        : AppColors.toolbarBorder.withOpacity(0.6);
+    final radius = borderRadius ?? AppleRadius.lg;
 
     return ClipRRect(
-      borderRadius: BorderRadius.circular(borderRadius),
+      borderRadius: BorderRadius.circular(radius),
       child: BackdropFilter(
         filter: ImageFilter.blur(
           sigmaX: blurSigma,
@@ -49,7 +54,7 @@ class FrostedContainer extends StatelessWidget {
         child: Container(
           decoration: BoxDecoration(
             color: bgColor,
-            borderRadius: BorderRadius.circular(borderRadius),
+            borderRadius: BorderRadius.circular(radius),
             border: border
                 ? Border.all(color: borderColor, width: 0.5)
                 : null,
