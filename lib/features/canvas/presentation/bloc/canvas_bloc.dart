@@ -52,6 +52,8 @@ class CanvasBloc extends Bloc<CanvasEvent, CanvasState> {
     on<HoverPositionChanged>(_onHoverPositionChanged);
     on<HoverEnded>(_onHoverEnded);
     on<StylusGestureTriggered>(_onStylusGestureTriggered);
+    on<SqueezePaletteOpened>(_onSqueezePaletteOpened);
+    on<SqueezePaletteClosed>(_onSqueezePaletteClosed);
   }
 
   final SettingsService _settings;
@@ -332,6 +334,14 @@ class CanvasBloc extends Bloc<CanvasEvent, CanvasState> {
 
   void _onStylusGestureTriggered(
       StylusGestureTriggered event, Emitter<CanvasState> emit) {
+    // Close squeeze palette on any non-showToolPicker gesture.
+    if (state.squeezePaletteVisible &&
+        event.action != StylusGestureAction.showToolPicker) {
+      emit(state.copyWith(
+        squeezePaletteVisible: false,
+        clearSqueezePalettePosition: true,
+      ));
+    }
     switch (event.action) {
       case StylusGestureAction.switchToEraser:
         emit(state.copyWith(
@@ -351,7 +361,25 @@ class CanvasBloc extends Bloc<CanvasEvent, CanvasState> {
         if (state.canRedo) _onRedo(const RedoRequested(), emit);
       case StylusGestureAction.none:
       case StylusGestureAction.switchToLastTool:
+        break;
       case StylusGestureAction.showToolPicker:
+        // Toggle: if the squeeze palette is already showing, close it.
+        if (state.squeezePaletteVisible) {
+          emit(state.copyWith(
+            squeezePaletteVisible: false,
+            clearSqueezePalettePosition: true,
+          ));
+        } else {
+          // Open at the ghost-nib position (hover) or fall back to last
+          // known position already stored.
+          final pos = state.hoverPosition;
+          if (pos != null) {
+            emit(state.copyWith(
+              squeezePaletteVisible: true,
+              squeezePalettePosition: pos,
+            ));
+          }
+        }
       case StylusGestureAction.showColorPicker:
       case StylusGestureAction.toggleEffects:
       case StylusGestureAction.custom:
@@ -359,4 +387,18 @@ class CanvasBloc extends Bloc<CanvasEvent, CanvasState> {
         break;
     }
   }
+
+  void _onSqueezePaletteOpened(
+      SqueezePaletteOpened event, Emitter<CanvasState> emit) =>
+      emit(state.copyWith(
+        squeezePaletteVisible: true,
+        squeezePalettePosition: event.position,
+      ));
+
+  void _onSqueezePaletteClosed(
+      SqueezePaletteClosed event, Emitter<CanvasState> emit) =>
+      emit(state.copyWith(
+        squeezePaletteVisible: false,
+        clearSqueezePalettePosition: true,
+      ));
 }
