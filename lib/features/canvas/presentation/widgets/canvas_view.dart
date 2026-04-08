@@ -80,6 +80,11 @@ class _CanvasViewState extends State<CanvasView>
   // instead of the stroke drawing pipeline.
   bool _activeShapeGesture = false;
 
+  // Set to true when pencil-only mode is enabled and the current pointer-down
+  // was from a finger/touch.  The matching move/up events are then silently
+  // dropped so the incomplete gesture doesn't leave a dangling stroke.
+  bool _pencilOnlyRejected = false;
+
   // For detecting undo/redo/tool-switch between BLoC states
   int _prevStrokeCount = 0;
   int _prevRedoCount = 0;
@@ -135,6 +140,17 @@ class _CanvasViewState extends State<CanvasView>
 
   void _onPointerDown(PointerDownEvent event) {
     final canvasBloc = context.read<CanvasBloc>();
+
+    // ── Pencil-only mode guard ────────────────────────────────────────────────
+    // When the user has enabled pencil-only drawing, reject any non-stylus
+    // (finger / mouse) pointer before it reaches the ink pipeline.
+    // Pan/zoom is unaffected because InteractiveViewer sits above this Listener.
+    _pencilOnlyRejected = false;
+    if (_settingsService.pencilOnlyModeNotifier.value &&
+        !StylusDetector.isStylus(event)) {
+      _pencilOnlyRejected = true;
+      return;
+    }
 
     // Detect and report stylus type.
     final stylusType = StylusDetector.detectStylusType(event);
@@ -197,6 +213,9 @@ class _CanvasViewState extends State<CanvasView>
   }
 
   void _onPointerMove(PointerMoveEvent event) {
+    // Drop moves that belong to a pencil-only-rejected finger gesture.
+    if (_pencilOnlyRejected) return;
+
     // Route to ShapeBloc if this gesture started on a shape.
     if (_activeShapeGesture) {
       final shapeBloc = context.read<ShapeBloc>();
@@ -229,6 +248,12 @@ class _CanvasViewState extends State<CanvasView>
   }
 
   void _onPointerUp(PointerUpEvent event) {
+    // Drop ups that belong to a pencil-only-rejected finger gesture.
+    if (_pencilOnlyRejected) {
+      _pencilOnlyRejected = false;
+      return;
+    }
+
     // End a shape drag/resize gesture.
     if (_activeShapeGesture) {
       _activeShapeGesture = false;
