@@ -206,6 +206,8 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
     ));
     _persistNotebook();
   }
+
+  void _onDeletePage(
     DeletePage event,
     Emitter<DocumentState> emit,
   ) {
@@ -218,6 +220,8 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
     emit(state.copyWith(notebook: updated, currentPageIndex: newIndex));
     _persistNotebook();
   }
+
+  void _onDuplicatePage(
     DuplicatePage event,
     Emitter<DocumentState> emit,
   ) {
@@ -267,6 +271,8 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
     ));
     _persistNotebook();
   }
+
+  void _onUpdatePageStrokes(
     UpdatePageStrokes event,
     Emitter<DocumentState> emit,
   ) {
@@ -276,6 +282,8 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
     emit(state.copyWith(notebook: nb.updatePage(event.pageIndex, page)));
     _persistNotebook();
   }
+
+  void _onUpdatePageConfig(
     UpdatePageConfig event,
     Emitter<DocumentState> emit,
   ) {
@@ -284,7 +292,9 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
     final page = nb.pages[event.pageIndex].copyWith(config: event.config);
     emit(state.copyWith(notebook: nb.updatePage(event.pageIndex, page)));
     _persistNotebook();
-  } ─────────────────────────────────────────────────────────────
+  }
+
+  // ── Export / Import ──────────────────────────────────────────────────────
 
   Future<void> _onExportCurrentPageAsPdf(
     ExportCurrentPageAsPdf event,
