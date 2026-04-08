@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:biscuits/app/route_names.dart';
 
 import '../../domain/entities/flash_card_deck.dart';
 import '../bloc/flash_card_bloc.dart';
@@ -20,7 +21,7 @@ class DeckListPage extends StatelessWidget {
             title: const Text('Flash Cards'),
             leading: IconButton(
               icon: const Icon(Icons.arrow_back),
-              onPressed: () => context.go('/'),
+              onPressed: () => context.pop(),
             ),
           ),
           body: state.status == FlashCardStatus.loading
@@ -164,7 +165,7 @@ class _DeckCard extends StatelessWidget {
       child: InkWell(
         onTap: () {
           context.read<FlashCardBloc>().add(DeckSelected(deck.id));
-          context.go('/flashcards/deck/${deck.id}');
+          context.push(AppRoutes.deck(deck.id));
         },
         child: Padding(
           padding: const EdgeInsets.all(16),

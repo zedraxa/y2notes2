@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:biscuits/app/route_names.dart';
 
 import '../../domain/entities/flash_card.dart';
 import '../bloc/flash_card_bloc.dart';
@@ -51,7 +52,7 @@ class StudySessionPage extends StatelessWidget {
                 context
                     .read<FlashCardBloc>()
                     .add(const StudySessionEnded());
-                context.go('/flashcards/deck/$deckId');
+                context.pop();
               },
             ),
           ),
@@ -161,7 +162,7 @@ class _StudyCompleteView extends StatelessWidget {
                 context
                     .read<FlashCardBloc>()
                     .add(const StudySessionEnded());
-                context.go('/flashcards/deck/$deckId');
+                context.pop();
               },
               child: const Text('Back to Deck'),
             ),

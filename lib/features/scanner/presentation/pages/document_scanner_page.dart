@@ -3,6 +3,7 @@ import 'dart:io' if (dart.library.html) 'package:biscuits/core/io/io_stub.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:biscuits/features/scanner/domain/entities/scanned_document.dart';
 import 'package:biscuits/features/scanner/presentation/bloc/scanner_bloc.dart';
 import 'package:biscuits/features/scanner/presentation/bloc/scanner_event.dart';
@@ -457,27 +458,34 @@ class _ScannerView extends StatelessWidget {
   Future<void> _captureFromCamera(
     BuildContext context,
   ) async {
-    // Use file_picker to select an image (camera
-    // integration requires image_picker which can be
-    // added later for native camera access).
-    final result = await FilePicker.pickFiles(
-      type: FileType.image,
-      allowMultiple: false,
-    );
+    try {
+      final picker = ImagePicker();
+      final photo = await picker.pickImage(
+        source: ImageSource.camera,
+        preferredCameraDevice: CameraDevice.rear,
+        imageQuality: 95,
+      );
 
-    if (result == null ||
-        result.files.isEmpty ||
-        result.files.first.path == null) {
-      return;
-    }
+      if (photo == null) return;
 
-    final bytes =
-        await File(result.files.first.path!)
-            .readAsBytes();
-    if (context.mounted) {
-      context.read<ScannerBloc>().add(
-            ImageCaptured(imageBytes: bytes),
-          );
+      final bytes = await File(photo.path).readAsBytes();
+      if (context.mounted) {
+        context.read<ScannerBloc>().add(
+              ImageCaptured(imageBytes: bytes),
+            );
+      }
+    } catch (e) {
+      // Camera not available — fall back to file picker.
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Camera not available. Picking from gallery instead.',
+            ),
+          ),
+        );
+        await _pickFromGallery(context);
+      }
     }
   }
 

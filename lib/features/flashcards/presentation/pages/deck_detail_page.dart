@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:biscuits/app/route_names.dart';
 
 import '../../domain/entities/flash_card.dart';
 import '../../domain/entities/flash_card_deck.dart';
@@ -35,7 +36,7 @@ class DeckDetailPage extends StatelessWidget {
               icon: const Icon(Icons.arrow_back),
               onPressed: () {
                 context.read<FlashCardBloc>().add(const DeckDeselected());
-                context.go('/flashcards');
+                context.pop();
               },
             ),
             actions: [
@@ -43,7 +44,7 @@ class DeckDetailPage extends StatelessWidget {
                 icon: const Icon(Icons.bar_chart_outlined),
                 tooltip: 'Statistics',
                 onPressed: () =>
-                    context.go('/flashcards/deck/$deckId/stats'),
+                    context.push(AppRoutes.deckStats(deckId)),
               ),
               IconButton(
                 icon: const Icon(Icons.edit_outlined),
@@ -71,7 +72,7 @@ class DeckDetailPage extends StatelessWidget {
             ],
           ),
           floatingActionButton: FloatingActionButton(
-            onPressed: () => context.go('/flashcards/deck/$deckId/add'),
+            onPressed: () => context.push(AppRoutes.deckAdd(deckId)),
             child: const Icon(Icons.add),
           ),
         );
@@ -140,7 +141,7 @@ class DeckDetailPage extends StatelessWidget {
             onPressed: () {
               context.read<FlashCardBloc>().add(DeckDeleted(deckId));
               Navigator.pop(dialogCtx);
-              context.go('/flashcards');
+              context.pop();
             },
             style: FilledButton.styleFrom(
               backgroundColor: Colors.red,
@@ -174,7 +175,7 @@ class _ActionBar extends StatelessWidget {
                     context
                         .read<FlashCardBloc>()
                         .add(StudySessionStarted(deckId));
-                    context.go('/flashcards/deck/$deckId/study');
+                    context.push(AppRoutes.deckStudy(deckId));
                   }
                 : null,
             icon: const Icon(Icons.school_outlined),
@@ -187,7 +188,7 @@ class _ActionBar extends StatelessWidget {
                           deckId: deckId,
                           quizType: QuizType.multipleChoice,
                         ));
-                    context.go('/flashcards/deck/$deckId/quiz');
+                    context.push(AppRoutes.deckQuiz(deckId));
                   }
                 : null,
             icon: const Icon(Icons.quiz_outlined),
@@ -200,7 +201,7 @@ class _ActionBar extends StatelessWidget {
                           deckId: deckId,
                           quizType: QuizType.written,
                         ));
-                    context.go('/flashcards/deck/$deckId/quiz');
+                    context.push(AppRoutes.deckQuiz(deckId));
                   }
                 : null,
             icon: const Icon(Icons.edit_note_outlined),
@@ -213,7 +214,7 @@ class _ActionBar extends StatelessWidget {
                           deckId: deckId,
                           quizType: QuizType.matching,
                         ));
-                    context.go('/flashcards/deck/$deckId/quiz');
+                    context.push(AppRoutes.deckQuiz(deckId));
                   }
                 : null,
             icon: const Icon(Icons.compare_arrows),
@@ -245,7 +246,7 @@ class _EmptyCardState extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           FilledButton.icon(
-            onPressed: () => context.go('/flashcards/deck/$deckId/add'),
+            onPressed: () => context.push(AppRoutes.deckAdd(deckId)),
             icon: const Icon(Icons.add),
             label: const Text('Add Card'),
           ),
@@ -323,7 +324,7 @@ class _FlashCardTile extends StatelessWidget {
           ],
         ),
         onTap: () =>
-            context.go('/flashcards/deck/$deckId/edit/${card.id}'),
+            context.push(AppRoutes.deckEdit(deckId, card.id)),
       ),
     );
   }

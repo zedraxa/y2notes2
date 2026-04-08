@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:biscuits/app/route_names.dart';
 
 import '../../domain/entities/flash_card.dart';
 import '../../domain/entities/flash_card_deck.dart';
@@ -81,8 +82,7 @@ class _CardEditorPageState extends State<CardEditorPage> {
             title: Text(isEditing ? 'Edit Card' : 'New Card'),
             leading: IconButton(
               icon: const Icon(Icons.arrow_back),
-              onPressed: () =>
-                  context.go('/flashcards/deck/${widget.deckId}'),
+              onPressed: () => context.pop(),
             ),
           ),
           body: Form(
@@ -176,6 +176,6 @@ class _CardEditorPageState extends State<CardEditorPage> {
         tags: tags,
       ));
     }
-    context.go('/flashcards/deck/${widget.deckId}');
+    context.pop();
   }
 }
