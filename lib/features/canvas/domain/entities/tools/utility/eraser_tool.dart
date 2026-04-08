@@ -220,7 +220,9 @@ class EraserTool implements DrawingTool {
         ..strokeWidth = 0.8
         ..strokeCap = StrokeCap.round;
       final spacing = r * 0.45;
-      for (double d = -r; d <= r; d += spacing) {
+      final steps = spacing > 0 ? ((2 * r) / spacing).ceil() : 0;
+      for (int n = 0; n <= steps; n++) {
+        final d = -r + n * spacing;
         final x1 = last.x + d;
         final y1 = last.y - r;
         final x2 = last.x + d + r;
@@ -305,8 +307,22 @@ class EraserTool implements DrawingTool {
       final r = _effectiveRadius(p, settings.size, pressureErase, tiltMod,
           velocitySpread);
       if (shape == 'square') {
-        path.addRect(
-            Rect.fromCircle(center: Offset(p.x, p.y), radius: r));
+        // Build a rotated square path respecting azimuth
+        final cos = math.cos(p.azimuth);
+        final sin = math.sin(p.azimuth);
+        final corners = [
+          Offset(-r, -r), Offset(r, -r),
+          Offset(r, r), Offset(-r, r),
+        ];
+        final rotated = corners.map((c) => Offset(
+          p.x + c.dx * cos - c.dy * sin,
+          p.y + c.dx * sin + c.dy * cos,
+        )).toList();
+        path.moveTo(rotated[0].dx, rotated[0].dy);
+        for (int j = 1; j < rotated.length; j++) {
+          path.lineTo(rotated[j].dx, rotated[j].dy);
+        }
+        path.close();
       } else {
         path.addOval(
             Rect.fromCircle(center: Offset(p.x, p.y), radius: r));
@@ -340,7 +356,7 @@ class EraserTool implements DrawingTool {
 
     // Eraser debris particles — small semi-transparent crumbs scattered
     // near the erasure path, like rubber shavings from a real eraser.
-    final rng = math.Random(points.first.timestamp);
+    final rng = math.Random(points.first.timestamp + points.length);
     final particleCount = (points.length * debris * 3.0).round();
     for (int i = 0; i < particleCount && i < points.length * 4; i++) {
       final idx = rng.nextInt(points.length);
