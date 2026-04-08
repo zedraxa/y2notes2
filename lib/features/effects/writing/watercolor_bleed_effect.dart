@@ -35,7 +35,6 @@ class WatercolorBleedEffect implements WritingEffect {
   double intensity = 1.0;
 
   final List<_WatercolorStroke> _renders = [];
-  final math.Random _random = math.Random();
 
   @override
   void onStrokeStart(PointData point) {}
@@ -199,7 +198,7 @@ class WatercolorBleedEffect implements WritingEffect {
     return hsv.withHue((hsv.hue + degrees) % 360).toColor();
   }
 
-  /// Darken a colour by [amount] (0..1, where 1 = fully black).
+  /// Darken a color by [amount] (0..1, where 1 = fully black).
   Color _darken(Color color, double amount) {
     final hsv = HSVColor.fromColor(color);
     return hsv

@@ -3,8 +3,8 @@ import 'dart:math' as math;
 /// Custom easing functions for animation effects.
 ///
 /// Provides spring, bounce, elastic, and other advanced curves that go
-/// beyond the standard [Curves] library. All functions take a normalised
-/// time [t] in 0..1 and return a normalised output, though some may
+/// beyond the standard [Curves] library. All functions take a normalized
+/// time [t] in 0..1 and return a normalized output, though some may
 /// overshoot (e.g. spring / elastic).
 abstract class EasingCurves {
   EasingCurves._();
