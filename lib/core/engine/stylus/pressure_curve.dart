@@ -268,8 +268,8 @@ abstract final class StylusWidthCalculator {
     double toolMultiplier = 1.0,
   }) {
     final mappedPressure = curve.apply(pressure.clamp(0.0, 1.0));
-    final tiltMultiplier = _tiltMultiplier(tiltRadians);
-    return (baseWidth * mappedPressure * tiltMultiplier * toolMultiplier)
+    final tiltMul = tiltMultiplier(tiltRadians);
+    return (baseWidth * mappedPressure * tiltMul * toolMultiplier)
         .clamp(0.5, 60.0);
   }
 
@@ -280,15 +280,18 @@ abstract final class StylusWidthCalculator {
   /// | < 30°      | 2.0        | Shading (flat hold) |
   /// | 30° – 60°  | 1.0        | Normal writing      |
   /// | > 60°      | 0.5        | Fine detail         |
-  static double _tiltMultiplier(double radians) {
+  ///
+  /// Uses smoothstep (Hermite interpolation) for glitch-free transitions.
+  static double tiltMultiplier(double radians) {
     const flat = 30.0 * math.pi / 180.0;   // 30°
     const normal = 60.0 * math.pi / 180.0; // 60°
 
-    if (radians < flat) return 2.0;
-    if (radians > normal) return 0.5;
+    if (radians <= flat) return 2.0;
+    if (radians >= normal) return 0.5;
 
-    // Smooth interpolation between flat and upright.
+    // Smoothstep: 3t² − 2t³  (Hermite basis, zero derivative at boundaries).
     final t = (radians - flat) / (normal - flat);
-    return 2.0 - 1.5 * t; // 2.0 → 0.5
+    final smooth = t * t * (3.0 - 2.0 * t);
+    return 2.0 - 1.5 * smooth;
   }
 }

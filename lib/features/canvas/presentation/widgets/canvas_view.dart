@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -454,8 +455,9 @@ class _CanvasViewState extends State<CanvasView>
   /// Converts a [StylusInput] to a [PointData], calculating velocity from the
   /// previous point if available.
   ///
-  /// Applies the user's selected pressure curve, pressure sensitivity scaling,
-  /// and light temporal smoothing to reduce stylus jitter.
+  /// Applies the user's selected pressure curve, temporal EMA smoothing, and
+  /// pressure sensitivity scaling — in that order — to reduce stylus jitter
+  /// while preserving responsiveness.
   PointData _stylusInputToPointData(StylusInput input, PointData? previous) {
     double velocity = 0.0;
     if (previous != null) {
@@ -463,7 +465,8 @@ class _CanvasViewState extends State<CanvasView>
       if (dt > 0) {
         final dx = input.position.dx - previous.x;
         final dy = input.position.dy - previous.y;
-        velocity = (dx * dx + dy * dy) / dt;
+        // Proper Euclidean velocity in px/ms (was squared distance before).
+        velocity = math.sqrt(dx * dx + dy * dy) / dt;
       }
     }
 
@@ -472,18 +475,20 @@ class _CanvasViewState extends State<CanvasView>
     final curve = _settingsService.activePressureCurve;
     double pressure = curve.apply(input.pressure.clamp(0.0, 1.0));
 
-    // 2. Scale pressure range by pressureSensitivity.
-    //    sensitivity = 1.0 → full range; 0.0 → constant 0.5 (no variation).
-    final bloc = context.read<CanvasBloc>();
-    final sensitivity = bloc.state.activeToolSettings.pressureSensitivity;
-    pressure = 0.5 + (pressure - 0.5) * sensitivity;
-
-    // 3. Temporal smoothing — exponential moving average on pressure to
-    //    eliminate high-frequency stylus jitter.
+    // 2. Temporal smoothing — EMA on pressure to eliminate high-frequency
+    //    stylus jitter.  Applied BEFORE sensitivity so the smoothing operates
+    //    on the raw curve output, giving a cleaner signal for the sensitivity
+    //    expansion that follows.
     if (previous != null) {
       pressure = previous.pressure * _pressureSmoothingFactor +
           pressure * (1.0 - _pressureSmoothingFactor);
     }
+
+    // 3. Scale pressure range by pressureSensitivity.
+    //    sensitivity = 1.0 → full range; 0.0 → constant 0.5 (no variation).
+    final bloc = context.read<CanvasBloc>();
+    final sensitivity = bloc.state.activeToolSettings.pressureSensitivity;
+    pressure = 0.5 + (pressure - 0.5) * sensitivity;
 
     pressure = pressure.clamp(0.0, 1.0);
 

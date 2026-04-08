@@ -1,6 +1,7 @@
-import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:perfect_freehand/perfect_freehand.dart';
+import 'package:biscuits/core/engine/stroke_smoother.dart';
+import 'package:biscuits/core/engine/stylus/pressure_curve.dart';
 import 'package:biscuits/features/canvas/domain/entities/stroke.dart';
 import 'package:biscuits/features/canvas/domain/entities/tool.dart';
 import 'package:biscuits/features/canvas/domain/entities/point_data.dart';
@@ -11,9 +12,16 @@ import 'package:biscuits/features/canvas/domain/entities/tools/tool_settings.dar
 /// Renders strokes using the `perfect_freehand` algorithm.
 class StrokeRenderer {
   /// Build a [Path] from [stroke] using perfect_freehand outline points.
+  ///
+  /// Applies Catmull-Rom interpolation to fill gaps in fast strokes and
+  /// velocity-based end tapering for natural stroke endings.
   Path buildStrokePath(Stroke stroke) {
     if (stroke.points.isEmpty) return Path();
-    final points = _toFreehandPoints(stroke.points);
+    // Interpolate to fill gaps from fast pen movement.
+    var smoothed = StrokeSmoother.interpolate(stroke.points);
+    // Apply natural pressure taper at stroke end.
+    smoothed = StrokeSmoother.applyEndTaper(smoothed);
+    final points = _toFreehandPoints(smoothed);
     final options = _buildOptions(stroke);
     final outlinePoints = getStroke(points, options: options);
     return _buildPathFromOutline(outlinePoints);
@@ -46,6 +54,8 @@ class StrokeRenderer {
   }
 
   /// Render the active (in-progress) stroke from raw [points].
+  ///
+  /// Applies Catmull-Rom interpolation for gap-filling during fast drawing.
   void renderActiveStroke(
     Canvas canvas,
     List<PointData> points,
@@ -54,7 +64,8 @@ class StrokeRenderer {
     StrokeTool tool,
   ) {
     if (points.isEmpty) return;
-    final freehandPoints = _toFreehandPoints(points);
+    final smoothed = StrokeSmoother.interpolate(points);
+    final freehandPoints = _toFreehandPoints(smoothed);
     final options = _buildOptionsFromParams(baseWidth, tool);
     final outlinePoints = getStroke(freehandPoints, options: options);
     final path = _buildPathFromOutline(outlinePoints);
@@ -68,26 +79,11 @@ class StrokeRenderer {
     return points.map((p) {
       // Apply tilt-to-width: altitude modulates the pressure passed to
       // perfect_freehand, so very flat strokes produce wider marks.
-      final tiltMultiplier = _tiltMultiplier(p.altitude);
-      final modulatedPressure = (p.pressure * tiltMultiplier).clamp(0.0, 1.0);
+      // Delegates to the shared StylusWidthCalculator implementation.
+      final tiltMul = StylusWidthCalculator.tiltMultiplier(p.altitude);
+      final modulatedPressure = (p.pressure * tiltMul).clamp(0.0, 1.0);
       return PointVector(p.x, p.y, modulatedPressure);
     }).toList();
-  }
-
-  /// Returns a width multiplier based on the pen altitude angle [radians].
-  ///
-  /// | Altitude  | Multiplier | Description          |
-  /// |-----------|------------|----------------------|
-  /// | < 30°     | 2.0        | Flat — shading mode  |
-  /// | 30° – 60° | 1.0        | Normal writing       |
-  /// | > 60°     | 0.5        | Upright — fine detail|
-  static double _tiltMultiplier(double radians) {
-    const flat = 30.0 * math.pi / 180.0;   // 30°
-    const normal = 60.0 * math.pi / 180.0; // 60°
-    if (radians < flat) return 2.0;
-    if (radians > normal) return 0.5;
-    final t = (radians - flat) / (normal - flat);
-    return 2.0 - 1.5 * t;
   }
 
   StrokeOptions _buildOptions(Stroke stroke) =>
@@ -118,16 +114,16 @@ class StrokeRenderer {
         return StrokeOptions(
           size: baseWidth,
           thinning: 0.6,
-          smoothing: 0.5,
-          streamline: 0.5,
+          smoothing: 0.55,
+          streamline: 0.6,
           simulatePressure: true,
         );
       case StrokeTool.ballpoint:
         return StrokeOptions(
           size: baseWidth,
           thinning: 0.3,
-          smoothing: 0.5,
-          streamline: 0.5,
+          smoothing: 0.55,
+          streamline: 0.6,
           simulatePressure: true,
         );
     }
@@ -155,13 +151,48 @@ class StrokeRenderer {
     return paint;
   }
 
+  /// Builds a smooth closed [Path] from perfect_freehand [outlinePoints].
+  ///
+  /// Uses quadratic Bézier curves between midpoints of consecutive segments
+  /// instead of straight lineTo() calls, producing much smoother rendered
+  /// edges — especially visible on thick strokes and highlights.
   Path _buildPathFromOutline(List<Offset> outlinePoints) {
     if (outlinePoints.isEmpty) return Path();
-    final path = Path()
-      ..moveTo(outlinePoints[0].dx, outlinePoints[0].dy);
-    for (int i = 1; i < outlinePoints.length; i++) {
-      path.lineTo(outlinePoints[i].dx, outlinePoints[i].dy);
+    if (outlinePoints.length < 3) {
+      // Not enough points for Bézier — fall back to simple lines.
+      final path = Path()
+        ..moveTo(outlinePoints[0].dx, outlinePoints[0].dy);
+      for (int i = 1; i < outlinePoints.length; i++) {
+        path.lineTo(outlinePoints[i].dx, outlinePoints[i].dy);
+      }
+      path.close();
+      return path;
     }
+
+    final path = Path();
+    // Start at the midpoint between the first and second outline point.
+    final firstMid = Offset(
+      (outlinePoints[0].dx + outlinePoints[1].dx) / 2,
+      (outlinePoints[0].dy + outlinePoints[1].dy) / 2,
+    );
+    path.moveTo(firstMid.dx, firstMid.dy);
+
+    for (int i = 1; i < outlinePoints.length - 1; i++) {
+      final mid = Offset(
+        (outlinePoints[i].dx + outlinePoints[i + 1].dx) / 2,
+        (outlinePoints[i].dy + outlinePoints[i + 1].dy) / 2,
+      );
+      path.quadraticBezierTo(
+        outlinePoints[i].dx,
+        outlinePoints[i].dy,
+        mid.dx,
+        mid.dy,
+      );
+    }
+
+    // Final segment back to close the path.
+    final last = outlinePoints.last;
+    path.quadraticBezierTo(last.dx, last.dy, firstMid.dx, firstMid.dy);
     path.close();
     return path;
   }
