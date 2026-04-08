@@ -9,6 +9,7 @@ import 'package:y2notes2/features/canvas/domain/entities/stroke.dart';
 import 'package:y2notes2/features/canvas/domain/models/canvas_config.dart';
 import 'package:y2notes2/features/documents/domain/entities/canvas_elements.dart';
 import 'package:y2notes2/features/documents/domain/models/export_options.dart';
+import 'package:y2notes2/features/shapes/domain/entities/shape_type.dart';
 
 /// Rasterises canvas content as PNG or JPEG.
 class ImageExportEngine {
@@ -16,9 +17,10 @@ class ImageExportEngine {
 
   // ── Internal rendering ─────────────────────────────────────────────────────
 
-  /// Paints strokes into an [ui.Image] at the given [scale].
+  /// Paints strokes and shapes into an [ui.Image] at the given [scale].
   Future<ui.Image> _rasterise({
     required List<Stroke> strokes,
+    List<ShapeElement> shapes = const [],
     required CanvasConfig config,
     required double scale,
     required bool transparentBackground,
@@ -62,6 +64,83 @@ class ImageExportEngine {
       canvas.drawPath(path, paint);
     }
 
+    // Draw shapes.
+    for (final shape in shapes) {
+      final strokePaint = Paint()
+        ..color = shape.strokeColor.withOpacity(shape.opacity)
+        ..strokeWidth = shape.strokeWidth
+        ..style = PaintingStyle.stroke;
+
+      final fillPaint = shape.isFilled
+          ? (Paint()
+            ..color = shape.fillColor.withOpacity(shape.opacity)
+            ..style = PaintingStyle.fill)
+          : null;
+
+      switch (shape.type) {
+        case ShapeType.rectangle:
+        case ShapeType.square:
+          if (fillPaint != null) {
+            canvas.drawRect(shape.bounds, fillPaint);
+          }
+          canvas.drawRect(shape.bounds, strokePaint);
+        case ShapeType.circle:
+        case ShapeType.ellipse:
+          final oval = shape.bounds;
+          if (fillPaint != null) {
+            canvas.drawOval(oval, fillPaint);
+          }
+          canvas.drawOval(oval, strokePaint);
+        case ShapeType.line:
+          canvas.drawLine(
+            shape.bounds.topLeft,
+            shape.bounds.bottomRight,
+            strokePaint,
+          );
+        case ShapeType.arrow:
+          final start = Offset(
+            shape.bounds.left,
+            shape.bounds.center.dy,
+          );
+          final end = Offset(
+            shape.bounds.right,
+            shape.bounds.center.dy,
+          );
+          canvas.drawLine(start, end, strokePaint);
+          // Arrowhead
+          final headLen = 8.0;
+          canvas.drawLine(
+            end,
+            Offset(end.dx - headLen, end.dy - headLen / 2),
+            strokePaint,
+          );
+          canvas.drawLine(
+            end,
+            Offset(end.dx - headLen, end.dy + headLen / 2),
+            strokePaint,
+          );
+        default:
+          // Polygon shapes (triangle, star, diamond, pentagon, hexagon, freeform)
+          if (shape.vertices.isNotEmpty) {
+            final path = Path();
+            path.moveTo(shape.vertices.first.dx, shape.vertices.first.dy);
+            for (var i = 1; i < shape.vertices.length; i++) {
+              path.lineTo(shape.vertices[i].dx, shape.vertices[i].dy);
+            }
+            path.close();
+            if (fillPaint != null) {
+              canvas.drawPath(path, fillPaint);
+            }
+            canvas.drawPath(path, strokePaint);
+          } else {
+            if (fillPaint != null) {
+              canvas.drawRect(shape.bounds, fillPaint);
+            }
+            canvas.drawRect(shape.bounds, strokePaint);
+          }
+      }
+    }
+
     final picture = recorder.endRecording();
     return picture.toImage(canvasWidth, canvasHeight);
   }
@@ -96,8 +175,6 @@ class ImageExportEngine {
   // ── Public API ─────────────────────────────────────────────────────────────
 
   /// Exports the canvas as image bytes.
-  /// Note: [shapes] and [stickers] are accepted for API compatibility with
-  /// future PRs but are not yet rendered.
   Future<Uint8List> exportToImage({
     required List<Stroke> strokes,
     List<ShapeElement> shapes = const [],
@@ -110,6 +187,7 @@ class ImageExportEngine {
 
     final image = await _rasterise(
       strokes: strokes,
+      shapes: shapes,
       config: config,
       scale: options.scale,
       transparentBackground:

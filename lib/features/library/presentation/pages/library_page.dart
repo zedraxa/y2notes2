@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:y2notes2/features/library/domain/entities/folder.dart';
 import 'package:y2notes2/features/library/domain/entities/library_item.dart';
 import 'package:y2notes2/features/library/domain/entities/tag.dart';
@@ -332,6 +333,22 @@ class _LibraryPageState extends State<LibraryPage> {
               onTap: () {
                 Navigator.pop(ctx);
                 _showCreateFolderDialog(context);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.style_outlined),
+              title: const Text('Flash Cards'),
+              onTap: () {
+                Navigator.pop(ctx);
+                GoRouter.of(context).go('/flashcards');
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.document_scanner_outlined),
+              title: const Text('Scan Document'),
+              onTap: () {
+                Navigator.pop(ctx);
+                GoRouter.of(context).go('/scanner');
               },
             ),
           ],

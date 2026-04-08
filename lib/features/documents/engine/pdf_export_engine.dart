@@ -10,6 +10,7 @@ import 'package:y2notes2/features/canvas/domain/entities/stroke.dart';
 import 'package:y2notes2/features/canvas/domain/models/canvas_config.dart';
 import 'package:y2notes2/features/documents/domain/entities/canvas_elements.dart';
 import 'package:y2notes2/features/documents/domain/models/export_options.dart';
+import 'package:y2notes2/features/shapes/domain/entities/shape_type.dart';
 
 /// Converts canvas content (strokes, shapes, stickers) into a PDF document.
 class PdfExportEngine {
@@ -159,14 +160,94 @@ class PdfExportEngine {
     }
   }
 
+  // ── Shape rendering ─────────────────────────────────────────────────────────
+
+  void _drawShapes(
+    pw.Context ctx,
+    PdfPageFormat format,
+    List<ShapeElement> shapes,
+    CanvasConfig config,
+    PdfExportOptions options,
+  ) {
+    if (shapes.isEmpty) return;
+    final PdfGraphics g = ctx.canvas;
+    final double pageH = format.availableHeight;
+    final double scaleX = format.availableWidth / config.width;
+    final double scaleY = pageH / config.height;
+    final double mLeft = options.margins.left;
+    final double mBottom = options.margins.bottom;
+
+    for (final shape in shapes) {
+      final c = shape.strokeColor;
+      g.setStrokeColor(PdfColor.fromInt(c.value));
+      g.setLineWidth(
+          (shape.strokeWidth * ((scaleX + scaleY) / 2)).clamp(0.3, 10.0));
+
+      if (shape.isFilled) {
+        final fc = shape.fillColor;
+        g.setFillColor(PdfColor.fromInt(fc.value));
+      }
+
+      final left = shape.bounds.left * scaleX + mLeft;
+      final top = shape.bounds.top * scaleY;
+      final w = shape.bounds.width * scaleX;
+      final h = shape.bounds.height * scaleY;
+      // PDF y is from bottom.
+      final bottom = pageH - top - h - mBottom;
+
+      switch (shape.type) {
+        case ShapeType.rectangle:
+        case ShapeType.square:
+          g.drawRect(left, bottom, w, h);
+        case ShapeType.circle:
+        case ShapeType.ellipse:
+          g.drawEllipse(left + w / 2, bottom + h / 2, w / 2, h / 2);
+        case ShapeType.line:
+          g.moveTo(left, bottom + h);
+          g.lineTo(left + w, bottom);
+        case ShapeType.arrow:
+          g.moveTo(left, bottom + h / 2);
+          g.lineTo(left + w, bottom + h / 2);
+          // Arrow head
+          g.moveTo(left + w - 8 * scaleX, bottom + h / 2 + 5 * scaleY);
+          g.lineTo(left + w, bottom + h / 2);
+          g.moveTo(left + w - 8 * scaleX, bottom + h / 2 - 5 * scaleY);
+          g.lineTo(left + w, bottom + h / 2);
+        default:
+          // For polygon types (triangle, star, diamond, pentagon, hexagon, freeform)
+          if (shape.vertices.isNotEmpty) {
+            final first = shape.vertices.first;
+            g.moveTo(
+              first.dx * scaleX + mLeft,
+              pageH - first.dy * scaleY - mBottom,
+            );
+            for (var i = 1; i < shape.vertices.length; i++) {
+              final v = shape.vertices[i];
+              g.lineTo(
+                v.dx * scaleX + mLeft,
+                pageH - v.dy * scaleY - mBottom,
+              );
+            }
+            g.closePath();
+          } else {
+            // Fallback: draw bounding rectangle.
+            g.drawRect(left, bottom, w, h);
+          }
+      }
+
+      if (shape.isFilled) {
+        g.fillAndStrokePath();
+      } else {
+        g.strokePath();
+      }
+    }
+  }
+
   // ── Public API ─────────────────────────────────────────────────────────────
 
   /// Converts canvas content into raw PDF bytes.
   ///
   /// [onProgress] reports a value from 0.0 to 1.0.
-  /// Note: [shapes] and [stickers] are accepted for API compatibility with
-  /// future PRs but are not yet rendered. They will be incorporated when PR 3
-  /// (Shape Recognition) and PR 4 (Stickers) are merged.
   Future<Uint8List> exportToPdf({
     required List<Stroke> strokes,
     List<ShapeElement> shapes = const [],
@@ -187,8 +268,10 @@ class PdfExportEngine {
         margin: pw.EdgeInsets.zero,
         build: (ctx) {
           _drawBackground(ctx, format, config, options);
-          onProgress?.call(0.4);
+          onProgress?.call(0.3);
           _drawStrokes(ctx, format, strokes, config, options);
+          onProgress?.call(0.6);
+          _drawShapes(ctx, format, shapes, config, options);
           onProgress?.call(0.9);
           return pw.SizedBox();
         },
@@ -201,8 +284,6 @@ class PdfExportEngine {
   }
 
   /// Exports multiple pages to a single PDF.
-  /// Note: shapes and stickers within each page record are accepted for API
-  /// compatibility with future PRs but are not yet rendered.
   Future<Uint8List> exportMultiPageToPdf({
     required List<({
       List<Stroke> strokes,
@@ -228,6 +309,7 @@ class PdfExportEngine {
           build: (ctx) {
             _drawBackground(ctx, format, page.config, options);
             _drawStrokes(ctx, format, page.strokes, page.config, options);
+            _drawShapes(ctx, format, page.shapes, page.config, options);
             return pw.SizedBox();
           },
         ),
