@@ -131,7 +131,7 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
 
   void _onCreateItem(CreateItem event, Emitter<LibraryState> emit) {
     final item = LibraryItem(
-      id: _uuid.v4(),
+      id: event.id ?? _uuid.v4(),
       type: event.type,
       name: event.name,
       folderId: event.folderId ?? state.currentFolderId,

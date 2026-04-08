@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+import 'package:biscuits/app/route_names.dart';
 import 'package:biscuits/features/documents/domain/entities/notebook.dart';
 import 'package:biscuits/features/library/domain/entities/library_item.dart';
 import 'package:biscuits/features/library/presentation/bloc/library_bloc.dart';
@@ -113,6 +115,7 @@ class _LibraryGridCard extends StatelessWidget {
           '${item.isFavorite ? ", favourited" : ""}',
       button: true,
       child: GestureDetector(
+        onTap: () => _navigateToItem(context),
         onLongPress: () => _showContextMenu(context),
         child: Card(
           clipBehavior: Clip.antiAlias,
@@ -178,6 +181,20 @@ class _LibraryGridCard extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  void _navigateToItem(BuildContext context) {
+    switch (item.type) {
+      case LibraryItemType.notebook:
+        context.push(AppRoutes.notebook(item.id));
+        break;
+      case LibraryItemType.infiniteCanvas:
+        context.push(AppRoutes.infiniteCanvas(item.id));
+        break;
+      case LibraryItemType.folder:
+        context.read<LibraryBloc>().add(NavigateToFolder(item.id));
+        break;
+    }
   }
 
   void _showContextMenu(BuildContext context) {

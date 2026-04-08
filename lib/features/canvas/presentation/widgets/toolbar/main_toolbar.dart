@@ -262,7 +262,7 @@ class MainToolbar extends StatelessWidget {
                   tooltip: 'Scan Document',
                   onPressed: () {
                     HapticController.light();
-                    context.go('/scanner');
+                    context.push('/scanner');
                   },
                 ),
                 const _Divider(),

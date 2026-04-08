@@ -54,12 +54,13 @@ class NavigateToFolder extends LibraryEvent {
 // ── Item management ───────────────────────────────────────────────────────────
 
 class CreateItem extends LibraryEvent {
-  const CreateItem({required this.name, required this.type, this.folderId});
+  const CreateItem({this.id, required this.name, required this.type, this.folderId});
+  final String? id;
   final String name;
   final LibraryItemType type;
   final String? folderId;
   @override
-  List<Object?> get props => [name, type, folderId];
+  List<Object?> get props => [id, name, type, folderId];
 }
 
 class RenameItem extends LibraryEvent {

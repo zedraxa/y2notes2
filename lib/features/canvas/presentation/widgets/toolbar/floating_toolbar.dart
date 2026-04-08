@@ -1331,7 +1331,7 @@ class _InsertTray extends StatelessWidget {
             tooltip: 'Scan Document',
             onTap: () {
               HapticController.light();
-              context.go('/scanner');
+              context.push('/scanner');
             },
           ),
           const _ToolbarDivider(),
