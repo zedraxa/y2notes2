@@ -22,6 +22,7 @@ class FlipCardWidget extends StatefulWidget {
 class _FlipCardWidgetState extends State<FlipCardWidget>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
+  late Animation<double> _animation;
   bool _showFront = true;
 
   @override
@@ -29,7 +30,12 @@ class _FlipCardWidgetState extends State<FlipCardWidget>
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 400),
+      duration: const Duration(milliseconds: 500),
+    );
+    // Spring-like curve: quick start, gentle overshoot, smooth settle
+    _animation = CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeOutBack,
     );
     _controller.addListener(() {
       if (_controller.value >= 0.5 && _showFront) {
@@ -69,13 +75,16 @@ class _FlipCardWidgetState extends State<FlipCardWidget>
     return GestureDetector(
       onTap: _toggleCard,
       child: AnimatedBuilder(
-        animation: _controller,
+        animation: _animation,
         builder: (context, _) {
-          final angle = _controller.value * math.pi;
+          final angle = _animation.value * math.pi;
+          // Slight elevation scale during flip for 3D depth
+          final scale = 1.0 + 0.04 * math.sin(_animation.value * math.pi);
           return Transform(
             alignment: Alignment.center,
             transform: Matrix4.identity()
               ..setEntry(3, 2, 0.001)
+              ..scale(scale)
               ..rotateY(angle),
             child: _showFront
                 ? _CardFace(
