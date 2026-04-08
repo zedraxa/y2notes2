@@ -894,7 +894,7 @@ class _ToolsTray extends StatelessWidget {
           ),
           const _ToolbarDivider(),
           // Handwriting recognition.
-          _RecognizeSmallButton(),
+          const _RecognizeSmallButton(),
           const _ToolbarDivider(),
           // Share.
           _SmallIconButton(
@@ -1118,6 +1118,8 @@ class _InsertTray extends StatelessWidget {
 // ─── Recognize button (compact) ─────────────────────────────────────────────
 
 class _RecognizeSmallButton extends StatelessWidget {
+  const _RecognizeSmallButton();
+
   @override
   Widget build(BuildContext context) {
     HandwritingBloc? hwBloc;
