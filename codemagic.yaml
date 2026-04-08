@@ -6,6 +6,7 @@ definitions:
     vars: &shared_vars
       BUNDLE_ID: "com.biscuits.app"
       APP_ORG: "com.biscuits"
+      APPLE_TEAM_ID: "L7623VR559"
 
   scripts:
     # ── Setup ──
