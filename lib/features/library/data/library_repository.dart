@@ -85,6 +85,8 @@ class LibraryRepository {
         'trashedAt': item.trashedAt?.toIso8601String(),
         if (item.coverColor != null) 'coverColor': item.coverColor,
         if (item.coverMaterial != null) 'coverMaterial': item.coverMaterial,
+        if (item.coverPattern != null) 'coverPattern': item.coverPattern,
+        if (item.coverEmblem != null) 'coverEmblem': item.coverEmblem,
       };
 
   LibraryItem _itemFromMap(Map<String, dynamic> m) => LibraryItem(
@@ -106,6 +108,8 @@ class LibraryRepository {
             : DateTime.parse(m['trashedAt'] as String),
         coverColor: m['coverColor'] as int?,
         coverMaterial: m['coverMaterial'] as String?,
+        coverPattern: m['coverPattern'] as String?,
+        coverEmblem: m['coverEmblem'] as String?,
       );
 
   Map<String, dynamic> _folderToMap(Folder f) => {

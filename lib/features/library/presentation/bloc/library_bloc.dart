@@ -236,6 +236,8 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
         return item.copyWith(
           coverColor: event.coverColor,
           coverMaterial: event.coverMaterial,
+          coverPattern: event.coverPattern,
+          coverEmblem: event.coverEmblem,
         );
       }
       return item;

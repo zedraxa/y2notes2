@@ -26,6 +26,64 @@ enum CoverMaterial {
   glossy,
 }
 
+// ── Cover pattern ──────────────────────────────────────────────────────────
+
+/// Decorative pattern overlaid on a notebook cover.
+enum CoverPattern {
+  /// No pattern — plain cover.
+  none,
+
+  /// Horizontal and/or vertical stripes.
+  stripes,
+
+  /// Evenly spaced polka dots.
+  dots,
+
+  /// Chevron / zig-zag pattern.
+  chevron,
+
+  /// Repeating diamond / argyle pattern.
+  diamond,
+
+  /// Crisscross plaid weave.
+  plaid,
+
+  /// Interlocking Moroccan tile motif.
+  moroccan,
+
+  /// Herringbone / parquet weave.
+  herringbone,
+}
+
+// ── Cover emblem ───────────────────────────────────────────────────────────
+
+/// Decorative emblem / icon displayed on a notebook cover.
+enum CoverEmblem {
+  /// No emblem.
+  none,
+
+  /// Five-pointed star.
+  star,
+
+  /// Heart shape.
+  heart,
+
+  /// Leaf / botanical element.
+  leaf,
+
+  /// Crown / regal crest.
+  crown,
+
+  /// Compass rose.
+  compass,
+
+  /// Feather quill.
+  feather,
+
+  /// Crescent moon.
+  moon,
+}
+
 // ── Cover configuration ────────────────────────────────────────────────────
 
 /// Rich configuration for a notebook cover.
@@ -36,6 +94,8 @@ class NotebookCoverConfig extends Equatable {
   const NotebookCoverConfig({
     this.color = const Color(0xFF2563EB),
     this.material = CoverMaterial.matte,
+    this.pattern = CoverPattern.none,
+    this.emblem = CoverEmblem.none,
   });
 
   /// Dominant cover color.
@@ -43,6 +103,12 @@ class NotebookCoverConfig extends Equatable {
 
   /// Surface material / finish.
   final CoverMaterial material;
+
+  /// Decorative pattern overlaid on the cover surface.
+  final CoverPattern pattern;
+
+  /// Emblem / icon displayed on the cover.
+  final CoverEmblem emblem;
 
   // ── Built-in presets ──────────────────────────────────────────────────────
 
@@ -71,27 +137,72 @@ class NotebookCoverConfig extends Equatable {
   static const NotebookCoverConfig teal =
       NotebookCoverConfig(color: Color(0xFF0F766E), material: CoverMaterial.kraft);
 
+  // ── Rich presets (with pattern + emblem) ─────────────────────────────────
+
+  static const NotebookCoverConfig classicJournal = NotebookCoverConfig(
+    color: Color(0xFF1E293B),
+    material: CoverMaterial.leather,
+    pattern: CoverPattern.herringbone,
+    emblem: CoverEmblem.compass,
+  );
+
+  static const NotebookCoverConfig gardenNotes = NotebookCoverConfig(
+    color: Color(0xFF16A34A),
+    material: CoverMaterial.linen,
+    pattern: CoverPattern.dots,
+    emblem: CoverEmblem.leaf,
+  );
+
+  static const NotebookCoverConfig nightSky = NotebookCoverConfig(
+    color: Color(0xFF4338CA),
+    material: CoverMaterial.matte,
+    pattern: CoverPattern.diamond,
+    emblem: CoverEmblem.moon,
+  );
+
+  static const NotebookCoverConfig royalDiary = NotebookCoverConfig(
+    color: Color(0xFF7C3AED),
+    material: CoverMaterial.glossy,
+    pattern: CoverPattern.plaid,
+    emblem: CoverEmblem.crown,
+  );
+
   NotebookCoverConfig copyWith({
     Color? color,
     CoverMaterial? material,
+    CoverPattern? pattern,
+    CoverEmblem? emblem,
   }) =>
       NotebookCoverConfig(
         color: color ?? this.color,
         material: material ?? this.material,
+        pattern: pattern ?? this.pattern,
+        emblem: emblem ?? this.emblem,
       );
 
   /// Serialise to a JSON map.
   Map<String, dynamic> toJson() => {
         'color': color.value,
         'material': material.name,
+        if (pattern != CoverPattern.none) 'pattern': pattern.name,
+        if (emblem != CoverEmblem.none) 'emblem': emblem.name,
       };
 
   /// Deserialise from a JSON map.
-  factory NotebookCoverConfig.fromJson(Map<String, dynamic> json) =>
-      NotebookCoverConfig(
-        color: Color(json['color'] as int),
-        material: CoverMaterial.values.byName(json['material'] as String),
-      );
+  factory NotebookCoverConfig.fromJson(Map<String, dynamic> json) {
+    final patternName = json['pattern'] as String?;
+    final emblemName = json['emblem'] as String?;
+    return NotebookCoverConfig(
+      color: Color(json['color'] as int),
+      material: CoverMaterial.values.byName(json['material'] as String),
+      pattern: patternName != null
+          ? CoverPattern.values.byName(patternName)
+          : CoverPattern.none,
+      emblem: emblemName != null
+          ? CoverEmblem.values.byName(emblemName)
+          : CoverEmblem.none,
+    );
+  }
 
   /// Convert a legacy [NotebookCover] name to a [NotebookCoverConfig].
   factory NotebookCoverConfig.fromLegacyName(String name) {
@@ -116,7 +227,7 @@ class NotebookCoverConfig extends Equatable {
   }
 
   @override
-  List<Object?> get props => [color, material];
+  List<Object?> get props => [color, material, pattern, emblem];
 }
 
 // ── Notebook ──────────────────────────────────────────────────────────────

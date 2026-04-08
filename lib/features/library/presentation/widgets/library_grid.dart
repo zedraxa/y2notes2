@@ -206,10 +206,22 @@ class _NotebookCoverThumbnail extends StatelessWidget {
         ? CoverMaterial.values.byName(matName)
         : CoverMaterial.matte;
 
+    final patName = item.coverPattern;
+    final pattern = patName != null
+        ? CoverPattern.values.byName(patName)
+        : CoverPattern.none;
+
+    final embName = item.coverEmblem;
+    final emblem = embName != null
+        ? CoverEmblem.values.byName(embName)
+        : CoverEmblem.none;
+
     return LayoutBuilder(
       builder: (context, constraints) => NotebookCoverWidget(
         color: color,
         material: material,
+        pattern: pattern,
+        emblem: emblem,
         width: constraints.maxWidth,
         height: constraints.maxHeight,
       ),

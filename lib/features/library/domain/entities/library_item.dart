@@ -61,6 +61,8 @@ class LibraryItem extends Equatable {
     this.trashedAt,
     this.coverColor,
     this.coverMaterial,
+    this.coverPattern,
+    this.coverEmblem,
   })  : id = id ?? const Uuid().v4(),
         createdAt = createdAt ?? DateTime.now(),
         updatedAt = updatedAt ?? DateTime.now(),
@@ -89,6 +91,12 @@ class LibraryItem extends Equatable {
   /// Cover material name for notebook items — corresponds to [CoverMaterial.name].
   final String? coverMaterial;
 
+  /// Cover pattern name for notebook items — corresponds to [CoverPattern.name].
+  final String? coverPattern;
+
+  /// Cover emblem name for notebook items — corresponds to [CoverEmblem.name].
+  final String? coverEmblem;
+
   bool get isDueForAutoPurge {
     if (trashedAt == null) return false;
     return DateTime.now().difference(trashedAt!).inDays >= 30;
@@ -107,6 +115,8 @@ class LibraryItem extends Equatable {
     Object? trashedAt = _sentinel,
     Object? coverColor = _sentinel,
     Object? coverMaterial = _sentinel,
+    Object? coverPattern = _sentinel,
+    Object? coverEmblem = _sentinel,
   }) =>
       LibraryItem(
         id: id,
@@ -129,6 +139,12 @@ class LibraryItem extends Equatable {
         coverMaterial: coverMaterial == _sentinel
             ? this.coverMaterial
             : coverMaterial as String?,
+        coverPattern: coverPattern == _sentinel
+            ? this.coverPattern
+            : coverPattern as String?,
+        coverEmblem: coverEmblem == _sentinel
+            ? this.coverEmblem
+            : coverEmblem as String?,
       );
 
   @override
@@ -147,6 +163,8 @@ class LibraryItem extends Equatable {
         trashedAt,
         coverColor,
         coverMaterial,
+        coverPattern,
+        coverEmblem,
       ];
 }
 
