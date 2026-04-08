@@ -1,10 +1,12 @@
 import 'package:equatable/equatable.dart';
 import 'package:y2notes2/features/canvas/domain/entities/stroke.dart';
 import 'package:y2notes2/features/canvas/domain/models/canvas_config.dart';
+import 'package:y2notes2/features/documents/domain/entities/canvas_elements.dart';
 import 'package:y2notes2/features/documents/domain/models/export_options.dart';
 import 'package:y2notes2/features/documents/domain/models/import_options.dart';
 import 'package:y2notes2/features/media/domain/entities/media_element.dart';
 import 'package:y2notes2/features/pdf_annotation/domain/entities/pdf_annotation.dart';
+import 'package:y2notes2/features/rich_text/domain/entities/rich_text_element.dart';
 import 'package:y2notes2/features/scanner/domain/entities/scanned_document.dart';
 
 /// Base class for all document-feature events.
@@ -313,4 +315,60 @@ class UpdatePageAudioRecordings extends DocumentEvent {
   final List<dynamic> recordings;
   @override
   List<Object?> get props => [pageIndex, recordings];
+}
+
+// ── Shape elements ─────────────────────────────────────────────────────────
+
+/// Update the shape elements for a specific page.
+class UpdatePageShapes extends DocumentEvent {
+  const UpdatePageShapes({
+    required this.pageIndex,
+    required this.shapes,
+  });
+  final int pageIndex;
+  final List<ShapeElement> shapes;
+  @override
+  List<Object?> get props => [pageIndex, shapes];
+}
+
+// ── Sticker elements ───────────────────────────────────────────────────────
+
+/// Update the sticker elements for a specific page.
+class UpdatePageStickers extends DocumentEvent {
+  const UpdatePageStickers({
+    required this.pageIndex,
+    required this.stickers,
+  });
+  final int pageIndex;
+  final List<StickerElement> stickers;
+  @override
+  List<Object?> get props => [pageIndex, stickers];
+}
+
+// ── Graph elements ─────────────────────────────────────────────────────────
+
+/// Update the graph elements for a specific page.
+class UpdatePageGraphs extends DocumentEvent {
+  const UpdatePageGraphs({
+    required this.pageIndex,
+    required this.graphs,
+  });
+  final int pageIndex;
+  final List<GraphElement> graphs;
+  @override
+  List<Object?> get props => [pageIndex, graphs];
+}
+
+// ── Rich text elements ─────────────────────────────────────────────────────
+
+/// Update the rich text elements for a specific page.
+class UpdatePageRichTexts extends DocumentEvent {
+  const UpdatePageRichTexts({
+    required this.pageIndex,
+    required this.richTexts,
+  });
+  final int pageIndex;
+  final List<RichTextElement> richTexts;
+  @override
+  List<Object?> get props => [pageIndex, richTexts];
 }

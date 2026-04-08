@@ -24,6 +24,12 @@ import 'package:y2notes2/features/effects/writing/writing_effects_engine.dart';
 import 'package:y2notes2/features/handwriting/domain/entities/text_block.dart';
 import 'package:y2notes2/features/handwriting/presentation/bloc/handwriting_bloc.dart';
 import 'package:y2notes2/features/handwriting/presentation/bloc/handwriting_state.dart';
+import 'package:y2notes2/features/math_graph/presentation/bloc/graph_bloc.dart';
+import 'package:y2notes2/features/math_graph/presentation/bloc/graph_state.dart';
+import 'package:y2notes2/features/math_graph/presentation/widgets/graph_canvas_widget.dart';
+import 'package:y2notes2/features/rich_text/domain/entities/rich_text_element.dart';
+import 'package:y2notes2/features/rich_text/presentation/bloc/rich_text_bloc.dart';
+import 'package:y2notes2/features/rich_text/presentation/bloc/rich_text_state.dart';
 import 'package:y2notes2/features/shapes/domain/entities/shape_element.dart';
 import 'package:y2notes2/features/shapes/engine/shape_hit_tester.dart';
 import 'package:y2notes2/features/shapes/presentation/bloc/shape_bloc.dart';
@@ -497,6 +503,75 @@ class _CanvasViewState extends State<CanvasView>
                               ),
                             // Layer: Media overlay (audio/video elements)
                             const MediaOverlay(),
+                            // Layer: Rich text elements overlay
+                            BlocBuilder<RichTextBloc, RichTextState>(
+                              builder: (_, rtState) {
+                                if (rtState.elements.isEmpty) {
+                                  return const SizedBox.shrink();
+                                }
+                                return Stack(
+                                  children: rtState.elements
+                                      .map((el) => Positioned(
+                                            left: el.position.dx,
+                                            top: el.position.dy,
+                                            width: el.width,
+                                            height: el.height ??
+                                                RichTextElement.defaultHeight,
+                                            child: Opacity(
+                                              opacity: el.opacity,
+                                              child: Transform.rotate(
+                                                angle: el.rotation,
+                                                child: Container(
+                                                  decoration: BoxDecoration(
+                                                    color: el.backgroundColor,
+                                                    border: el.isEditing
+                                                        ? Border.all(
+                                                            color: Theme.of(
+                                                                    context)
+                                                                .colorScheme
+                                                                .primary,
+                                                          )
+                                                        : null,
+                                                  ),
+                                                  padding:
+                                                      const EdgeInsets.all(8),
+                                                  child: Text(
+                                                    el.plainText,
+                                                    style: Theme.of(context)
+                                                        .textTheme
+                                                        .bodyMedium,
+                                                    overflow:
+                                                        TextOverflow.clip,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ))
+                                      .toList(),
+                                );
+                              },
+                            ),
+                            // Layer: Math graph elements overlay
+                            BlocBuilder<GraphBloc, GraphState>(
+                              builder: (_, graphState) {
+                                if (graphState.graphs.isEmpty) {
+                                  return const SizedBox.shrink();
+                                }
+                                return Stack(
+                                  children: graphState.graphs
+                                      .map((g) => Positioned(
+                                            left: g.bounds.left,
+                                            top: g.bounds.top,
+                                            width: g.bounds.width,
+                                            height: g.bounds.height,
+                                            child: GraphCanvasWidget(
+                                              graph: g,
+                                            ),
+                                          ))
+                                      .toList(),
+                                );
+                              },
+                            ),
                           ],
                         ),
                       ),

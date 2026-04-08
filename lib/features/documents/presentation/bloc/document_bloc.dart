@@ -67,6 +67,10 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
     on<UpdatePageAudioRecordings>(
       _onUpdatePageAudioRecordings,
     );
+    on<UpdatePageShapes>(_onUpdatePageShapes);
+    on<UpdatePageStickers>(_onUpdatePageStickers);
+    on<UpdatePageGraphs>(_onUpdatePageGraphs);
+    on<UpdatePageRichTexts>(_onUpdatePageRichTexts);
   }
 
   /// Optional repository for persisting/loading notebooks.
@@ -208,8 +212,11 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
       shapes: List.of(source.shapes),
       stickers: List.of(source.stickers),
       mediaElements: List.of(source.mediaElements),
+      graphs: List.of(source.graphs),
+      pdfAnnotations: List.of(source.pdfAnnotations),
       richTexts: List.of(source.richTexts),
       config: source.config,
+      audioRecordings: List.of(source.audioRecordings),
     );
 
     final pages = List<NotebookPage>.of(nb.pages)
@@ -937,6 +944,70 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
         .toList();
     final page = nb.pages[event.pageIndex].copyWith(
       audioRecordings: recordings,
+    );
+    emit(state.copyWith(
+      notebook: nb.updatePage(event.pageIndex, page),
+    ));
+  }
+
+  // ── Shape elements ────────────────────────────────────────────────────────
+
+  void _onUpdatePageShapes(
+    UpdatePageShapes event,
+    Emitter<DocumentState> emit,
+  ) {
+    final nb = state.notebook;
+    if (nb == null) return;
+    final page = nb.pages[event.pageIndex].copyWith(
+      shapes: event.shapes,
+    );
+    emit(state.copyWith(
+      notebook: nb.updatePage(event.pageIndex, page),
+    ));
+  }
+
+  // ── Sticker elements ──────────────────────────────────────────────────────
+
+  void _onUpdatePageStickers(
+    UpdatePageStickers event,
+    Emitter<DocumentState> emit,
+  ) {
+    final nb = state.notebook;
+    if (nb == null) return;
+    final page = nb.pages[event.pageIndex].copyWith(
+      stickers: event.stickers,
+    );
+    emit(state.copyWith(
+      notebook: nb.updatePage(event.pageIndex, page),
+    ));
+  }
+
+  // ── Graph elements ────────────────────────────────────────────────────────
+
+  void _onUpdatePageGraphs(
+    UpdatePageGraphs event,
+    Emitter<DocumentState> emit,
+  ) {
+    final nb = state.notebook;
+    if (nb == null) return;
+    final page = nb.pages[event.pageIndex].copyWith(
+      graphs: event.graphs,
+    );
+    emit(state.copyWith(
+      notebook: nb.updatePage(event.pageIndex, page),
+    ));
+  }
+
+  // ── Rich text elements ────────────────────────────────────────────────────
+
+  void _onUpdatePageRichTexts(
+    UpdatePageRichTexts event,
+    Emitter<DocumentState> emit,
+  ) {
+    final nb = state.notebook;
+    if (nb == null) return;
+    final page = nb.pages[event.pageIndex].copyWith(
+      richTexts: event.richTexts,
     );
     emit(state.copyWith(
       notebook: nb.updatePage(event.pageIndex, page),

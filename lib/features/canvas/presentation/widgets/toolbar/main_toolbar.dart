@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:y2notes2/app/theme/colors.dart';
 import 'package:y2notes2/core/constants/app_constants.dart';
 import 'package:y2notes2/core/engine/haptic_controller.dart';
@@ -19,6 +20,10 @@ import 'package:y2notes2/features/documents/presentation/pages/notebook_page_vie
 import 'package:y2notes2/features/handwriting/presentation/bloc/handwriting_bloc.dart';
 import 'package:y2notes2/features/handwriting/presentation/bloc/handwriting_event.dart';
 import 'package:y2notes2/features/handwriting/presentation/bloc/handwriting_state.dart';
+import 'package:y2notes2/features/math_graph/presentation/bloc/graph_bloc.dart';
+import 'package:y2notes2/features/math_graph/presentation/bloc/graph_event.dart';
+import 'package:y2notes2/features/rich_text/presentation/bloc/rich_text_bloc.dart';
+import 'package:y2notes2/features/rich_text/presentation/bloc/rich_text_event.dart';
 import 'package:y2notes2/features/shapes/domain/entities/shape_type.dart';
 import 'package:y2notes2/features/shapes/presentation/widgets/shape_type_picker.dart';
 import 'package:y2notes2/features/collaboration/presentation/widgets/share_button.dart';
@@ -215,6 +220,47 @@ class MainToolbar extends StatelessWidget {
                         ),
                       ),
                     );
+                  },
+                ),
+                const _Divider(),
+                // ── Rich Text ──────────────────────────────────────────────
+                IconButton(
+                  icon: const Icon(Icons.text_fields),
+                  iconSize: AppConstants.toolbarIconSize,
+                  tooltip: 'Rich Text',
+                  onPressed: () {
+                    HapticController.light();
+                    context.read<RichTextBloc>().add(
+                          const CreateRichTextElement(
+                            position: Offset(100, 100),
+                          ),
+                        );
+                  },
+                ),
+                const _Divider(),
+                // ── Math Graph ─────────────────────────────────────────────
+                IconButton(
+                  icon: const Icon(Icons.show_chart),
+                  iconSize: AppConstants.toolbarIconSize,
+                  tooltip: 'Math Graph',
+                  onPressed: () {
+                    HapticController.light();
+                    context.read<GraphBloc>().add(
+                          GraphCreated(
+                            bounds: const Rect.fromLTWH(50, 50, 400, 300),
+                          ),
+                        );
+                  },
+                ),
+                const _Divider(),
+                // ── Scanner ────────────────────────────────────────────────
+                IconButton(
+                  icon: const Icon(Icons.document_scanner_outlined),
+                  iconSize: AppConstants.toolbarIconSize,
+                  tooltip: 'Scan Document',
+                  onPressed: () {
+                    HapticController.light();
+                    context.go('/scanner');
                   },
                 ),
                 const _Divider(),
