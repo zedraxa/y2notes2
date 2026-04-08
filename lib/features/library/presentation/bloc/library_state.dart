@@ -17,6 +17,7 @@ class LibraryState extends Equatable {
     this.currentFolderId,
     this.searchQuery = '',
     this.searchResults = const [],
+    this.isSearchMode = false,
     this.viewMode = LibraryViewMode.grid,
     this.sortOrder = LibrarySortOrder.dateModified,
     this.filterTagIds = const {},
@@ -44,6 +45,7 @@ class LibraryState extends Equatable {
   // ── Search ──────────────────────────────────────────────────────────────
   final String searchQuery;
   final List<SearchResult> searchResults;
+  final bool isSearchMode;
   final bool isSpotlightOpen;
 
   // ── View options ─────────────────────────────────────────────────────────
@@ -65,7 +67,7 @@ class LibraryState extends Equatable {
 
   // ── Convenience getters ───────────────────────────────────────────────────
 
-  bool get isSearching => searchQuery.isNotEmpty;
+  bool get isSearching => isSearchMode;
 
   bool get hasActiveFilters =>
       filterTagIds.isNotEmpty ||
@@ -149,6 +151,7 @@ class LibraryState extends Equatable {
     Object? currentFolderId = _sentinel,
     String? searchQuery,
     List<SearchResult>? searchResults,
+    bool? isSearchMode,
     LibraryViewMode? viewMode,
     LibrarySortOrder? sortOrder,
     Set<String>? filterTagIds,
@@ -171,6 +174,7 @@ class LibraryState extends Equatable {
             : currentFolderId as String?,
         searchQuery: searchQuery ?? this.searchQuery,
         searchResults: searchResults ?? this.searchResults,
+        isSearchMode: isSearchMode ?? this.isSearchMode,
         viewMode: viewMode ?? this.viewMode,
         sortOrder: sortOrder ?? this.sortOrder,
         filterTagIds: filterTagIds ?? this.filterTagIds,
@@ -199,6 +203,7 @@ class LibraryState extends Equatable {
         currentFolderId,
         searchQuery,
         searchResults,
+        isSearchMode,
         viewMode,
         sortOrder,
         filterTagIds,

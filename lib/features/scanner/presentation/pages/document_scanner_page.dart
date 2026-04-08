@@ -3,6 +3,7 @@ import 'dart:io' if (dart.library.html) 'package:biscuits/core/io/io_stub.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:biscuits/features/scanner/domain/entities/scanned_document.dart';
 import 'package:biscuits/features/scanner/presentation/bloc/scanner_bloc.dart';
@@ -42,8 +43,7 @@ class _ScannerView extends StatelessWidget {
         listener: (context, state) {
           if (state.phase == ScannerPhase.completed &&
               state.scanResult != null) {
-            Navigator.of(context)
-                .pop(state.scanResult);
+            context.pop(state.scanResult);
           }
           if (state.phase == ScannerPhase.error &&
               state.errorMessage != null) {
@@ -79,7 +79,7 @@ class _ScannerView extends StatelessWidget {
             context.read<ScannerBloc>().add(
                   const ScannerSessionCancelled(),
                 );
-            Navigator.of(context).pop();
+            context.pop();
           },
         ),
         actions: [

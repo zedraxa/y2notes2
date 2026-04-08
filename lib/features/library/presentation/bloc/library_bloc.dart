@@ -325,6 +325,7 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
   void _onSearch(SearchLibrary event, Emitter<LibraryState> emit) {
     final results = _searchEngine.search(event.query);
     emit(state.copyWith(
+      isSearchMode: true,
       searchQuery: event.query,
       searchResults: results,
     ));
@@ -332,6 +333,7 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
 
   void _onClearSearch(ClearSearch event, Emitter<LibraryState> emit) {
     emit(state.copyWith(
+      isSearchMode: false,
       searchQuery: '',
       searchResults: [],
     ));
