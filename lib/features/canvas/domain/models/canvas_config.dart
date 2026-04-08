@@ -2,7 +2,31 @@ import 'package:equatable/equatable.dart';
 import 'package:biscuits/core/constants/app_constants.dart';
 
 /// Page background template types.
-enum PageTemplate { blank, lined, grid, dotted, chalkboard }
+enum PageTemplate {
+  blank,
+  lined,
+  grid,
+  dotted,
+  chalkboard,
+
+  /// College-ruled narrow lines (closer spacing, approx 8 mm).
+  narrowRuled,
+
+  /// Primary/wide-ruled lines (wider spacing, approx 11 mm).
+  wideRuled,
+
+  /// Isometric dot grid for 3-D sketching and technical drawing.
+  isometric,
+
+  /// Five-line music staff repeated across the page.
+  musicStaff,
+
+  /// Hexagonal grid — useful for science notes, game design, and maps.
+  hexagonal,
+
+  /// Slanted calligraphy guide lines (ascender / base / descender).
+  calligraphy,
+}
 
 /// Immutable configuration for a canvas page.
 class CanvasConfig extends Equatable {

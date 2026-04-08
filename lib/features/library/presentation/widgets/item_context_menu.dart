@@ -5,6 +5,7 @@ import 'package:biscuits/features/library/presentation/bloc/library_bloc.dart';
 import 'package:biscuits/features/library/presentation/bloc/library_event.dart';
 import 'package:biscuits/features/library/presentation/bloc/library_state.dart';
 import 'package:biscuits/features/library/presentation/widgets/color_label_picker.dart';
+import 'package:biscuits/features/library/presentation/widgets/cover_picker_bottom_sheet.dart';
 
 /// Context menu (bottom sheet) for a single [LibraryItem].
 ///
@@ -68,6 +69,16 @@ class ItemContextMenu extends StatelessWidget {
                 _showRenameDialog(context, bloc);
               },
             ),
+            // Customise cover (notebooks only)
+            if (item.type == LibraryItemType.notebook)
+              ListTile(
+                leading: const Icon(Icons.auto_awesome_outlined),
+                title: const Text('Customise Cover'),
+                onTap: () {
+                  Navigator.pop(context);
+                  CoverPickerBottomSheet.show(context, item);
+                },
+              ),
             // Move to folder
             ListTile(
               leading: const Icon(Icons.drive_file_move_outlined),

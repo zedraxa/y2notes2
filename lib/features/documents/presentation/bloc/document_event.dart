@@ -2,6 +2,7 @@ import 'package:equatable/equatable.dart';
 import 'package:biscuits/features/canvas/domain/entities/stroke.dart';
 import 'package:biscuits/features/canvas/domain/models/canvas_config.dart';
 import 'package:biscuits/features/documents/domain/entities/canvas_elements.dart';
+import 'package:biscuits/features/documents/domain/entities/notebook.dart';
 import 'package:biscuits/features/documents/domain/models/export_options.dart';
 import 'package:biscuits/features/documents/domain/models/import_options.dart';
 import 'package:biscuits/features/media/domain/entities/media_element.dart';
@@ -235,6 +236,14 @@ class UpdateNotebookDescription extends DocumentEvent {
   final String? description;
   @override
   List<Object?> get props => [description];
+}
+
+/// Change the cover style of the current notebook.
+class ChangeNotebookCover extends DocumentEvent {
+  const ChangeNotebookCover({required this.cover});
+  final NotebookCoverConfig cover;
+  @override
+  List<Object?> get props => [cover];
 }
 
 // ── Page metadata ──────────────────────────────────────────────────────────

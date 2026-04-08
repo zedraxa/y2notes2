@@ -27,6 +27,7 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
     on<EmptyTrash>(_onEmptyTrash);
     on<ToggleFavorite>(_onToggleFavorite);
     on<SetColorLabel>(_onSetColorLabel);
+    on<SetNotebookCover>(_onSetNotebookCover);
     on<CreateTag>(_onCreateTag);
     on<UpdateTag>(_onUpdateTag);
     on<DeleteTag>(_onDeleteTag);
@@ -222,6 +223,20 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
       if (item.id == event.itemId) {
         // Passing null clears the colour label.
         return item.copyWith(colorLabel: event.colorLabel);
+      }
+      return item;
+    }).toList();
+    _persistItems(_allItems);
+    emit(_withItems(state));
+  }
+
+  void _onSetNotebookCover(SetNotebookCover event, Emitter<LibraryState> emit) {
+    _allItems = _allItems.map((item) {
+      if (item.id == event.itemId) {
+        return item.copyWith(
+          coverColor: event.coverColor,
+          coverMaterial: event.coverMaterial,
+        );
       }
       return item;
     }).toList();

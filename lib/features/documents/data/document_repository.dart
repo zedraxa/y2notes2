@@ -57,7 +57,7 @@ class DocumentRepository {
         if (nb.description != null) 'description': nb.description,
         'createdAt': nb.createdAt.toIso8601String(),
         'updatedAt': nb.updatedAt.toIso8601String(),
-        'cover': nb.cover.name,
+        'cover': nb.cover.toJson(),
         'pages': nb.pages.map(_pageToJson).toList(),
       };
 
@@ -67,7 +67,7 @@ class DocumentRepository {
         description: json['description'] as String?,
         createdAt: DateTime.parse(json['createdAt'] as String),
         updatedAt: DateTime.parse(json['updatedAt'] as String),
-        cover: NotebookCover.values.byName(json['cover'] as String),
+        cover: _coverFromJson(json['cover']),
         pages: (json['pages'] as List<dynamic>)
             .map((p) => _pageFromJson(p as Map<String, dynamic>))
             .toList(),
@@ -115,4 +115,18 @@ class DocumentRepository {
         dotSpacing: (json['dotSpacing'] as num).toDouble(),
         showMargin: json['showMargin'] as bool,
       );
+
+  /// Deserialises a cover from [raw].
+  ///
+  /// Supports both the legacy String format (e.g. `"blue"`) and the new
+  /// [NotebookCoverConfig] JSON map `{"color": 0xFF2563EB, "material": "matte"}`.
+  NotebookCoverConfig _coverFromJson(dynamic raw) {
+    if (raw is String) {
+      return NotebookCoverConfig.fromLegacyName(raw);
+    }
+    if (raw is Map<String, dynamic>) {
+      return NotebookCoverConfig.fromJson(raw);
+    }
+    return NotebookCoverConfig.azure;
+  }
 }

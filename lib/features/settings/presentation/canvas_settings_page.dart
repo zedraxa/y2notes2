@@ -114,8 +114,14 @@ class _PageTemplateSelector extends StatelessWidget {
   static const _templates = [
     (PageTemplate.blank, 'Blank', Icons.crop_square_outlined),
     (PageTemplate.lined, 'Lined', Icons.format_align_left),
+    (PageTemplate.narrowRuled, 'Narrow Ruled', Icons.format_list_bulleted),
+    (PageTemplate.wideRuled, 'Wide Ruled', Icons.short_text),
     (PageTemplate.grid, 'Grid', Icons.grid_on),
     (PageTemplate.dotted, 'Dotted', Icons.more_horiz),
+    (PageTemplate.isometric, 'Isometric', Icons.grid_3x3),
+    (PageTemplate.musicStaff, 'Music Staff', Icons.music_note_outlined),
+    (PageTemplate.hexagonal, 'Hexagonal', Icons.hexagon_outlined),
+    (PageTemplate.calligraphy, 'Calligraphy', Icons.edit_outlined),
     (PageTemplate.chalkboard, 'Chalkboard', Icons.dashboard_outlined),
   ];
 

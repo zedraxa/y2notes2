@@ -28,6 +28,7 @@ class GeneralSettingsPage extends StatelessWidget {
           const Divider(height: 24),
           _SectionHeader('Navigation'),
           _PageGesturesToggle(settings: settings),
+          _PageGestureHapticsToggle(settings: settings),
           const Divider(height: 24),
           _SectionHeader('Data'),
           _ResetTile(settings: settings),
@@ -168,6 +169,23 @@ class _PageGesturesToggle extends StatelessWidget {
           ),
           value: enabled,
           onChanged: settings.setPageGesturesEnabled,
+        ),
+      );
+}
+
+class _PageGestureHapticsToggle extends StatelessWidget {
+  const _PageGestureHapticsToggle({required this.settings});
+
+  final SettingsService settings;
+
+  @override
+  Widget build(BuildContext context) => ValueListenableBuilder<bool>(
+        valueListenable: settings.pageGestureHapticsEnabledNotifier,
+        builder: (context, enabled, _) => SwitchListTile(
+          title: const Text('Page Turn Haptics'),
+          subtitle: const Text('Haptic pulse when a page-turn gesture commits'),
+          value: enabled,
+          onChanged: settings.setPageGestureHapticsEnabled,
         ),
       );
 }

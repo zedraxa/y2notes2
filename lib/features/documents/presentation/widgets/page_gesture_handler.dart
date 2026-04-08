@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:biscuits/core/services/settings_service.dart';
 import 'package:biscuits/features/documents/presentation/bloc/document_bloc.dart';
@@ -40,6 +41,12 @@ class _PageGestureHandlerState extends State<PageGestureHandler>
 
   /// Width (in logical pixels) of the edge-swipe hit zone.
   static const double _edgeMargin = 28.0;
+
+  /// Width (in logical pixels) of the tap-to-navigate zone at each edge.
+  ///
+  /// Single-tap anywhere within this zone (left or right) triggers page
+  /// navigation without requiring a swipe gesture.
+  static const double _tapZoneWidth = 48.0;
 
   /// Minimum horizontal displacement to commit a page change.
   static const double _commitThreshold = 80.0;
@@ -84,6 +91,15 @@ class _PageGestureHandlerState extends State<PageGestureHandler>
   double _edgeStartX = 0.0;
   DateTime? _edgeLastMoveTime;
   double _edgeLastMoveDx = 0.0;
+
+  // ── Tap-zone tracking ─────────────────────────────────────────────────────
+
+  /// Whether the current single-pointer down is in a tap zone and hasn't
+  /// moved beyond [_minSwipeDistance] yet.
+  bool _tapZoneDown = false;
+
+  /// The side (left / right) of the tap-zone touch. `true` = left zone.
+  bool _tapZoneIsLeft = false;
 
   // ── Visual feedback ───────────────────────────────────────────────────────
 
@@ -142,8 +158,23 @@ class _PageGestureHandlerState extends State<PageGestureHandler>
   void _commitNavigation(DocumentBloc bloc, DocumentState state) {
     if (_dragProgress < 0 && state.canGoBack) {
       bloc.add(const GoToPreviousPage());
+      _triggerPageTurnHaptic();
     } else if (_dragProgress > 0 && state.canGoForward) {
       bloc.add(const GoToNextPage());
+      _triggerPageTurnHaptic();
+    }
+  }
+
+  /// Fire a light haptic impact when a page turn is committed, if enabled.
+  void _triggerPageTurnHaptic() {
+    try {
+      final settings = ServiceProvider.of<SettingsService>(context);
+      if (settings.pageGestureHapticsEnabledNotifier.value) {
+        HapticFeedback.lightImpact();
+      }
+    } catch (_) {
+      // Settings service not available — skip haptic rather than firing
+      // unconditionally against user preference.
     }
   }
 
@@ -188,18 +219,25 @@ class _PageGestureHandlerState extends State<PageGestureHandler>
 
     _activePointers.add(event.pointer);
 
-    // Start edge swipe when touch begins in the edge zone.
+    // Start edge swipe / tap-zone detection when touch begins in the edge zone.
     if (_activePointers.length == 1 && !_twoFingerGestureActive) {
       final widgetWidth = context.size?.width ?? 0;
-      if (widgetWidth > 0 &&
-          (event.localPosition.dx <= _edgeMargin ||
-           event.localPosition.dx >= widgetWidth - _edgeMargin)) {
-        _edgeSwipeActive = true;
-        _edgeDx = 0.0;
-        _edgeDy = 0.0;
-        _edgeStartX = event.localPosition.dx;
-        _edgeLastMoveTime = DateTime.now();
-        _edgeLastMoveDx = 0.0;
+      if (widgetWidth > 0) {
+        final x = event.localPosition.dx;
+        final inLeft = x <= math.max(_edgeMargin, _tapZoneWidth);
+        final inRight = x >= widgetWidth - math.max(_edgeMargin, _tapZoneWidth);
+        if (inLeft || inRight) {
+          _edgeSwipeActive = true;
+          _edgeDx = 0.0;
+          _edgeDy = 0.0;
+          _edgeStartX = x;
+          _edgeLastMoveTime = DateTime.now();
+          _edgeLastMoveDx = 0.0;
+
+          // Track potential tap in the tap zone (slightly wider than swipe zone).
+          _tapZoneDown = x <= _tapZoneWidth || x >= widgetWidth - _tapZoneWidth;
+          _tapZoneIsLeft = x <= _tapZoneWidth;
+        }
       }
     }
 
@@ -207,6 +245,7 @@ class _PageGestureHandlerState extends State<PageGestureHandler>
     if (_activePointers.length == 2) {
       _twoFingerGestureActive = true;
       _edgeSwipeActive = false; // cancel edge swipe if upgrading to two-finger
+      _tapZoneDown = false;
       _twoFingerDx = 0.0;
       _twoFingerDy = 0.0;
       _lastMoveTime = DateTime.now();
@@ -233,6 +272,11 @@ class _PageGestureHandlerState extends State<PageGestureHandler>
       _edgeDy += event.delta.dy;
       _edgeLastMoveTime = DateTime.now();
       _edgeLastMoveDx = _edgeDx;
+
+      // Cancel tap-zone detection once the user starts swiping.
+      if (_edgeDx.abs() > _minSwipeDistance || _edgeDy.abs() > _minSwipeDistance) {
+        _tapZoneDown = false;
+      }
 
       _updateDragProgress(_edgeDx, _edgeDy);
     }
@@ -285,6 +329,22 @@ class _PageGestureHandlerState extends State<PageGestureHandler>
       return;
     }
 
+    // Tap-zone: single-tap with minimal movement navigates immediately.
+    if (_tapZoneDown && _activePointers.isEmpty) {
+      _tapZoneDown = false;
+      _edgeSwipeActive = false;
+      final bloc = context.read<DocumentBloc>();
+      final state = bloc.state;
+      if (_tapZoneIsLeft && state.canGoBack) {
+        bloc.add(const GoToPreviousPage());
+        _triggerPageTurnHaptic();
+      } else if (!_tapZoneIsLeft && state.canGoForward) {
+        bloc.add(const GoToNextPage());
+        _triggerPageTurnHaptic();
+      }
+      return;
+    }
+
     if (_edgeSwipeActive && _activePointers.isEmpty) {
       _endSwipe(
         _edgeDx,
@@ -322,6 +382,7 @@ class _PageGestureHandlerState extends State<PageGestureHandler>
     _activePointers.clear();
     _twoFingerGestureActive = false;
     _edgeSwipeActive = false;
+    _tapZoneDown = false;
     _twoFingerDx = 0.0;
     _twoFingerDy = 0.0;
     _edgeDx = 0.0;
@@ -338,8 +399,16 @@ class _PageGestureHandlerState extends State<PageGestureHandler>
     return BlocBuilder<DocumentBloc, DocumentState>(
       buildWhen: (prev, curr) =>
           prev.canGoBack != curr.canGoBack ||
-          prev.canGoForward != curr.canGoForward,
+          prev.canGoForward != curr.canGoForward ||
+          prev.currentPageIndex != curr.currentPageIndex ||
+          prev.pageCount != curr.pageCount,
       builder: (context, state) {
+        final isDragging = _dragProgress.abs() > 0.05;
+        // The page we'd land on if the current drag commits.
+        final targetPageIndex = _dragProgress < 0
+            ? state.currentPageIndex - 1
+            : state.currentPageIndex + 1;
+
         return Listener(
           behavior: HitTestBehavior.translucent,
           onPointerDown: _onPointerDown,
@@ -364,6 +433,15 @@ class _PageGestureHandlerState extends State<PageGestureHandler>
                   progress: _dragProgress,
                   icon: Icons.chevron_right_rounded,
                   label: 'Next',
+                ),
+              // Live page-number indicator during a drag.
+              if (isDragging && state.pageCount > 1)
+                _PageNumberIndicator(
+                  currentPage: state.currentPageIndex + 1,
+                  targetPage: targetPageIndex.clamp(1, state.pageCount),
+                  totalPages: state.pageCount,
+                  progress: _dragProgress.abs(),
+                  direction: _dragProgress < 0 ? -1 : 1,
                 ),
             ],
           ),
@@ -449,6 +527,92 @@ class _PageEdgeIndicator extends StatelessWidget {
                     ],
                   )
                 : null,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ── Page number indicator ─────────────────────────────────────────────────────
+
+/// A pill indicator shown in the centre-bottom of the canvas during a drag
+/// that shows both the current and target page numbers.
+class _PageNumberIndicator extends StatelessWidget {
+  const _PageNumberIndicator({
+    required this.currentPage,
+    required this.targetPage,
+    required this.totalPages,
+    required this.progress,
+    required this.direction,
+  });
+
+  final int currentPage;
+  final int targetPage;
+  final int totalPages;
+
+  /// 0.0–1.0; used for opacity fade-in.
+  final double progress;
+
+  /// -1 = going to previous page, +1 = going to next page.
+  final int direction;
+
+  @override
+  Widget build(BuildContext context) {
+    final opacity = (progress * 2.0).clamp(0.0, 1.0);
+    final theme = Theme.of(context);
+
+    return Positioned(
+      bottom: 24,
+      left: 0,
+      right: 0,
+      child: IgnorePointer(
+        child: AnimatedOpacity(
+          duration: const Duration(milliseconds: 80),
+          opacity: opacity,
+          child: Center(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.inverseSurface.withOpacity(0.85),
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Colors.black26,
+                    blurRadius: 6,
+                    offset: Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (direction < 0) ...[
+                    Icon(
+                      Icons.chevron_left,
+                      size: 16,
+                      color: theme.colorScheme.onInverseSurface.withOpacity(0.7),
+                    ),
+                    const SizedBox(width: 2),
+                  ],
+                  Text(
+                    '$targetPage / $totalPages',
+                    style: theme.textTheme.labelMedium?.copyWith(
+                      color: theme.colorScheme.onInverseSurface,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  if (direction > 0) ...[
+                    const SizedBox(width: 2),
+                    Icon(
+                      Icons.chevron_right,
+                      size: 16,
+                      color: theme.colorScheme.onInverseSurface.withOpacity(0.7),
+                    ),
+                  ],
+                ],
+              ),
+            ),
           ),
         ),
       ),

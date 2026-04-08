@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:biscuits/features/documents/domain/entities/notebook.dart';
 import 'package:biscuits/features/library/domain/entities/library_item.dart';
 import 'package:biscuits/features/library/presentation/bloc/library_bloc.dart';
 import 'package:biscuits/features/library/presentation/bloc/library_event.dart';
 import 'package:biscuits/features/library/presentation/bloc/library_state.dart';
 import 'package:biscuits/features/library/presentation/widgets/item_context_menu.dart';
+import 'package:biscuits/features/library/presentation/widgets/notebook_cover_widget.dart';
 
 /// Displays library items in a responsive grid layout.
 class LibraryGrid extends StatelessWidget {
@@ -120,6 +122,8 @@ class _LibraryGridCard extends StatelessWidget {
                 children: [
                   if (item.thumbnailPath != null)
                     Image.asset(item.thumbnailPath!, fit: BoxFit.cover)
+                  else if (item.type == LibraryItemType.notebook)
+                    _NotebookCoverThumbnail(item: item)
                   else
                     Container(
                       color: Theme.of(context).colorScheme.surfaceContainerHighest,
@@ -179,5 +183,36 @@ class _LibraryGridCard extends StatelessWidget {
       case LibraryItemType.folder:
         return Icons.folder_outlined;
     }
+  }
+}
+
+// ── Notebook cover thumbnail ──────────────────────────────────────────────────
+
+/// Renders a [NotebookCoverWidget] fitted to fill the card thumbnail area.
+class _NotebookCoverThumbnail extends StatelessWidget {
+  const _NotebookCoverThumbnail({required this.item});
+
+  final LibraryItem item;
+
+  @override
+  Widget build(BuildContext context) {
+    final rawColor = item.coverColor;
+    final color = rawColor != null
+        ? Color(rawColor)
+        : NotebookCoverConfig.azure.color;
+
+    final matName = item.coverMaterial;
+    final material = matName != null
+        ? CoverMaterial.values.byName(matName)
+        : CoverMaterial.matte;
+
+    return LayoutBuilder(
+      builder: (context, constraints) => NotebookCoverWidget(
+        color: color,
+        material: material,
+        width: constraints.maxWidth,
+        height: constraints.maxHeight,
+      ),
+    );
   }
 }
