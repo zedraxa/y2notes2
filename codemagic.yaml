@@ -171,3 +171,40 @@ workflows:
         submit_to_testflight: true
         beta_groups:
           - Internal Testers
+
+  # ════════════════════════════════════════════════
+  #  3. Android APK/AAB build
+  # ════════════════════════════════════════════════
+  android-build:
+    name: Android Build (MatePad)
+    max_build_duration: 60
+    instance_type: mac_mini_m2
+    environment:
+      flutter: stable
+      java: 17
+      vars:
+        <<: *shared_vars
+    cache:
+      cache_paths: *cache_paths
+    triggering:
+      events:
+        - push
+      branch_patterns:
+        - pattern: main
+          include: true
+    scripts:
+      - *flutter_pub_get
+      - name: Build Android APK
+        script: flutter build apk --release
+      - name: Build Android App Bundle
+        script: flutter build appbundle --release
+    artifacts:
+      - build/app/outputs/flutter-apk/*.apk
+      - build/app/outputs/bundle/release/*.aab
+    publishing:
+      email:
+        recipients:
+          - user1@example.com
+        notify:
+          success: true
+          failure: true
