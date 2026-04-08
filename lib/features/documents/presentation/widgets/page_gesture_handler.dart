@@ -173,7 +173,8 @@ class _PageGestureHandlerState extends State<PageGestureHandler>
         HapticFeedback.lightImpact();
       }
     } catch (_) {
-      HapticFeedback.lightImpact();
+      // Settings service not available — skip haptic rather than firing
+      // unconditionally against user preference.
     }
   }
 
