@@ -384,9 +384,10 @@ class _CoverPainter extends CustomPainter {
       ..style = PaintingStyle.stroke;
     const rowH = 12.0;
     const halfW = 14.0;
+    final path = Path();
     double y = 0.0;
     while (y < size.height + rowH) {
-      final path = Path();
+      path.reset();
       double x = 10.0;
       while (x < size.width + halfW) {
         path.moveTo(x, y);
@@ -405,17 +406,18 @@ class _CoverPainter extends CustomPainter {
       ..strokeWidth = 0.8
       ..style = PaintingStyle.stroke;
     const sizeD = 14.0;
+    final path = Path();
     double y = -sizeD;
     bool offset = false;
     while (y < size.height + sizeD) {
       double x = 10.0 + (offset ? sizeD / 2 : 0);
       while (x < size.width + sizeD) {
-        final path = Path()
-          ..moveTo(x, y - sizeD / 2)
-          ..lineTo(x + sizeD / 2, y)
-          ..lineTo(x, y + sizeD / 2)
-          ..lineTo(x - sizeD / 2, y)
-          ..close();
+        path.reset();
+        path.moveTo(x, y - sizeD / 2);
+        path.lineTo(x + sizeD / 2, y);
+        path.lineTo(x, y + sizeD / 2);
+        path.lineTo(x - sizeD / 2, y);
+        path.close();
         canvas.drawPath(path, paint);
         x += sizeD;
       }
