@@ -101,5 +101,5 @@ abstract class EasingCurves {
 
   /// Exponential ease-out: fast start, decelerating to zero velocity.
   static double expoOut(double t) =>
-      t >= 1 ? 1 : 1 - math.pow(2, -10 * t);
+      t >= 1 ? 1.0 : 1.0 - math.pow(2, -10 * t).toDouble();
 }
