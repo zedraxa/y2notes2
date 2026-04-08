@@ -23,6 +23,7 @@ class LibraryState extends Equatable {
     this.filterTypes = const {},
     this.filterColorLabel,
     this.filterIsFavorite,
+    this.activeSmartCollection,
     this.isSpotlightOpen = false,
     this.isLoading = false,
     this.error,
@@ -55,6 +56,9 @@ class LibraryState extends Equatable {
   final ColorLabel? filterColorLabel;
   final bool? filterIsFavorite;
 
+  /// Active smart collection filter; `null` = no smart collection selected.
+  final SmartCollection? activeSmartCollection;
+
   // ── Async state ───────────────────────────────────────────────────────────
   final bool isLoading;
   final String? error;
@@ -67,13 +71,20 @@ class LibraryState extends Equatable {
       filterTagIds.isNotEmpty ||
       filterTypes.isNotEmpty ||
       filterColorLabel != null ||
-      filterIsFavorite != null;
+      filterIsFavorite != null ||
+      activeSmartCollection != null;
 
-  /// Items in the current folder that pass active filters, sorted.
+  /// Items that pass active filters, sorted.
+  ///
+  /// When an [activeSmartCollection] is active the folder constraint is lifted
+  /// so that the collection spans the entire library.
   List<LibraryItem> get visibleItems {
     var result = items.where((item) {
       if (item.isInTrash) return false;
-      if (item.folderId != currentFolderId) return false;
+      // Smart collections are library-wide; skip the folder constraint.
+      if (activeSmartCollection == null && item.folderId != currentFolderId) {
+        return false;
+      }
       if (filterTagIds.isNotEmpty &&
           !item.tagIds.any(filterTagIds.contains)) return false;
       if (filterTypes.isNotEmpty && !filterTypes.contains(item.type)) {
@@ -83,6 +94,10 @@ class LibraryState extends Equatable {
         return false;
       }
       if (filterIsFavorite != null && item.isFavorite != filterIsFavorite) {
+        return false;
+      }
+      if (activeSmartCollection != null &&
+          !activeSmartCollection!.matches(item)) {
         return false;
       }
       return true;
@@ -140,6 +155,7 @@ class LibraryState extends Equatable {
     Set<LibraryItemType>? filterTypes,
     Object? filterColorLabel = _sentinel,
     Object? filterIsFavorite = _sentinel,
+    Object? activeSmartCollection = _sentinel,
     bool? isSpotlightOpen,
     bool? isLoading,
     Object? error = _sentinel,
@@ -165,6 +181,9 @@ class LibraryState extends Equatable {
         filterIsFavorite: filterIsFavorite == _sentinel
             ? this.filterIsFavorite
             : filterIsFavorite as bool?,
+        activeSmartCollection: activeSmartCollection == _sentinel
+            ? this.activeSmartCollection
+            : activeSmartCollection as SmartCollection?,
         isSpotlightOpen: isSpotlightOpen ?? this.isSpotlightOpen,
         isLoading: isLoading ?? this.isLoading,
         error: error == _sentinel ? this.error : error as String?,
@@ -186,6 +205,7 @@ class LibraryState extends Equatable {
         filterTypes,
         filterColorLabel,
         filterIsFavorite,
+        activeSmartCollection,
         isSpotlightOpen,
         isLoading,
         error,

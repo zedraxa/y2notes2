@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:biscuits/features/library/domain/entities/library_item.dart';
 import 'package:biscuits/features/library/domain/entities/search_result.dart';
 import 'package:biscuits/features/library/presentation/bloc/library_bloc.dart';
@@ -81,11 +82,17 @@ class _SpotlightSearchState extends State<SpotlightSearch> {
               DateTime.now().difference(i.updatedAt).inDays <= 7)
           .take(5);
       for (final item in recent) {
-        entries.add(_SpotlightEntry.item(item));
+        entries.add(_SpotlightEntry.item(item, onNavigate: () {
+          _close();
+          _navigateToItem(item);
+        }));
       }
     } else {
       for (final result in state.searchResults.take(12)) {
-        entries.add(_SpotlightEntry.result(result));
+        entries.add(_SpotlightEntry.result(result, onNavigate: () {
+          _close();
+          _navigateToItem(result.item);
+        }));
       }
     }
 
@@ -110,6 +117,18 @@ class _SpotlightSearchState extends State<SpotlightSearch> {
     ]);
 
     return entries;
+  }
+
+  /// Navigate to the appropriate screen for [item].
+  void _navigateToItem(LibraryItem item) {
+    switch (item.type) {
+      case LibraryItemType.notebook:
+        GoRouter.of(context).go('/notebook/${item.id}');
+      case LibraryItemType.infiniteCanvas:
+        GoRouter.of(context).go('/canvas/infinite/${item.id}');
+      case LibraryItemType.folder:
+        context.read<LibraryBloc>().add(NavigateToFolder(item.id));
+    }
   }
 
   void _promptCreate(LibraryItemType type) {
@@ -274,17 +293,21 @@ class _SpotlightEntry {
     required this.activate,
   });
 
-  factory _SpotlightEntry.item(LibraryItem item) => _SpotlightEntry(
+  factory _SpotlightEntry.item(LibraryItem item,
+          {required VoidCallback onNavigate}) =>
+      _SpotlightEntry(
         label: item.name,
         icon: _iconFor(item.type),
-        activate: () {/* TODO: navigate to item */},
+        activate: onNavigate,
       );
 
-  factory _SpotlightEntry.result(SearchResult result) => _SpotlightEntry(
+  factory _SpotlightEntry.result(SearchResult result,
+          {required VoidCallback onNavigate}) =>
+      _SpotlightEntry(
         label: result.item.name,
         icon: _iconFor(result.item.type),
         subtitle: result.previewSnippet.isNotEmpty ? result.previewSnippet : null,
-        activate: () {/* TODO: navigate to item */},
+        activate: onNavigate,
       );
 
   factory _SpotlightEntry.action({

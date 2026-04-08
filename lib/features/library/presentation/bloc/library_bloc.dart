@@ -39,6 +39,7 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
     on<SortBy>(_onSortBy);
     on<FilterBy>(_onFilterBy);
     on<ClearFilters>(_onClearFilters);
+    on<FilterBySmartCollection>(_onFilterBySmartCollection);
     on<ToggleViewMode>(_onToggleViewMode);
   }
 
@@ -353,7 +354,13 @@ class LibraryBloc extends Bloc<LibraryEvent, LibraryState> {
       // LibraryState.copyWith, so they will be set to null correctly).
       filterColorLabel: null,
       filterIsFavorite: null,
+      activeSmartCollection: null,
     ));
+  }
+
+  void _onFilterBySmartCollection(
+      FilterBySmartCollection event, Emitter<LibraryState> emit) {
+    emit(state.copyWith(activeSmartCollection: event.collection));
   }
 
   void _onToggleViewMode(ToggleViewMode event, Emitter<LibraryState> emit) {

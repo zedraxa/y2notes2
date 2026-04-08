@@ -168,14 +168,21 @@ class _LibraryPageState extends State<LibraryPage> {
             final count = state.items
                 .where((i) => col.matches(i))
                 .length;
+            final isActive = state.activeSmartCollection?.id == col.id;
             return ListTile(
               leading: Text(col.emoji ?? '📂',
                   style: const TextStyle(fontSize: 20)),
               title: Text(col.name),
               trailing: Text('$count',
                   style: Theme.of(context).textTheme.bodySmall),
+              selected: isActive,
               dense: true,
-              onTap: () {/* TODO: navigate to collection view */},
+              onTap: () {
+                Navigator.pop(context);
+                context.read<LibraryBloc>().add(
+                      FilterBySmartCollection(isActive ? null : col),
+                    );
+              },
             );
           }),
           const Divider(),
@@ -201,7 +208,10 @@ class _LibraryPageState extends State<LibraryPage> {
           ListTile(
             leading: const Icon(Icons.settings_outlined),
             title: const Text('Settings'),
-            onTap: () {/* navigate to settings */},
+            onTap: () {
+              Navigator.pop(context);
+              context.go('/settings');
+            },
           ),
         ],
       ),
@@ -235,7 +245,11 @@ class _LibraryPageState extends State<LibraryPage> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         // Breadcrumbs
-        if (!state.isSearching) const FolderBreadcrumbs(),
+        if (!state.isSearching && state.activeSmartCollection == null)
+          const FolderBreadcrumbs(),
+        // Active smart collection banner
+        if (state.activeSmartCollection != null)
+          _buildActiveCollectionBanner(context, state),
         // Tag cloud (toggle)
         if (_showTagCloud)
           Container(
@@ -253,8 +267,10 @@ class _LibraryPageState extends State<LibraryPage> {
               },
             ),
           ),
-        // Smart collections strip (only at root, not searching)
-        if (!state.isSearching && state.currentFolderId == null)
+        // Smart collections strip (only at root, not searching, no active collection)
+        if (!state.isSearching &&
+            state.currentFolderId == null &&
+            state.activeSmartCollection == null)
           _buildSmartCollectionsStrip(context, state),
         // Sort / filter bar
         const SortFilterBar(),
@@ -281,12 +297,18 @@ class _LibraryPageState extends State<LibraryPage> {
           final col = state.smartCollections[index];
           final count =
               state.items.where((i) => col.matches(i)).length;
+          final isActive = state.activeSmartCollection?.id == col.id;
           return SizedBox(
             width: 140,
             child: SmartCollectionCard(
               collection: col,
               itemCount: count,
-              onTap: () {/* TODO: filter by collection */},
+              isActive: isActive,
+              onTap: () {
+                context.read<LibraryBloc>().add(
+                      FilterBySmartCollection(isActive ? null : col),
+                    );
+              },
             ),
           );
         },
@@ -299,6 +321,42 @@ class _LibraryPageState extends State<LibraryPage> {
       onPressed: () => _showCreateMenu(context),
       icon: const Icon(Icons.add),
       label: const Text('New'),
+    );
+  }
+
+  Widget _buildActiveCollectionBanner(
+      BuildContext context, LibraryState state) {
+    final col = state.activeSmartCollection!;
+    return ColoredBox(
+      color: Theme.of(context).colorScheme.primaryContainer.withOpacity(0.4),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        child: Row(
+          children: [
+            if (col.emoji != null)
+              Text(col.emoji!, style: const TextStyle(fontSize: 18))
+            else
+              Icon(Icons.filter_list,
+                  size: 18,
+                  color: Theme.of(context).colorScheme.primary),
+            const SizedBox(width: 8),
+            Text(
+              col.name,
+              style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                    color: Theme.of(context).colorScheme.onPrimaryContainer,
+                  ),
+            ),
+            const Spacer(),
+            IconButton(
+              icon: const Icon(Icons.close, size: 18),
+              tooltip: 'Clear filter',
+              onPressed: () => context
+                  .read<LibraryBloc>()
+                  .add(const FilterBySmartCollection(null)),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
