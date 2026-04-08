@@ -215,8 +215,8 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
       graphs: List.of(source.graphs),
       pdfAnnotations: List.of(source.pdfAnnotations),
       richTexts: List.of(source.richTexts),
-      audioRecordings: List.of(source.audioRecordings),
       config: source.config,
+      audioRecordings: List.of(source.audioRecordings),
     );
 
     final pages = List<NotebookPage>.of(nb.pages)

@@ -515,7 +515,8 @@ class _CanvasViewState extends State<CanvasView>
                                             left: el.position.dx,
                                             top: el.position.dy,
                                             width: el.width,
-                                            height: el.height ?? 200.0,
+                                            height: el.height ??
+                                                RichTextElement.defaultHeight,
                                             child: Opacity(
                                               opacity: el.opacity,
                                               child: Transform.rotate(

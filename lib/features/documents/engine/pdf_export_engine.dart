@@ -162,6 +162,10 @@ class PdfExportEngine {
 
   // ── Shape rendering ─────────────────────────────────────────────────────────
 
+  // Arrow head dimensions (in canvas points before scaling).
+  static const _arrowHeadLength = 10.0;
+  static const _arrowHeadWidth = 6.0;
+
   void _drawShapes(
     pw.Context ctx,
     PdfPageFormat format,
@@ -209,9 +213,11 @@ class PdfExportEngine {
           g.moveTo(left, bottom + h / 2);
           g.lineTo(left + w, bottom + h / 2);
           // Arrow head
-          g.moveTo(left + w - 8 * scaleX, bottom + h / 2 + 5 * scaleY);
+          final aLen = _arrowHeadLength * scaleX;
+          final aWid = _arrowHeadWidth * scaleY;
+          g.moveTo(left + w - aLen, bottom + h / 2 + aWid);
           g.lineTo(left + w, bottom + h / 2);
-          g.moveTo(left + w - 8 * scaleX, bottom + h / 2 - 5 * scaleY);
+          g.moveTo(left + w - aLen, bottom + h / 2 - aWid);
           g.lineTo(left + w, bottom + h / 2);
         default:
           // For polygon types (triangle, star, diamond, pentagon, hexagon, freeform)

@@ -17,6 +17,10 @@ class ImageExportEngine {
 
   // ── Internal rendering ─────────────────────────────────────────────────────
 
+  // Arrow head dimensions in canvas points.
+  static const _arrowHeadLength = 10.0;
+  static const _arrowHeadWidth = 6.0;
+
   /// Paints strokes and shapes into an [ui.Image] at the given [scale].
   Future<ui.Image> _rasterise({
     required List<Stroke> strokes,
@@ -108,15 +112,14 @@ class ImageExportEngine {
           );
           canvas.drawLine(start, end, strokePaint);
           // Arrowhead
-          final headLen = 8.0;
           canvas.drawLine(
             end,
-            Offset(end.dx - headLen, end.dy - headLen / 2),
+            Offset(end.dx - _arrowHeadLength, end.dy - _arrowHeadWidth),
             strokePaint,
           );
           canvas.drawLine(
             end,
-            Offset(end.dx - headLen, end.dy + headLen / 2),
+            Offset(end.dx - _arrowHeadLength, end.dy + _arrowHeadWidth),
             strokePaint,
           );
         default:

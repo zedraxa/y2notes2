@@ -10,6 +10,9 @@ import 'rich_text_node.dart';
 /// [StickerElement]: position, size, rotation, opacity, UUID, and
 /// full JSON serialisation.
 class RichTextElement extends Equatable {
+  /// Default height used when no explicit height is set.
+  static const defaultHeight = 200.0;
+
   RichTextElement({
     String? id,
     required this.position,
@@ -60,7 +63,7 @@ class RichTextElement extends Equatable {
         position.dx,
         position.dy,
         width,
-        height ?? 200.0,
+        height ?? defaultHeight,
       );
 
   /// Concatenated plain text of all nodes.

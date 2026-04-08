@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:y2notes2/features/cloud_sync/data/cloud_sync_service.dart';
 import 'package:y2notes2/features/cloud_sync/data/dropbox_sync_service.dart';
@@ -420,8 +422,8 @@ class CloudSyncBloc extends Bloc<CloudSyncEvent, CloudSyncState> {
       'notebookId': notebookId,
       'serializedAt': DateTime.now().toIso8601String(),
     };
-    final jsonStr = payload.toString();
-    return jsonStr.codeUnits;
+    final jsonStr = jsonEncode(payload);
+    return utf8.encode(jsonStr);
   }
 
   /// Deserialize downloaded notebook bytes and persist locally.
@@ -432,6 +434,7 @@ class CloudSyncBloc extends Bloc<CloudSyncEvent, CloudSyncState> {
     if (data.isEmpty) return;
     // Decode the JSON payload. In production, this would reconstruct
     // the full Notebook model and persist it via the repository.
-    final _ = String.fromCharCodes(data);
+    final jsonStr = utf8.decode(data);
+    final _ = jsonDecode(jsonStr);
   }
 }
