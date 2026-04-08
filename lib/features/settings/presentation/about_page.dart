@@ -10,7 +10,13 @@ class AboutPage extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('About')),
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new),
+          onPressed: () => Navigator.of(context).maybePop(),
+        ),
+        title: const Text('About'),
+      ),
       body: ListView(
         padding: const EdgeInsets.symmetric(vertical: 8),
         children: [

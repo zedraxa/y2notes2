@@ -14,7 +14,13 @@ class SettingsHomePage extends StatelessWidget {
     final iconColor = isDark ? AppColors.darkAccent : AppColors.accent;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Settings')),
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new),
+          onPressed: () => Navigator.of(context).maybePop(),
+        ),
+        title: const Text('Settings'),
+      ),
       body: ListView(
         padding: const EdgeInsets.symmetric(vertical: AppleSpacing.md),
         children: [

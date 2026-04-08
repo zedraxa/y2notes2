@@ -14,7 +14,13 @@ class CloudSyncSettingsPage extends StatelessWidget {
     return BlocBuilder<CloudSyncBloc, CloudSyncState>(
       builder: (context, state) {
         return Scaffold(
-          appBar: AppBar(title: const Text('Cloud Sync')),
+          appBar: AppBar(
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back_ios_new),
+              onPressed: () => Navigator.of(context).maybePop(),
+            ),
+            title: const Text('Cloud Sync'),
+          ),
           body: ListView(
             padding: const EdgeInsets.symmetric(vertical: 8),
             children: [
