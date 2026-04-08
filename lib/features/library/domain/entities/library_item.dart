@@ -59,6 +59,8 @@ class LibraryItem extends Equatable {
     this.isFavorite = false,
     this.isInTrash = false,
     this.trashedAt,
+    this.coverColor,
+    this.coverMaterial,
   })  : id = id ?? const Uuid().v4(),
         createdAt = createdAt ?? DateTime.now(),
         updatedAt = updatedAt ?? DateTime.now(),
@@ -81,6 +83,12 @@ class LibraryItem extends Equatable {
   /// Set when the item is moved to trash; used for auto-purge after 30 days.
   final DateTime? trashedAt;
 
+  /// Cover color value (ARGB int) for notebook items — used for library thumbnails.
+  final int? coverColor;
+
+  /// Cover material name for notebook items — corresponds to [CoverMaterial.name].
+  final String? coverMaterial;
+
   bool get isDueForAutoPurge {
     if (trashedAt == null) return false;
     return DateTime.now().difference(trashedAt!).inDays >= 30;
@@ -97,6 +105,8 @@ class LibraryItem extends Equatable {
     bool? isFavorite,
     bool? isInTrash,
     Object? trashedAt = _sentinel,
+    Object? coverColor = _sentinel,
+    Object? coverMaterial = _sentinel,
   }) =>
       LibraryItem(
         id: id,
@@ -115,6 +125,10 @@ class LibraryItem extends Equatable {
         isInTrash: isInTrash ?? this.isInTrash,
         trashedAt:
             trashedAt == _sentinel ? this.trashedAt : trashedAt as DateTime?,
+        coverColor: coverColor == _sentinel ? this.coverColor : coverColor as int?,
+        coverMaterial: coverMaterial == _sentinel
+            ? this.coverMaterial
+            : coverMaterial as String?,
       );
 
   @override
@@ -131,6 +145,8 @@ class LibraryItem extends Equatable {
         isFavorite,
         isInTrash,
         trashedAt,
+        coverColor,
+        coverMaterial,
       ];
 }
 

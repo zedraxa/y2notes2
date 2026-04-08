@@ -117,6 +117,22 @@ class SetColorLabel extends LibraryEvent {
   List<Object?> get props => [itemId, colorLabel];
 }
 
+/// Update the cover appearance of a notebook library item.
+class SetNotebookCover extends LibraryEvent {
+  const SetNotebookCover({
+    required this.itemId,
+    required this.coverColor,
+    required this.coverMaterial,
+  });
+  final String itemId;
+  /// ARGB color value for the cover.
+  final int coverColor;
+  /// [CoverMaterial.name] string.
+  final String coverMaterial;
+  @override
+  List<Object?> get props => [itemId, coverColor, coverMaterial];
+}
+
 // ── Tag management ────────────────────────────────────────────────────────────
 
 class CreateTag extends LibraryEvent {

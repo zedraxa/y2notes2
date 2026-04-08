@@ -57,6 +57,7 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
     on<ClearDocumentStatus>(_onClearStatus);
     on<RenameNotebook>(_onRenameNotebook);
     on<UpdateNotebookDescription>(_onUpdateNotebookDescription);
+    on<ChangeNotebookCover>(_onChangeNotebookCover);
     on<UpdatePageTitle>(_onUpdatePageTitle);
     on<TogglePageBookmark>(_onTogglePageBookmark);
     on<ToggleOutlinePanel>(_onToggleOutlinePanel);
@@ -844,6 +845,15 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
         notebook: nb.copyWith(description: event.description),
       ));
     }
+  }
+
+  void _onChangeNotebookCover(
+    ChangeNotebookCover event,
+    Emitter<DocumentState> emit,
+  ) {
+    final nb = state.notebook;
+    if (nb == null) return;
+    emit(state.copyWith(notebook: nb.copyWith(cover: event.cover)));
   }
 
   // ── Page metadata ─────────────────────────────────────────────────────────

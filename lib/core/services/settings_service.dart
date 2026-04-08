@@ -75,6 +75,10 @@ class SettingsService {
   /// Whether two-finger / edge swipe page navigation is enabled.
   final ValueNotifier<bool> pageGesturesEnabledNotifier = ValueNotifier(true);
 
+  /// Whether haptic feedback fires when a page turn gesture commits.
+  final ValueNotifier<bool> pageGestureHapticsEnabledNotifier =
+      ValueNotifier(true);
+
   // ─── Canvas spacing notifiers ─────────────────────────────────────────────
   final ValueNotifier<double> lineSpacingNotifier = ValueNotifier(32.0);
   final ValueNotifier<double> gridSpacingNotifier = ValueNotifier(32.0);
@@ -109,6 +113,7 @@ class SettingsService {
   static const _defaultToolSizeKey = 'default_tool_size';
   // Page gesture keys
   static const _pageGesturesEnabledKey = 'page_gestures_enabled';
+  static const _pageGestureHapticsEnabledKey = 'page_gesture_haptics_enabled';
   // Canvas spacing keys
   static const _lineSpacingKey = 'canvas_line_spacing';
   static const _gridSpacingKey = 'canvas_grid_spacing';
@@ -217,6 +222,8 @@ class SettingsService {
     // Page gesture settings
     pageGesturesEnabledNotifier.value =
         _prefs.getBool(_pageGesturesEnabledKey) ?? true;
+    pageGestureHapticsEnabledNotifier.value =
+        _prefs.getBool(_pageGestureHapticsEnabledKey) ?? true;
 
     // Canvas spacing settings
     lineSpacingNotifier.value =
@@ -385,6 +392,11 @@ class SettingsService {
     await _prefs.setBool(_pageGesturesEnabledKey, value);
   }
 
+  Future<void> setPageGestureHapticsEnabled(bool value) async {
+    pageGestureHapticsEnabledNotifier.value = value;
+    await _prefs.setBool(_pageGestureHapticsEnabledKey, value);
+  }
+
   // ─── Interaction effect setters / getters ──────────────────────────────────
 
   Future<void> setInteractionEffectsEnabled(bool value) async {
@@ -502,6 +514,7 @@ class SettingsService {
     defaultExportFormatNotifier.dispose();
     defaultToolSizeNotifier.dispose();
     pageGesturesEnabledNotifier.dispose();
+    pageGestureHapticsEnabledNotifier.dispose();
     lineSpacingNotifier.dispose();
     gridSpacingNotifier.dispose();
     dotSpacingNotifier.dispose();
