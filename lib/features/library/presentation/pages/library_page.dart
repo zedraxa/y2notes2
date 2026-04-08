@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+import 'package:y2notes2/app/theme/colors.dart';
 import 'package:y2notes2/features/library/domain/entities/folder.dart';
 import 'package:y2notes2/features/library/domain/entities/library_item.dart';
 import 'package:y2notes2/features/library/domain/entities/tag.dart';
@@ -18,8 +20,8 @@ import 'package:y2notes2/features/library/presentation/widgets/trash_view.dart';
 
 /// The root screen of the app — the unified document library.
 ///
-/// Houses the search bar, smart collections, folder navigation, sort/filter
-/// toolbar, and the main item grid/list.
+/// Apple-style large-title navigation with embedded search, smart collections
+/// strip, and a clean content area.
 class LibraryPage extends StatefulWidget {
   const LibraryPage({super.key});
 
@@ -70,140 +72,14 @@ class _LibraryPageState extends State<LibraryPage> {
           child: Stack(
             children: [
               Scaffold(
-                appBar: _buildAppBar(context, state),
-                drawer: _buildDrawer(context, state),
                 body: _buildBody(context, state),
                 floatingActionButton: _buildFab(context, state),
               ),
-              // Spotlight overlay
               if (state.isSpotlightOpen) const SpotlightSearch(),
             ],
           ),
         );
       },
-    );
-  }
-
-  AppBar _buildAppBar(BuildContext context, LibraryState state) {
-    return AppBar(
-      title: state.isSearching
-          ? TextField(
-              controller: _searchController,
-              focusNode: _searchFocus,
-              decoration: InputDecoration(
-                hintText: 'Search…',
-                border: InputBorder.none,
-                suffixIcon: IconButton(
-                  icon: const Icon(Icons.close),
-                  onPressed: () {
-                    _searchController.clear();
-                    context.read<LibraryBloc>().add(const ClearSearch());
-                  },
-                ),
-              ),
-              onChanged: (q) {
-                if (q.isNotEmpty) {
-                  context.read<LibraryBloc>().add(SearchLibrary(q));
-                } else {
-                  context.read<LibraryBloc>().add(const ClearSearch());
-                }
-              },
-            )
-          : const Text('Library'),
-      actions: [
-        if (!state.isSearching)
-          IconButton(
-            icon: const Icon(Icons.search),
-            onPressed: () {
-              context.read<LibraryBloc>().add(SearchLibrary(''));
-              _searchFocus.requestFocus();
-            },
-          ),
-        IconButton(
-          icon: const Icon(Icons.label_outline),
-          tooltip: 'Tag Cloud',
-          onPressed: () => setState(() => _showTagCloud = !_showTagCloud),
-        ),
-        IconButton(
-          icon: const Icon(Icons.delete_outline),
-          tooltip: 'Trash',
-          onPressed: () => Navigator.push(
-            context,
-            MaterialPageRoute<void>(
-              builder: (_) => BlocProvider.value(
-                value: context.read<LibraryBloc>(),
-                child: const TrashView(),
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Drawer _buildDrawer(BuildContext context, LibraryState state) {
-    return Drawer(
-      child: ListView(
-        padding: EdgeInsets.zero,
-        children: [
-          DrawerHeader(
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.primary,
-            ),
-            child: Text(
-              'Y2Notes',
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    color: Colors.white,
-                  ),
-            ),
-          ),
-          // Smart collections
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Text('Collections',
-                style: Theme.of(context).textTheme.labelLarge),
-          ),
-          ...state.smartCollections.map((col) {
-            final count = state.items
-                .where((i) => col.matches(i))
-                .length;
-            return ListTile(
-              leading: Text(col.emoji ?? '📂',
-                  style: const TextStyle(fontSize: 20)),
-              title: Text(col.name),
-              trailing: Text('$count',
-                  style: Theme.of(context).textTheme.bodySmall),
-              dense: true,
-              onTap: () {/* TODO: navigate to collection view */},
-            );
-          }),
-          const Divider(),
-          // Folders
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text('Folders',
-                    style: Theme.of(context).textTheme.labelLarge),
-                IconButton(
-                  icon: const Icon(Icons.create_new_folder_outlined, size: 18),
-                  onPressed: () => _showCreateFolderDialog(context),
-                ),
-              ],
-            ),
-          ),
-          ...state.folders
-              .where((f) => f.isRoot)
-              .map((f) => _FolderTile(folder: f)),
-          const Divider(),
-          ListTile(
-            leading: const Icon(Icons.settings_outlined),
-            title: const Text('Settings'),
-            onTap: () {/* navigate to settings */},
-          ),
-        ],
-      ),
     );
   }
 
@@ -216,10 +92,25 @@ class _LibraryPageState extends State<LibraryPage> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.error_outline, size: 48, color: Colors.red),
-            const SizedBox(height: 12),
-            Text(state.error!),
-            const SizedBox(height: 12),
+            Icon(
+              Icons.wifi_off_rounded,
+              size: 56,
+              color: Theme.of(context)
+                  .colorScheme
+                  .onSurfaceVariant
+                  .withOpacity(0.3),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              state.error!,
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    color: Theme.of(context)
+                        .colorScheme
+                        .onSurfaceVariant
+                        .withOpacity(0.6),
+                  ),
+            ),
+            const SizedBox(height: 20),
             FilledButton(
               onPressed: () =>
                   context.read<LibraryBloc>().add(const LoadLibrary()),
@@ -230,35 +121,179 @@ class _LibraryPageState extends State<LibraryPage> {
       );
     }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        // Breadcrumbs
-        if (!state.isSearching) const FolderBreadcrumbs(),
-        // Tag cloud (toggle)
-        if (_showTagCloud)
-          Container(
-            padding: const EdgeInsets.all(16),
-            child: TagCloud(
-              tags: state.tags,
-              onTagTap: (tag) {
-                final ids = Set<String>.of(state.filterTagIds);
-                if (ids.contains(tag.id)) {
-                  ids.remove(tag.id);
-                } else {
-                  ids.add(tag.id);
-                }
-                context.read<LibraryBloc>().add(FilterBy(tagIds: ids));
-              },
+    return CustomScrollView(
+      slivers: [
+        // ── Apple-style large title app bar ──────────────────────────────
+        SliverAppBar.large(
+          expandedHeight: 120,
+          pinned: true,
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+          surfaceTintColor: Colors.transparent,
+          flexibleSpace: FlexibleSpaceBar(
+            titlePadding:
+                const EdgeInsets.only(left: 20, bottom: 16, right: 20),
+            title: Text(
+              'Library',
+              style: TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.w700,
+                letterSpacing: -0.5,
+                color: Theme.of(context).textTheme.headlineLarge?.color,
+              ),
             ),
           ),
-        // Smart collections strip (only at root, not searching)
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.tag_rounded, size: 22),
+              tooltip: 'Tags',
+              onPressed: () =>
+                  setState(() => _showTagCloud = !_showTagCloud),
+            ),
+            IconButton(
+              icon: const Icon(Icons.delete_outline_rounded, size: 22),
+              tooltip: 'Trash',
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute<void>(
+                  builder: (_) => BlocProvider.value(
+                    value: context.read<LibraryBloc>(),
+                    child: const TrashView(),
+                  ),
+                ),
+              ),
+            ),
+            IconButton(
+              icon: const Icon(Icons.settings_outlined, size: 22),
+              tooltip: 'Settings',
+              onPressed: () => context.push('/settings'),
+            ),
+            const SizedBox(width: 4),
+          ],
+        ),
+        // ── Search bar ──────────────────────────────────────────────────
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+            child: GestureDetector(
+              onTap: () {
+                if (!state.isSearching) {
+                  context.read<LibraryBloc>().add(SearchLibrary(''));
+                  _searchFocus.requestFocus();
+                }
+              },
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                curve: Curves.easeInOut,
+                decoration: BoxDecoration(
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? const Color(0xFF1C1C1E)
+                      : const Color(0xFFE5E5EA).withOpacity(0.6),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                child: state.isSearching
+                    ? Row(
+                        children: [
+                          Icon(
+                            Icons.search_rounded,
+                            size: 20,
+                            color: AppColors.textSecondary.withOpacity(0.8),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: TextField(
+                              controller: _searchController,
+                              focusNode: _searchFocus,
+                              style: const TextStyle(fontSize: 15),
+                              decoration: const InputDecoration(
+                                hintText: 'Search notes, folders…',
+                                border: InputBorder.none,
+                                isDense: true,
+                                contentPadding: EdgeInsets.zero,
+                                filled: false,
+                              ),
+                              onChanged: (q) {
+                                if (q.isNotEmpty) {
+                                  context
+                                      .read<LibraryBloc>()
+                                      .add(SearchLibrary(q));
+                                } else {
+                                  context
+                                      .read<LibraryBloc>()
+                                      .add(const ClearSearch());
+                                }
+                              },
+                            ),
+                          ),
+                          GestureDetector(
+                            onTap: () {
+                              _searchController.clear();
+                              context
+                                  .read<LibraryBloc>()
+                                  .add(const ClearSearch());
+                            },
+                            child: Icon(
+                              Icons.close_rounded,
+                              size: 18,
+                              color: AppColors.textSecondary.withOpacity(0.6),
+                            ),
+                          ),
+                        ],
+                      )
+                    : Row(
+                        children: [
+                          Icon(
+                            Icons.search_rounded,
+                            size: 20,
+                            color: AppColors.textSecondary.withOpacity(0.6),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Search',
+                            style: TextStyle(
+                              fontSize: 15,
+                              color:
+                                  AppColors.textSecondary.withOpacity(0.6),
+                            ),
+                          ),
+                        ],
+                      ),
+              ),
+            ),
+          ),
+        ),
+        // ── Breadcrumbs ─────────────────────────────────────────────────
+        if (!state.isSearching)
+          const SliverToBoxAdapter(child: FolderBreadcrumbs()),
+        // ── Tag cloud (toggle) ──────────────────────────────────────────
+        if (_showTagCloud)
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
+              child: TagCloud(
+                tags: state.tags,
+                onTagTap: (tag) {
+                  final ids = Set<String>.of(state.filterTagIds);
+                  if (ids.contains(tag.id)) {
+                    ids.remove(tag.id);
+                  } else {
+                    ids.add(tag.id);
+                  }
+                  context.read<LibraryBloc>().add(FilterBy(tagIds: ids));
+                },
+              ),
+            ),
+          ),
+        // ── Smart collections ───────────────────────────────────────────
         if (!state.isSearching && state.currentFolderId == null)
-          _buildSmartCollectionsStrip(context, state),
-        // Sort / filter bar
-        const SortFilterBar(),
-        // Main content
-        Expanded(
+          SliverToBoxAdapter(
+            child: _buildSmartCollectionsStrip(context, state),
+          ),
+        // ── Sort / filter bar ───────────────────────────────────────────
+        const SliverToBoxAdapter(child: SortFilterBar()),
+        // ── Main content ────────────────────────────────────────────────
+        SliverFillRemaining(
           child: state.viewMode == LibraryViewMode.grid
               ? const LibraryGrid()
               : const LibraryList(),
@@ -269,35 +304,37 @@ class _LibraryPageState extends State<LibraryPage> {
 
   Widget _buildSmartCollectionsStrip(BuildContext context, LibraryState state) {
     if (state.smartCollections.isEmpty) return const SizedBox.shrink();
-    return SizedBox(
-      height: 100,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        itemCount: state.smartCollections.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 8),
-        itemBuilder: (context, index) {
-          final col = state.smartCollections[index];
-          final count =
-              state.items.where((i) => col.matches(i)).length;
-          return SizedBox(
-            width: 140,
-            child: SmartCollectionCard(
-              collection: col,
-              itemCount: count,
-              onTap: () {/* TODO: filter by collection */},
-            ),
-          );
-        },
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: SizedBox(
+        height: 96,
+        child: ListView.separated(
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          itemCount: state.smartCollections.length,
+          separatorBuilder: (_, __) => const SizedBox(width: 10),
+          itemBuilder: (context, index) {
+            final col = state.smartCollections[index];
+            final count =
+                state.items.where((i) => col.matches(i)).length;
+            return SizedBox(
+              width: 150,
+              child: SmartCollectionCard(
+                collection: col,
+                itemCount: count,
+                onTap: () {/* TODO: filter by collection */},
+              ),
+            );
+          },
+        ),
       ),
     );
   }
 
-  FloatingActionButton _buildFab(BuildContext context, LibraryState state) {
-    return FloatingActionButton.extended(
+  Widget _buildFab(BuildContext context, LibraryState state) {
+    return FloatingActionButton(
       onPressed: () => _showCreateMenu(context),
-      icon: const Icon(Icons.add),
-      label: const Text('New'),
+      child: const Icon(Icons.add_rounded, size: 28),
     );
   }
 
@@ -307,34 +344,51 @@ class _LibraryPageState extends State<LibraryPage> {
     showModalBottomSheet<void>(
       context: context,
       builder: (ctx) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.menu_book_outlined),
-              title: const Text('New Notebook'),
-              onTap: () {
-                Navigator.pop(ctx);
-                _showCreateItemDialog(context, LibraryItemType.notebook);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.dashboard_outlined),
-              title: const Text('New Canvas'),
-              onTap: () {
-                Navigator.pop(ctx);
-                _showCreateItemDialog(context, LibraryItemType.infiniteCanvas);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.create_new_folder_outlined),
-              title: const Text('New Folder'),
-              onTap: () {
-                Navigator.pop(ctx);
-                _showCreateFolderDialog(context);
-              },
-            ),
-          ],
+        child: Padding(
+          padding: const EdgeInsets.only(bottom: 8),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 8),
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                child: Text(
+                  'Create New',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+              ),
+              const SizedBox(height: 4),
+              _CreateMenuItem(
+                icon: Icons.menu_book_rounded,
+                label: 'Notebook',
+                subtitle: 'Pages with handwriting & drawing',
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _showCreateItemDialog(context, LibraryItemType.notebook);
+                },
+              ),
+              _CreateMenuItem(
+                icon: Icons.dashboard_rounded,
+                label: 'Infinite Canvas',
+                subtitle: 'Freeform workspace without pages',
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _showCreateItemDialog(
+                      context, LibraryItemType.infiniteCanvas);
+                },
+              ),
+              _CreateMenuItem(
+                icon: Icons.folder_rounded,
+                label: 'Folder',
+                subtitle: 'Organize your notes',
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _showCreateFolderDialog(context);
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -418,23 +472,39 @@ class _LibraryPageState extends State<LibraryPage> {
   }
 }
 
-/// A drawer tile for a [Folder].
-class _FolderTile extends StatelessWidget {
-  const _FolderTile({required this.folder});
+/// Apple-style bottom sheet menu item.
+class _CreateMenuItem extends StatelessWidget {
+  const _CreateMenuItem({
+    required this.icon,
+    required this.label,
+    required this.subtitle,
+    required this.onTap,
+  });
 
-  final Folder folder;
+  final IconData icon;
+  final String label;
+  final String subtitle;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      leading: Text(folder.emoji ?? '📁',
-          style: const TextStyle(fontSize: 20)),
-      title: Text(folder.name),
-      trailing: Text('${folder.childCount}',
-          style: Theme.of(context).textTheme.bodySmall),
-      dense: true,
-      onTap: () =>
-          context.read<LibraryBloc>().add(NavigateToFolder(folder.id)),
+      leading: Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          color: AppColors.accent.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Icon(icon, color: AppColors.accent, size: 22),
+      ),
+      title: Text(label, style: Theme.of(context).textTheme.bodyLarge),
+      subtitle: Text(
+        subtitle,
+        style: Theme.of(context).textTheme.bodySmall,
+      ),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 2),
+      onTap: onTap,
     );
   }
 }

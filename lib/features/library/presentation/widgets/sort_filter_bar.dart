@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:y2notes2/app/theme/colors.dart';
 import 'package:y2notes2/features/library/domain/entities/library_item.dart';
 import 'package:y2notes2/features/library/domain/entities/tag.dart';
 import 'package:y2notes2/features/library/presentation/bloc/library_bloc.dart';
 import 'package:y2notes2/features/library/presentation/bloc/library_event.dart';
 import 'package:y2notes2/features/library/presentation/bloc/library_state.dart';
 
-/// Sort + filter toolbar shown above the library item grid/list.
+/// Apple-style sort + filter toolbar with clean pill buttons and view toggle.
 class SortFilterBar extends StatelessWidget {
   const SortFilterBar({super.key});
 
@@ -14,35 +15,22 @@ class SortFilterBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<LibraryBloc, LibraryState>(
       builder: (context, state) {
-        return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
           child: Row(
             children: [
-              // Sort menu
-              _SortButton(current: state.sortOrder),
+              // Sort pill
+              _SortPill(current: state.sortOrder),
               const SizedBox(width: 8),
-              // Filter chips
+              // Clear filters pill
               if (state.hasActiveFilters)
-                ActionChip(
-                  avatar: const Icon(Icons.filter_list, size: 16),
-                  label: const Text('Clear filters'),
-                  onPressed: () =>
+                _FilterPill(
+                  onClear: () =>
                       context.read<LibraryBloc>().add(const ClearFilters()),
                 ),
               const Spacer(),
               // View mode toggle
-              IconButton(
-                icon: Icon(
-                  state.viewMode == LibraryViewMode.grid
-                      ? Icons.view_list
-                      : Icons.grid_view,
-                ),
-                tooltip: state.viewMode == LibraryViewMode.grid
-                    ? 'List view'
-                    : 'Grid view',
-                onPressed: () =>
-                    context.read<LibraryBloc>().add(const ToggleViewMode()),
-              ),
+              _ViewToggle(mode: state.viewMode),
             ],
           ),
         );
@@ -51,8 +39,8 @@ class SortFilterBar extends StatelessWidget {
   }
 }
 
-class _SortButton extends StatelessWidget {
-  const _SortButton({required this.current});
+class _SortPill extends StatelessWidget {
+  const _SortPill({required this.current});
 
   final LibrarySortOrder current;
 
@@ -80,15 +68,36 @@ class _SortButton extends StatelessWidget {
           child: Text('Size'),
         ),
       ],
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Icon(Icons.sort, size: 18),
-          const SizedBox(width: 4),
-          Text(_label(current),
-              style: Theme.of(context).textTheme.bodySmall),
-          const Icon(Icons.arrow_drop_down, size: 18),
-        ],
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: Theme.of(context).brightness == Brightness.dark
+              ? AppColors.darkSurface
+              : AppColors.surface,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: Theme.of(context).dividerColor.withOpacity(0.5),
+            width: 0.5,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.arrow_upward_rounded,
+              size: 14,
+              color: AppColors.accent,
+            ),
+            const SizedBox(width: 4),
+            Text(
+              _label(current),
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    fontWeight: FontWeight.w500,
+                    color: Theme.of(context).textTheme.bodyLarge?.color,
+                  ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -107,6 +116,115 @@ class _SortButton extends StatelessWidget {
   }
 }
 
+class _FilterPill extends StatelessWidget {
+  const _FilterPill({required this.onClear});
+
+  final VoidCallback onClear;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onClear,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: AppColors.accent.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.close_rounded, size: 14, color: AppColors.accent),
+            const SizedBox(width: 4),
+            Text(
+              'Clear filters',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.accent,
+                  ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ViewToggle extends StatelessWidget {
+  const _ViewToggle({required this.mode});
+
+  final LibraryViewMode mode;
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.darkSurface : AppColors.surface,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: Theme.of(context).dividerColor.withOpacity(0.5),
+          width: 0.5,
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _ToggleItem(
+            icon: Icons.grid_view_rounded,
+            isActive: mode == LibraryViewMode.grid,
+            onTap: () {
+              if (mode != LibraryViewMode.grid) {
+                context.read<LibraryBloc>().add(const ToggleViewMode());
+              }
+            },
+          ),
+          _ToggleItem(
+            icon: Icons.view_list_rounded,
+            isActive: mode == LibraryViewMode.list,
+            onTap: () {
+              if (mode != LibraryViewMode.list) {
+                context.read<LibraryBloc>().add(const ToggleViewMode());
+              }
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ToggleItem extends StatelessWidget {
+  const _ToggleItem({
+    required this.icon,
+    required this.isActive,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final bool isActive;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(6),
+        decoration: BoxDecoration(
+          color: isActive ? AppColors.accent.withOpacity(0.1) : null,
+          borderRadius: BorderRadius.circular(6),
+        ),
+        child: Icon(
+          icon,
+          size: 18,
+          color: isActive ? AppColors.accent : AppColors.textSecondary,
+        ),
+      ),
+    );
+  }
+}
+
 /// A bottom-sheet filter panel for tags, types, and color labels.
 class FilterPanel extends StatelessWidget {
   const FilterPanel({super.key});
@@ -121,7 +239,7 @@ class FilterPanel extends StatelessWidget {
           minChildSize: 0.3,
           maxChildSize: 0.85,
           builder: (_, scrollController) => Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -129,15 +247,16 @@ class FilterPanel extends StatelessWidget {
                   child: Container(
                     width: 36,
                     height: 4,
-                    margin: const EdgeInsets.only(bottom: 16),
+                    margin: const EdgeInsets.only(bottom: 20),
                     decoration: BoxDecoration(
-                      color: Colors.grey[300],
+                      color: AppColors.textSecondary.withOpacity(0.3),
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
                 ),
-                Text('Filters', style: Theme.of(context).textTheme.titleMedium),
-                const SizedBox(height: 12),
+                Text('Filters',
+                    style: Theme.of(context).textTheme.titleMedium),
+                const SizedBox(height: 16),
                 Text('Type',
                     style: Theme.of(context).textTheme.labelLarge),
                 const SizedBox(height: 8),
@@ -149,14 +268,13 @@ class FilterPanel extends StatelessWidget {
                       label: Text(_typeName(type)),
                       selected: selected,
                       onSelected: (_) {
-                        final types = Set<LibraryItemType>.of(state.filterTypes);
+                        final types =
+                            Set<LibraryItemType>.of(state.filterTypes);
                         if (selected) {
                           types.remove(type);
                         } else {
                           types.add(type);
                         }
-                        // Include all current filter values so scalar fields
-                        // are not accidentally cleared.
                         context.read<LibraryBloc>().add(FilterBy(
                               tagIds: state.filterTagIds,
                               types: types,
@@ -167,7 +285,7 @@ class FilterPanel extends StatelessWidget {
                     );
                   }).toList(),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 20),
                 Text('Tags',
                     style: Theme.of(context).textTheme.labelLarge),
                 const SizedBox(height: 8),
@@ -198,7 +316,7 @@ class FilterPanel extends StatelessWidget {
                     );
                   }).toList(),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 20),
                 Text('Options',
                     style: Theme.of(context).textTheme.labelLarge),
                 CheckboxListTile(
