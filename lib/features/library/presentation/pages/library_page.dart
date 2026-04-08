@@ -186,8 +186,8 @@ class _LibraryPageState extends State<LibraryPage> {
                 curve: Curves.easeInOut,
                 decoration: BoxDecoration(
                   color: Theme.of(context).brightness == Brightness.dark
-                      ? const Color(0xFF1C1C1E)
-                      : const Color(0xFFE5E5EA).withOpacity(0.6),
+                      ? AppColors.darkSurface
+                      : AppColors.systemFill.withOpacity(0.6),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 padding:

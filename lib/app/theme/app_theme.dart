@@ -173,11 +173,7 @@ class AppTheme {
           ),
         ),
         switchTheme: SwitchThemeData(
-          thumbColor: WidgetStateProperty.resolveWith(
-            (states) => states.contains(WidgetState.selected)
-                ? Colors.white
-                : Colors.white,
-          ),
+          thumbColor: WidgetStateProperty.all(Colors.white),
           trackColor: WidgetStateProperty.resolveWith(
             (states) => states.contains(WidgetState.selected)
                 ? AppColors.systemGreen
@@ -384,9 +380,7 @@ class AppTheme {
           ),
         ),
         switchTheme: SwitchThemeData(
-          thumbColor: WidgetStateProperty.resolveWith(
-            (states) => Colors.white,
-          ),
+          thumbColor: WidgetStateProperty.all(Colors.white),
           trackColor: WidgetStateProperty.resolveWith(
             (states) => states.contains(WidgetState.selected)
                 ? AppColors.systemGreen

@@ -38,6 +38,11 @@ abstract class AppColors {
   static const Color darkGroupedBackground = Color(0xFF000000);
   static const Color darkGroupedSurface = Color(0xFF1C1C1E);
 
+  // ─── System Grouped Secondary (iOS search bars, tertiary fills) ───────────
+  static const Color systemFill = Color(0xFFE5E5EA);
+  static const Color darkSystemFill = Color(0xFF2C2C2E);
+  static const Color systemGroupedSecondaryBg = Color(0xFFF2F2F7);
+
   // ─── Pen Colors ──────────────────────────────────────────────────────────
   static const List<Color> defaultPenColors = [
     Color(0xFF000000), // Black

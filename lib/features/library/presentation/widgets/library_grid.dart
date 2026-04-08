@@ -147,8 +147,8 @@ class _LibraryGridCard extends StatelessWidget {
                     Container(
                       decoration: BoxDecoration(
                         color: isDark
-                            ? const Color(0xFF2C2C2E)
-                            : const Color(0xFFF2F2F7),
+                            ? AppColors.darkSystemFill
+                            : AppColors.systemGroupedSecondaryBg,
                       ),
                       child: Center(
                         child: Icon(

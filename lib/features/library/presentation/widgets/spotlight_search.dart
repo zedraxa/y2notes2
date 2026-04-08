@@ -178,7 +178,7 @@ class _SpotlightSearchState extends State<SpotlightSearch>
                   child: Container(
                     decoration: BoxDecoration(
                       color: isDark
-                          ? const Color(0xFF1C1C1E)
+                          ? AppColors.darkSurface
                           : AppColors.surface,
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [
@@ -230,8 +230,8 @@ class _SpotlightSearchState extends State<SpotlightSearch>
                                 ),
                                 filled: true,
                                 fillColor: isDark
-                                    ? const Color(0xFF2C2C2E)
-                                    : const Color(0xFFF2F2F7),
+                                    ? AppColors.darkSystemFill
+                                    : AppColors.systemGroupedSecondaryBg,
                               ),
                               onSubmitted: (_) {
                                 final state =
