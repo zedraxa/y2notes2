@@ -25,6 +25,9 @@ import 'package:y2notes2/features/collaboration/presentation/widgets/share_butto
 import 'package:y2notes2/features/stickers/presentation/bloc/sticker_bloc.dart';
 import 'package:y2notes2/features/stickers/presentation/bloc/sticker_event.dart';
 import 'package:y2notes2/features/stickers/presentation/widgets/sticker_picker_panel.dart';
+import 'package:y2notes2/features/media/presentation/bloc/media_bloc.dart';
+import 'package:y2notes2/features/media/presentation/bloc/media_event.dart';
+import 'package:y2notes2/features/media/presentation/widgets/media_picker_panel.dart';
 import 'package:y2notes2/features/templates/domain/entities/page_template.dart';
 import 'package:y2notes2/features/templates/presentation/bloc/template_bloc.dart';
 import 'package:y2notes2/features/templates/presentation/bloc/template_event.dart';
@@ -184,6 +187,30 @@ class MainToolbar extends StatelessWidget {
                             context
                                 .read<StickerBloc>()
                                 .add(StickerPlacementPending(template));
+                          },
+                        ),
+                      ),
+                    );
+                  },
+                ),
+                const _Divider(),
+                // ── Media (audio/video) ────────────────────────────────────
+                IconButton(
+                  icon: const Icon(Icons.play_circle_outline),
+                  iconSize: AppConstants.toolbarIconSize,
+                  tooltip: 'Media',
+                  onPressed: () {
+                    HapticController.light();
+                    showModalBottomSheet<void>(
+                      context: context,
+                      isScrollControlled: true,
+                      builder: (_) => BlocProvider.value(
+                        value: context.read<MediaBloc>(),
+                        child: MediaPickerPanel(
+                          onSelected: (element) {
+                            context
+                                .read<MediaBloc>()
+                                .add(MediaAdded(element));
                           },
                         ),
                       ),

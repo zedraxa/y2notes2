@@ -36,6 +36,7 @@ import 'package:y2notes2/features/stickers/domain/entities/sticker_element.dart'
 import 'package:y2notes2/features/stickers/presentation/bloc/sticker_bloc.dart';
 import 'package:y2notes2/features/stickers/presentation/bloc/sticker_state.dart';
 import 'package:y2notes2/features/stickers/presentation/widgets/sticker_interaction_handler.dart';
+import 'package:y2notes2/features/media/presentation/widgets/media_overlay.dart';
 import 'package:y2notes2/shared/widgets/service_provider.dart';
 
 /// The actual drawing surface.
@@ -494,6 +495,8 @@ class _CanvasViewState extends State<CanvasView>
                                     StrokeTool.eraser,
                                 isVisible: true,
                               ),
+                            // Layer: Media overlay (audio/video elements)
+                            const MediaOverlay(),
                           ],
                         ),
                       ),

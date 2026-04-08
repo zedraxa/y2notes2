@@ -3,6 +3,7 @@ import 'package:y2notes2/features/canvas/domain/entities/stroke.dart';
 import 'package:y2notes2/features/canvas/domain/models/canvas_config.dart';
 import 'package:y2notes2/features/documents/domain/models/export_options.dart';
 import 'package:y2notes2/features/documents/domain/models/import_options.dart';
+import 'package:y2notes2/features/media/domain/entities/media_element.dart';
 import 'package:y2notes2/features/pdf_annotation/domain/entities/pdf_annotation.dart';
 import 'package:y2notes2/features/scanner/domain/entities/scanned_document.dart';
 
@@ -270,6 +271,20 @@ class GoToPreviousPage extends DocumentEvent {
 /// Toggle the outline/table-of-contents panel visibility.
 class ToggleOutlinePanel extends DocumentEvent {
   const ToggleOutlinePanel();
+}
+
+// ── Media elements ─────────────────────────────────────────────────────────
+
+/// Update the media elements for a specific page.
+class UpdatePageMedia extends DocumentEvent {
+  const UpdatePageMedia({
+    required this.pageIndex,
+    required this.mediaElements,
+  });
+  final int pageIndex;
+  final List<MediaElement> mediaElements;
+  @override
+  List<Object?> get props => [pageIndex, mediaElements];
 }
 
 // ── PDF annotations ────────────────────────────────────────────────────────

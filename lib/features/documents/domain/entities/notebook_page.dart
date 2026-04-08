@@ -6,6 +6,7 @@ import 'package:y2notes2/features/audio_sync/domain/entities/audio_recording.dar
 import 'package:y2notes2/features/canvas/domain/entities/stroke.dart';
 import 'package:y2notes2/features/canvas/domain/models/canvas_config.dart';
 import 'package:y2notes2/features/documents/domain/entities/canvas_elements.dart';
+import 'package:y2notes2/features/media/domain/entities/media_element.dart';
 import 'package:y2notes2/features/pdf_annotation/domain/entities/pdf_annotation.dart';
 import 'package:y2notes2/features/rich_text/domain/entities/rich_text_element.dart';
 
@@ -19,6 +20,7 @@ class NotebookPage extends Equatable {
     this.strokes = const [],
     this.shapes = const [],
     this.stickers = const [],
+    this.mediaElements = const [],
     this.graphs = const [],
     this.pdfAnnotations = const [],
     this.richTexts = const [],
@@ -46,6 +48,9 @@ class NotebookPage extends Equatable {
   /// for pages imported from a PDF.
   final List<PdfAnnotation> pdfAnnotations;
 
+  /// Audio and video media elements embedded on this page.
+  final List<MediaElement> mediaElements;
+
   /// Rich text blocks placed on this page.
   final List<RichTextElement> richTexts;
 
@@ -62,6 +67,9 @@ class NotebookPage extends Equatable {
 
   bool get hasBackground =>
       backgroundImage != null || backgroundPdfPath != null;
+
+  /// Whether this page contains any media (audio/video).
+  bool get hasMedia => mediaElements.isNotEmpty;
 
   /// Whether this page originated from a PDF import and therefore
   /// supports PDF-specific annotations.
@@ -82,6 +90,7 @@ class NotebookPage extends Equatable {
     List<Stroke>? strokes,
     List<ShapeElement>? shapes,
     List<StickerElement>? stickers,
+    List<MediaElement>? mediaElements,
     List<GraphElement>? graphs,
     List<PdfAnnotation>? pdfAnnotations,
     List<RichTextElement>? richTexts,
@@ -99,6 +108,7 @@ class NotebookPage extends Equatable {
         strokes: strokes ?? this.strokes,
         shapes: shapes ?? this.shapes,
         stickers: stickers ?? this.stickers,
+        mediaElements: mediaElements ?? this.mediaElements,
         graphs: graphs ?? this.graphs,
         pdfAnnotations: pdfAnnotations ?? this.pdfAnnotations,
         richTexts: richTexts ?? this.richTexts,
@@ -121,6 +131,7 @@ class NotebookPage extends Equatable {
         strokes,
         shapes,
         stickers,
+        mediaElements,
         graphs,
         pdfAnnotations,
         richTexts,
