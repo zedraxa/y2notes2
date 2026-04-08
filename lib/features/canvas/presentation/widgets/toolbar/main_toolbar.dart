@@ -53,17 +53,19 @@ class MainToolbar extends StatelessWidget {
         builder: (context, state) {
           final bloc = context.read<CanvasBloc>();
 
-          return Container(
-            height: AppConstants.toolbarHeight,
-            decoration: BoxDecoration(
-              color: Theme.of(context).appBarTheme.backgroundColor,
-              border: Border(
-                bottom: BorderSide(
-                  color: AppColors.toolbarBorder,
-                  width: 0.5,
+          return Semantics(
+            label: 'Canvas toolbar',
+            child: Container(
+              height: AppConstants.toolbarHeight,
+              decoration: BoxDecoration(
+                color: Theme.of(context).appBarTheme.backgroundColor,
+                border: Border(
+                  bottom: BorderSide(
+                    color: AppColors.toolbarBorder,
+                    width: 0.5,
+                  ),
                 ),
               ),
-            ),
             child: Row(
               children: [
                 const SizedBox(width: 8),
@@ -277,6 +279,7 @@ class MainToolbar extends StatelessWidget {
                 const SizedBox(width: 4),
               ],
             ),
+          ),
           );
         },
       );

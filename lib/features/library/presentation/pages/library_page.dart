@@ -508,6 +508,13 @@ class _LibraryPageState extends State<LibraryPage> {
       BuildContext context, String name, LibraryItemType type) {
     if (name.isEmpty) return;
     context.read<LibraryBloc>().add(CreateItem(name: name, type: type));
+    final typeName =
+        type == LibraryItemType.notebook ? 'Notebook' : 'Canvas';
+    AppleToast.show(
+      context,
+      message: '$typeName "$name" created',
+      style: AppleToastStyle.success,
+    );
   }
 
   void _showCreateFolderDialog(BuildContext context) {
@@ -545,6 +552,11 @@ class _LibraryPageState extends State<LibraryPage> {
   void _submitCreateFolder(BuildContext context, String name) {
     if (name.isEmpty) return;
     context.read<LibraryBloc>().add(CreateFolder(name: name));
+    AppleToast.show(
+      context,
+      message: 'Folder "$name" created',
+      style: AppleToastStyle.success,
+    );
   }
 }
 
