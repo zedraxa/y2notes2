@@ -7,18 +7,24 @@ class SmartCollectionCard extends StatelessWidget {
     super.key,
     required this.collection,
     required this.itemCount,
+    this.isActive = false,
     this.onTap,
   });
 
   final SmartCollection collection;
   final int itemCount;
+
+  /// Whether this card is the currently active filter.
+  final bool isActive;
   final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final activeColor = theme.colorScheme.primaryContainer;
     return Card(
       clipBehavior: Clip.antiAlias,
+      color: isActive ? activeColor : null,
       child: InkWell(
         onTap: onTap,
         child: Padding(
@@ -35,13 +41,19 @@ class SmartCollectionCard extends StatelessWidget {
                     Icon(
                       _iconFor(collection.rule),
                       size: 24,
-                      color: theme.colorScheme.primary,
+                      color: isActive
+                          ? theme.colorScheme.onPrimaryContainer
+                          : theme.colorScheme.primary,
                     ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       collection.name,
-                      style: theme.textTheme.titleSmall,
+                      style: theme.textTheme.titleSmall?.copyWith(
+                        color: isActive
+                            ? theme.colorScheme.onPrimaryContainer
+                            : null,
+                      ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -51,8 +63,11 @@ class SmartCollectionCard extends StatelessWidget {
               const SizedBox(height: 8),
               Text(
                 '$itemCount item${itemCount == 1 ? '' : 's'}',
-                style: theme.textTheme.bodySmall
-                    ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: isActive
+                      ? theme.colorScheme.onPrimaryContainer
+                      : theme.colorScheme.onSurfaceVariant,
+                ),
               ),
             ],
           ),

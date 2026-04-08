@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:biscuits/features/library/domain/entities/folder.dart';
 import 'package:biscuits/features/library/domain/entities/library_item.dart';
+import 'package:biscuits/features/library/domain/entities/smart_collection.dart';
 import 'package:biscuits/features/library/domain/entities/tag.dart';
 
 abstract class LibraryEvent extends Equatable {
@@ -198,6 +199,16 @@ class FilterBy extends LibraryEvent {
 
 class ClearFilters extends LibraryEvent {
   const ClearFilters();
+}
+
+/// Activates (or clears) a smart collection filter.
+///
+/// Pass `null` to clear the active smart collection.
+class FilterBySmartCollection extends LibraryEvent {
+  const FilterBySmartCollection(this.collection);
+  final SmartCollection? collection;
+  @override
+  List<Object?> get props => [collection];
 }
 
 class ToggleViewMode extends LibraryEvent {
