@@ -183,8 +183,8 @@ class CanvasBloc extends Bloc<CanvasEvent, CanvasState> {
     Emitter<CanvasState> emit,
   ) =>
       emit(state.copyWith(
-        strokes: event.strokes,
-        shapes: event.shapes,
+        strokes: List.from(event.strokes),
+        shapes: List.from(event.shapes),
         config: event.config,
         redoStack: [],
         shapeUndoStack: [],

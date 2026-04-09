@@ -85,16 +85,10 @@ class _NotebookPageViewState extends State<NotebookPageView> {
     if (!docState.hasNotebook) return;
 
     final pageIndex = docState.currentPageIndex;
-    docBloc.add(UpdatePageStrokes(
+    docBloc.add(UpdatePageCanvasContent(
       pageIndex: pageIndex,
-      strokes: canvasState.strokes,
-    ));
-    docBloc.add(UpdatePageShapes(
-      pageIndex: pageIndex,
-      shapes: canvasState.shapes,
-    ));
-    docBloc.add(UpdatePageConfig(
-      pageIndex: pageIndex,
+      strokes: List.unmodifiable(canvasState.strokes),
+      shapes: List.unmodifiable(canvasState.shapes),
       config: canvasState.config,
     ));
   }

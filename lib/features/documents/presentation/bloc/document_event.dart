@@ -111,6 +111,26 @@ class UpdatePageConfig extends DocumentEvent {
   List<Object?> get props => [pageIndex, config];
 }
 
+/// Batch-update strokes, shapes and config for a single page in one shot.
+///
+/// Preferred over dispatching [UpdatePageStrokes], [UpdatePageShapes], and
+/// [UpdatePageConfig] separately because it produces a single state emission
+/// and a single persistence write.
+class UpdatePageCanvasContent extends DocumentEvent {
+  const UpdatePageCanvasContent({
+    required this.pageIndex,
+    required this.strokes,
+    required this.shapes,
+    required this.config,
+  });
+  final int pageIndex;
+  final List<Stroke> strokes;
+  final List<ShapeElement> shapes;
+  final CanvasConfig config;
+  @override
+  List<Object?> get props => [pageIndex, strokes, shapes, config];
+}
+
 // ── PDF export ─────────────────────────────────────────────────────────────
 
 /// Export the current page as PDF.

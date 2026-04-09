@@ -72,6 +72,7 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
     on<UpdatePageStickers>(_onUpdatePageStickers);
     on<UpdatePageGraphs>(_onUpdatePageGraphs);
     on<UpdatePageRichTexts>(_onUpdatePageRichTexts);
+    on<UpdatePageCanvasContent>(_onUpdatePageCanvasContent);
   }
 
   /// Optional repository for persisting/loading notebooks.
@@ -1063,6 +1064,24 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
     emit(state.copyWith(
       notebook: nb.updatePage(event.pageIndex, page),
     ));
+    _persistNotebook();
+  }
+
+  /// Batch-update strokes, shapes and config for a page in a single operation.
+  ///
+  /// Produces one state emission and one persistence write instead of three.
+  void _onUpdatePageCanvasContent(
+    UpdatePageCanvasContent event,
+    Emitter<DocumentState> emit,
+  ) {
+    final nb = state.notebook;
+    if (nb == null) return;
+    final page = nb.pages[event.pageIndex].copyWith(
+      strokes: event.strokes,
+      shapes: event.shapes,
+      config: event.config,
+    );
+    emit(state.copyWith(notebook: nb.updatePage(event.pageIndex, page)));
     _persistNotebook();
   }
 
