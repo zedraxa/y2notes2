@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:biscuits/core/engine/stylus/stylus_detector.dart';
 import 'package:biscuits/core/engine/stylus/stylus_gesture_handler.dart';
 import 'package:biscuits/features/canvas/domain/entities/point_data.dart';
+import 'package:biscuits/features/canvas/domain/entities/stroke.dart';
 import 'package:biscuits/features/canvas/domain/entities/tool.dart';
 import 'package:biscuits/features/canvas/domain/entities/tools/tool_settings.dart';
 import 'package:biscuits/features/canvas/domain/models/canvas_config.dart';
@@ -85,6 +86,26 @@ class CanvasConfigUpdated extends CanvasEvent {
   final CanvasConfig config;
   @override
   List<Object?> get props => [config];
+}
+
+/// Load a page's strokes, shapes, and config into the canvas.
+///
+/// Dispatched when a notebook page is opened or when the user navigates
+/// to a different page.  Replaces the current canvas state with the
+/// page data so the user sees their previously-saved content.
+class CanvasPageLoaded extends CanvasEvent {
+  const CanvasPageLoaded({
+    required this.strokes,
+    required this.shapes,
+    required this.config,
+  });
+
+  final List<Stroke> strokes;
+  final List<ShapeElement> shapes;
+  final CanvasConfig config;
+
+  @override
+  List<Object?> get props => [strokes, shapes, config];
 }
 
 /// Clear all strokes from the canvas.
