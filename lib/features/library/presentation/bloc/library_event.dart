@@ -54,12 +54,14 @@ class NavigateToFolder extends LibraryEvent {
 // ── Item management ───────────────────────────────────────────────────────────
 
 class CreateItem extends LibraryEvent {
-  const CreateItem({required this.name, required this.type, this.folderId});
+  const CreateItem({required this.name, required this.type, this.folderId, this.id});
   final String name;
   final LibraryItemType type;
   final String? folderId;
+  /// Optional pre-generated ID. If omitted the bloc generates one.
+  final String? id;
   @override
-  List<Object?> get props => [name, type, folderId];
+  List<Object?> get props => [name, type, folderId, id];
 }
 
 class RenameItem extends LibraryEvent {

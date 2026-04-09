@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:uuid/uuid.dart';
+import 'package:biscuits/app/route_names.dart';
+import 'package:biscuits/features/documents/presentation/bloc/document_bloc.dart';
+import 'package:biscuits/features/documents/presentation/bloc/document_event.dart';
 import 'package:biscuits/features/library/domain/entities/folder.dart';
 import 'package:biscuits/features/library/domain/entities/library_item.dart';
 import 'package:biscuits/features/library/domain/entities/tag.dart';
@@ -493,7 +497,13 @@ class _LibraryPageState extends State<LibraryPage> {
   void _submitCreateItem(
       BuildContext context, String name, LibraryItemType type) {
     if (name.isEmpty) return;
-    context.read<LibraryBloc>().add(CreateItem(name: name, type: type));
+    final id = const Uuid().v4();
+    context.read<LibraryBloc>().add(CreateItem(name: name, type: type, id: id));
+    if (type == LibraryItemType.notebook) {
+      context
+          .read<DocumentBloc>()
+          .add(CreateNotebook(title: name, id: id));
+    }
     final typeName =
         type == LibraryItemType.notebook ? 'Notebook' : 'Canvas';
     AppleToast.show(
@@ -501,6 +511,11 @@ class _LibraryPageState extends State<LibraryPage> {
       message: '$typeName "$name" created',
       style: AppleToastStyle.success,
     );
+    if (type == LibraryItemType.notebook) {
+      context.push(AppRoutes.notebook(id));
+    } else if (type == LibraryItemType.infiniteCanvas) {
+      context.push(AppRoutes.infiniteCanvas(id));
+    }
   }
 
   void _showCreateFolderDialog(BuildContext context) {

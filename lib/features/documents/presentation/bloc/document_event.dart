@@ -22,10 +22,12 @@ abstract class DocumentEvent extends Equatable {
 
 /// Create a new blank notebook with the given title.
 class CreateNotebook extends DocumentEvent {
-  const CreateNotebook({required this.title});
+  const CreateNotebook({required this.title, this.id});
   final String title;
+  /// Optional pre-generated ID (used when coordinating with the library layer).
+  final String? id;
   @override
-  List<Object?> get props => [title];
+  List<Object?> get props => [title, id];
 }
 
 /// Open an existing notebook by ID.

@@ -24,17 +24,19 @@ class DocumentRepository {
 
   static const _notebookKey = 'document_notebook';
 
+  static String _keyFor(String id) => '${_notebookKey}_$id';
+
   // ── Persistence ─────────────────────────────────────────────────────────────
 
-  /// Saves the [notebook] to persistent storage.
+  /// Saves the [notebook] to persistent storage, keyed by its [Notebook.id].
   Future<void> saveNotebook(Notebook notebook) async {
     final json = jsonEncode(_notebookToJson(notebook));
-    await _prefs.setString(_notebookKey, json);
+    await _prefs.setString(_keyFor(notebook.id), json);
   }
 
-  /// Loads and returns the persisted notebook, or `null` if none exists.
-  Future<Notebook?> loadNotebook() async {
-    final raw = _prefs.getString(_notebookKey);
+  /// Loads and returns the notebook with [id], or `null` if not found.
+  Future<Notebook?> loadNotebook(String id) async {
+    final raw = _prefs.getString(_keyFor(id));
     if (raw == null) return null;
     try {
       final map = jsonDecode(raw) as Map<String, dynamic>;
@@ -44,9 +46,9 @@ class DocumentRepository {
     }
   }
 
-  /// Removes the persisted notebook.
-  Future<void> deleteNotebook() async {
-    await _prefs.remove(_notebookKey);
+  /// Removes the notebook with [id] from persistent storage.
+  Future<void> deleteNotebook(String id) async {
+    await _prefs.remove(_keyFor(id));
   }
 
   // ── Serialisation helpers ────────────────────────────────────────────────────
