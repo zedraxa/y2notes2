@@ -117,9 +117,6 @@ workflows:
     environment:
       flutter: stable
       xcode: latest
-      ios_signing:
-        distribution_type: app_store
-        bundle_identifier: com.biscuits.app
       vars:
         <<: *shared_vars
     cache:
@@ -137,6 +134,15 @@ workflows:
       - *configure_ipad_plist
 
       # ── Signing ──
+      - name: Initialize keychain
+        script: keychain initialize
+      - name: Fetch signing files from App Store Connect
+        script: |
+          app-store-connect fetch-signing-files "$BUNDLE_ID" \
+            --type IOS_APP_STORE \
+            --create
+      - name: Add certificates to keychain
+        script: keychain add-certificates
       - name: Set up code signing settings on Xcode project
         script: xcode-project use-profiles --project ios/Runner.xcodeproj
 
