@@ -43,6 +43,21 @@ class _NotebookPageViewState extends State<NotebookPageView> {
   /// The page index we last loaded into the canvas.
   int? _loadedPageIndex;
 
+  @override
+  void initState() {
+    super.initState();
+    // Sync whatever notebook is already in DocumentBloc into the canvas on
+    // the first frame.  This handles the common case where CreateNotebook
+    // runs synchronously (the notebook is already in state before this
+    // widget is ever mounted), so the BlocListener below would never fire a
+    // "notebook changed" transition and the canvas would stay blank.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _syncDocumentToCanvas(context, context.read<DocumentBloc>().state);
+      }
+    });
+  }
+
   // ── Document → Canvas sync ─────────────────────────────────────────────────
 
   /// Loads the current page's data from [docState] into [CanvasBloc].
