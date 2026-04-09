@@ -2,6 +2,7 @@ import 'dart:io' if (dart.library.html) 'package:biscuits/core/io/io_stub.dart';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uuid/uuid.dart';
+import 'package:biscuits/core/services/app_logger.dart';
 import 'package:biscuits/features/audio_sync/domain/entities/audio_recording.dart';
 import 'package:biscuits/features/canvas/domain/models/canvas_config.dart';
 import 'package:biscuits/features/documents/data/document_repository.dart';
@@ -93,7 +94,7 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
       config: const CanvasConfig(),
     );
     final notebook = Notebook(
-      id: event.id,
+      id: event.id ?? _uuid.v4(),
       title: event.title,
       pages: [firstPage],
     );
@@ -1055,7 +1056,17 @@ class DocumentBloc extends Bloc<DocumentEvent, DocumentState> {
       .toList();
 
   /// Persists [notebook] to the repository in the background (fire-and-forget).
+  /// Errors are logged but not surfaced to the UI.
   void _persistNotebook(Notebook notebook) {
-    _repository?.saveNotebook(notebook);
+    final repo = _repository;
+    if (repo == null) return;
+    repo.saveNotebook(notebook).catchError((Object e, StackTrace st) {
+      AppLogger.instance.error(
+        'Failed to persist notebook "${notebook.id}"',
+        error: e,
+        stackTrace: st,
+        tag: 'DocumentBloc',
+      );
+    });
   }
 }

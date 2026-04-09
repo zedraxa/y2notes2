@@ -39,6 +39,7 @@ class LibraryPage extends StatefulWidget {
 class _LibraryPageState extends State<LibraryPage> {
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocus = FocusNode();
+  final _uuid = const Uuid();
   bool _showTagCloud = false;
 
   @override
@@ -497,7 +498,7 @@ class _LibraryPageState extends State<LibraryPage> {
   void _submitCreateItem(
       BuildContext context, String name, LibraryItemType type) {
     if (name.isEmpty) return;
-    final id = const Uuid().v4();
+    final id = _uuid.v4();
     context.read<LibraryBloc>().add(CreateItem(name: name, type: type, id: id));
     if (type == LibraryItemType.notebook) {
       context
