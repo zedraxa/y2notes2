@@ -75,6 +75,10 @@ class PdfExportEngine {
       case PageTemplate.chalkboard:
         break;
       case PageTemplate.lined:
+      case PageTemplate.narrowRuled:
+      case PageTemplate.wideRuled:
+      case PageTemplate.musicStaff:
+      case PageTemplate.calligraphy:
         final spacing = config.lineSpacing;
         for (double y = h - spacing; y > 0; y -= spacing) {
           g.moveTo(0, y);
@@ -89,6 +93,8 @@ class PdfExportEngine {
           g.strokePath();
         }
       case PageTemplate.grid:
+      case PageTemplate.isometric:
+      case PageTemplate.hexagonal:
         final spacing = config.gridSpacing;
         for (double y = h - spacing; y > 0; y -= spacing) {
           g.moveTo(0, y);

@@ -498,8 +498,16 @@ class _ActionSheetButtonState<T> extends State<_ActionSheetButton<T>> {
       onTapUp: (_) => setState(() => _isPressed = false),
       onTapCancel: () => setState(() => _isPressed = false),
       onTap: () {
-        widget.action.onPressed?.call();
+        // Pop the action sheet first, then invoke the callback in a
+        // post-frame callback so that any dialog / route pushed by
+        // the action is not immediately popped by the sheet dismissal.
+        final callback = widget.action.onPressed;
         Navigator.of(context).pop(widget.action.result);
+        if (callback != null) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            callback();
+          });
+        }
       },
       child: AnimatedContainer(
         duration: AppleDurations.quick,

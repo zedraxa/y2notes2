@@ -12,7 +12,13 @@ class BackupSettingsPage extends StatelessWidget {
     final settings = ServiceProvider.of<SettingsService>(context);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Backup & Data')),
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new),
+          onPressed: () => Navigator.of(context).maybePop(),
+        ),
+        title: const Text('Backup & Data'),
+      ),
       body: ListView(
         padding: const EdgeInsets.symmetric(vertical: 8),
         children: [

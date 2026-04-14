@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:biscuits/features/canvas/presentation/bloc/canvas_bloc.dart';
+import 'package:biscuits/features/canvas/presentation/bloc/canvas_event.dart';
+import 'package:biscuits/features/canvas/presentation/bloc/canvas_state.dart';
 import 'package:biscuits/features/documents/presentation/bloc/document_bloc.dart';
 import 'package:biscuits/features/documents/presentation/bloc/document_event.dart';
 import 'package:biscuits/features/documents/presentation/bloc/document_state.dart';
@@ -11,7 +14,16 @@ import 'package:biscuits/features/documents/presentation/widgets/page_navigator.
 
 /// Full notebook view: the canvas (passed as [child]) surrounded by the
 /// page navigator strip, outline panel, and export/import affordances.
-class NotebookPageView extends StatelessWidget {
+///
+/// Also provides bidirectional synchronisation between [DocumentBloc] and
+/// [CanvasBloc]:
+/// - **Document → Canvas**: when the open notebook or current page changes,
+///   the page's persisted strokes, shapes, and config are loaded into
+///   [CanvasBloc] so the user sees their saved content immediately.
+/// - **Canvas → Document**: after every stroke is committed (or when the page
+///   changes), the current strokes and shapes are written back to
+///   [DocumentBloc] so they are persisted to storage.
+class NotebookPageView extends StatefulWidget {
   const NotebookPageView({
     super.key,
     required this.child,
@@ -21,21 +33,127 @@ class NotebookPageView extends StatelessWidget {
   final Widget child;
 
   @override
+  State<NotebookPageView> createState() => _NotebookPageViewState();
+}
+
+class _NotebookPageViewState extends State<NotebookPageView> {
+  /// The notebook ID we last loaded into the canvas.
+  String? _loadedNotebookId;
+
+  /// The page index we last loaded into the canvas.
+  int? _loadedPageIndex;
+
+  @override
+  void initState() {
+    super.initState();
+    // Sync whatever notebook is already in DocumentBloc into the canvas on
+    // the first frame.  This handles the common case where CreateNotebook
+    // runs synchronously (the notebook is already in state before this
+    // widget is ever mounted), so the BlocListener below would never fire a
+    // "notebook changed" transition and the canvas would stay blank.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _syncDocumentToCanvas(context, context.read<DocumentBloc>().state);
+      }
+    });
+  }
+
+  // ── Document → Canvas sync ─────────────────────────────────────────────────
+
+  /// Loads the current page's data from [docState] into [CanvasBloc].
+  ///
+  /// Only fires when the notebook ID or page index changes to avoid loops
+  /// caused by the DocumentBloc state update that happens when we write
+  /// strokes back.
+  void _syncDocumentToCanvas(
+    BuildContext context,
+    DocumentState docState,
+  ) {
+    if (!docState.hasNotebook) return;
+    final nb = docState.notebook!;
+    final pageIndex = docState.currentPageIndex;
+
+    // Avoid reloading the same page we already loaded.
+    if (_loadedNotebookId == nb.id && _loadedPageIndex == pageIndex) return;
+
+    _loadedNotebookId = nb.id;
+    _loadedPageIndex = pageIndex;
+
+    if (pageIndex >= nb.pages.length) return;
+    final page = nb.pages[pageIndex];
+    context.read<CanvasBloc>().add(CanvasPageLoaded(
+          strokes: page.strokes,
+          shapes: page.shapes,
+          config: page.config,
+        ));
+  }
+
+  // ── Canvas → Document sync ─────────────────────────────────────────────────
+
+  /// Persists the current [CanvasBloc] strokes, shapes and config to [DocumentBloc].
+  ///
+  /// Called after a stroke is committed ([StrokeEnded] fires), when the page
+  /// template changes, and before switching pages so nothing is lost.
+  void _saveCanvasToDocument(BuildContext context, CanvasState canvasState) {
+    final docBloc = context.read<DocumentBloc>();
+    final docState = docBloc.state;
+    if (!docState.hasNotebook) return;
+
+    final pageIndex = docState.currentPageIndex;
+    docBloc.add(UpdatePageCanvasContent(
+      pageIndex: pageIndex,
+      strokes: List.unmodifiable(canvasState.strokes),
+      shapes: List.unmodifiable(canvasState.shapes),
+      config: canvasState.config,
+    ));
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return BlocListener<DocumentBloc, DocumentState>(
-      listenWhen: (prev, curr) =>
-          prev.status != curr.status && curr.status == DocumentOperationStatus.error,
-      listener: (context, state) {
-        if (state.errorMessage != null) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(state.errorMessage!),
-              backgroundColor: Theme.of(context).colorScheme.error,
-            ),
-          );
-          context.read<DocumentBloc>().add(const ClearDocumentStatus());
-        }
-      },
+    return MultiBlocListener(
+      listeners: [
+        // ── Document → Canvas: load page when notebook/page changes ─────────
+        BlocListener<DocumentBloc, DocumentState>(
+          listenWhen: (prev, curr) =>
+              prev.notebook?.id != curr.notebook?.id ||
+              prev.currentPageIndex != curr.currentPageIndex ||
+              (prev.notebook == null && curr.notebook != null),
+          listener: (context, state) {
+            // Before loading the new page, save whatever was on the canvas
+            // for the page we're navigating away from.  Skip on first load
+            // since there's nothing to save yet.
+            if (_loadedPageIndex != null) {
+              _saveCanvasToDocument(context, context.read<CanvasBloc>().state);
+            }
+            _syncDocumentToCanvas(context, state);
+          },
+        ),
+        // ── Canvas → Document: auto-save after each committed stroke ────────
+        BlocListener<CanvasBloc, CanvasState>(
+          listenWhen: (prev, curr) =>
+              prev.strokes.length != curr.strokes.length ||
+              prev.shapes.length != curr.shapes.length ||
+              prev.config != curr.config,
+          listener: _saveCanvasToDocument,
+        ),
+        // ── Error toast ─────────────────────────────────────────────────────
+        BlocListener<DocumentBloc, DocumentState>(
+          listenWhen: (prev, curr) =>
+              prev.status != curr.status &&
+              curr.status == DocumentOperationStatus.error,
+          listener: (context, state) {
+            if (state.errorMessage != null) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(state.errorMessage!),
+                  backgroundColor: Theme.of(context).colorScheme.error,
+                ),
+              );
+              context.read<DocumentBloc>().add(const ClearDocumentStatus());
+            }
+          },
+        ),
+      ],
       child: Stack(
         children: [
           // Main content: outline panel + canvas + page navigator.
@@ -46,7 +164,7 @@ class NotebookPageView extends StatelessWidget {
                 child: Column(
                   children: [
                     Expanded(
-                      child: PageGestureHandler(child: child),
+                      child: PageGestureHandler(child: widget.child),
                     ),
                     const PageNavigator(),
                   ],

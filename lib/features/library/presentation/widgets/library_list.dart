@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+import 'package:biscuits/app/route_names.dart';
 import 'package:biscuits/features/library/domain/entities/library_item.dart';
 import 'package:biscuits/features/library/presentation/bloc/library_bloc.dart';
+import 'package:biscuits/features/library/presentation/bloc/library_event.dart';
 import 'package:biscuits/features/library/presentation/bloc/library_state.dart';
 import 'package:biscuits/features/library/presentation/widgets/item_context_menu.dart';
 
@@ -147,13 +150,27 @@ class _LibraryListTile extends StatelessWidget {
             ),
           ],
         ),
-        onTap: () {/* Navigate to item — handled by parent page */},
+        onTap: () => _navigateToItem(context),
         onLongPress: () => showModalBottomSheet<void>(
           context: context,
           builder: (_) => ItemContextMenu(item: item),
         ),
       ),
     );
+  }
+
+  void _navigateToItem(BuildContext context) {
+    switch (item.type) {
+      case LibraryItemType.notebook:
+        context.push(AppRoutes.notebook(item.id));
+        break;
+      case LibraryItemType.infiniteCanvas:
+        context.push(AppRoutes.infiniteCanvas(item.id));
+        break;
+      case LibraryItemType.folder:
+        context.read<LibraryBloc>().add(NavigateToFolder(item.id));
+        break;
+    }
   }
 
   String _subtitle(LibraryItem item) {

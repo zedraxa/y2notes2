@@ -11,7 +11,7 @@ class LassoTool implements DrawingTool {
   @override String get name => 'Lasso';
   @override String get description => 'Freeform selection with marching ants and snapping';
   @override ToolCategory get category => ToolCategory.utility;
-  @override IconData get icon => Icons.lasso;
+  @override IconData get icon => Icons.gesture;
   @override BlendMode get blendMode => BlendMode.srcOver;
   @override bool get hasTexture => false;
 

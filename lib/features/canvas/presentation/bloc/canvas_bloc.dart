@@ -32,6 +32,7 @@ class CanvasBloc extends Bloc<CanvasEvent, CanvasState> {
     on<EffectsToggled>(_onEffectsToggled);
     on<CanvasConfigUpdated>(_onConfigUpdated);
     on<CanvasCleared>(_onCanvasCleared);
+    on<CanvasPageLoaded>(_onCanvasPageLoaded);
     on<ViewportChanged>(_onViewportChanged);
     on<DrawingToolChanged>(_onDrawingToolChanged);
     on<ToolSettingsChanged>(_onToolSettingsChanged);
@@ -172,6 +173,24 @@ class CanvasBloc extends Bloc<CanvasEvent, CanvasState> {
 
   void _onCanvasCleared(CanvasCleared event, Emitter<CanvasState> emit) =>
       emit(state.copyWith(strokes: [], redoStack: []));
+
+  /// Load a page's strokes, shapes and config into the canvas.
+  ///
+  /// Clears the redo stack and any active stroke so the canvas shows exactly
+  /// what was persisted for that page.
+  void _onCanvasPageLoaded(
+    CanvasPageLoaded event,
+    Emitter<CanvasState> emit,
+  ) =>
+      emit(state.copyWith(
+        strokes: List.from(event.strokes),
+        shapes: List.from(event.shapes),
+        config: event.config,
+        redoStack: [],
+        shapeUndoStack: [],
+        shapeRedoStack: [],
+        clearActiveStroke: true,
+      ));
 
   void _onViewportChanged(ViewportChanged event, Emitter<CanvasState> emit) =>
       emit(state.copyWith(

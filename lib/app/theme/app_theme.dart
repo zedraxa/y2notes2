@@ -46,7 +46,7 @@ class AppTheme {
         ),
         textTheme: _buildTextTheme(AppColors.textPrimary),
         dividerColor: AppColors.toolbarBorder,
-        cardTheme: CardTheme(
+        cardTheme: CardThemeData(
           elevation: 0,
           color: AppColors.surface,
           shape: RoundedRectangleBorder(
@@ -173,7 +173,7 @@ class AppTheme {
           ),
           elevation: 8,
         ),
-        dialogTheme: DialogTheme(
+        dialogTheme: DialogThemeData(
           backgroundColor: AppColors.surface,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
@@ -221,7 +221,7 @@ class AppTheme {
         ),
         textTheme: _buildTextTheme(AppColors.darkTextPrimary),
         dividerColor: AppColors.darkDivider,
-        cardTheme: CardTheme(
+        cardTheme: CardThemeData(
           elevation: 0,
           color: AppColors.darkSurface,
           shape: RoundedRectangleBorder(
@@ -349,7 +349,7 @@ class AppTheme {
           ),
           elevation: 8,
         ),
-        dialogTheme: DialogTheme(
+        dialogTheme: DialogThemeData(
           backgroundColor: AppColors.darkSurface,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),

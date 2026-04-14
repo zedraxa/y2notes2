@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:biscuits/app/route_names.dart';
 
 import '../../domain/entities/quiz_session.dart';
 import '../bloc/flash_card_bloc.dart';
@@ -43,7 +44,7 @@ class QuizPage extends StatelessWidget {
               icon: const Icon(Icons.close),
               onPressed: () {
                 context.read<FlashCardBloc>().add(const QuizEnded());
-                context.go('/flashcards/deck/$deckId');
+                context.pop();
               },
             ),
           ),
@@ -306,7 +307,7 @@ class _QuizResults extends StatelessWidget {
             FilledButton(
               onPressed: () {
                 context.read<FlashCardBloc>().add(const QuizEnded());
-                context.go('/flashcards/deck/$deckId');
+                context.pop();
               },
               child: const Text('Back to Deck'),
             ),

@@ -2,6 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:uuid/uuid.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:biscuits/app/route_names.dart';
+import 'package:biscuits/features/documents/presentation/bloc/document_bloc.dart';
+import 'package:biscuits/features/documents/presentation/bloc/document_event.dart';
+import 'package:biscuits/features/documents/domain/models/import_options.dart';
 import 'package:biscuits/features/library/domain/entities/folder.dart';
 import 'package:biscuits/features/library/domain/entities/library_item.dart';
 import 'package:biscuits/features/library/domain/entities/tag.dart';
@@ -16,6 +22,7 @@ import 'package:biscuits/features/library/presentation/widgets/sort_filter_bar.d
 import 'package:biscuits/features/library/presentation/widgets/spotlight_search.dart';
 import 'package:biscuits/features/library/presentation/widgets/tag_cloud.dart';
 import 'package:biscuits/features/library/presentation/widgets/trash_view.dart';
+import 'package:biscuits/features/scanner/domain/entities/scanned_document.dart';
 import 'package:biscuits/shared/widgets/apple_toast.dart';
 import 'package:biscuits/shared/widgets/apple_sheet.dart';
 import 'package:biscuits/shared/widgets/keyboard_shortcuts_overlay.dart';
@@ -67,7 +74,7 @@ class _LibraryPageState extends State<LibraryPage> {
     }
     // ⌘+, → Settings
     if (isMetaOrCtrl && event.logicalKey == LogicalKeyboardKey.comma) {
-      context.go('/settings');
+      context.push('/settings');
       return KeyEventResult.handled;
     }
     return KeyEventResult.ignored;
@@ -234,7 +241,7 @@ class _LibraryPageState extends State<LibraryPage> {
             title: const Text('Settings'),
             onTap: () {
               Navigator.pop(context);
-              context.go('/settings');
+              context.push('/settings');
             },
           ),
         ],
@@ -441,14 +448,19 @@ class _LibraryPageState extends State<LibraryPage> {
           onPressed: () => _showCreateFolderDialog(context),
         ),
         AppleActionSheetAction(
+          label: 'Import Document',
+          icon: Icons.file_open_outlined,
+          onPressed: () => _importDocument(context),
+        ),
+        AppleActionSheetAction(
           label: 'Flash Cards',
           icon: Icons.style_outlined,
-          onPressed: () => GoRouter.of(context).go('/flashcards'),
+          onPressed: () => context.push(AppRoutes.flashcards),
         ),
         AppleActionSheetAction(
           label: 'Scan Document',
           icon: Icons.document_scanner_outlined,
-          onPressed: () => GoRouter.of(context).go('/scanner'),
+          onPressed: () => _scanDocument(context),
         ),
       ],
       cancelAction: const AppleActionSheetAction(label: 'Cancel'),
@@ -493,7 +505,12 @@ class _LibraryPageState extends State<LibraryPage> {
   void _submitCreateItem(
       BuildContext context, String name, LibraryItemType type) {
     if (name.isEmpty) return;
-    context.read<LibraryBloc>().add(CreateItem(name: name, type: type));
+    final id = const Uuid().v4();
+    context.read<LibraryBloc>().add(CreateItem(id: id, name: name, type: type));
+    // Also create the actual notebook/canvas document so the page can load it.
+    if (type == LibraryItemType.notebook) {
+      context.read<DocumentBloc>().add(CreateNotebook(id: id, title: name));
+    }
     final typeName =
         type == LibraryItemType.notebook ? 'Notebook' : 'Canvas';
     AppleToast.show(
@@ -501,6 +518,12 @@ class _LibraryPageState extends State<LibraryPage> {
       message: '$typeName "$name" created',
       style: AppleToastStyle.success,
     );
+    // Navigate to the newly created item.
+    if (type == LibraryItemType.notebook) {
+      context.push(AppRoutes.notebook(id));
+    } else if (type == LibraryItemType.infiniteCanvas) {
+      context.push(AppRoutes.infiniteCanvas(id));
+    }
   }
 
   void _showCreateFolderDialog(BuildContext context) {
@@ -544,6 +567,78 @@ class _LibraryPageState extends State<LibraryPage> {
       message: 'Folder "$name" created',
       style: AppleToastStyle.success,
     );
+  }
+
+  Future<void> _scanDocument(BuildContext context) async {
+    final result = await context.push<ScanResult>(AppRoutes.scanner);
+    if (result != null && result.hasPages && context.mounted) {
+      final id = const Uuid().v4();
+      final title = result.title ?? 'Scanned Document';
+      context.read<LibraryBloc>().add(
+            CreateItem(id: id, name: title, type: LibraryItemType.notebook),
+          );
+      // Create the notebook document and import the scanned pages.
+      final docBloc = context.read<DocumentBloc>();
+      docBloc.add(CreateNotebook(id: id, title: title));
+      docBloc.add(ImportScannedDocument(scanResult: result));
+      AppleToast.show(
+        context,
+        message: '"$title" saved (${result.pageCount} pages)',
+        style: AppleToastStyle.success,
+      );
+      context.push(AppRoutes.notebook(id));
+    }
+  }
+
+  Future<void> _importDocument(BuildContext context) async {
+    try {
+      final result = await FilePicker.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['pdf', 'png', 'jpg', 'jpeg'],
+        allowMultiple: false,
+      );
+      if (result == null || result.files.isEmpty) return;
+      final file = result.files.first;
+      if (file.path == null) return;
+
+      if (!context.mounted) return;
+      final fileName =
+          file.name.replaceAll(RegExp(r'\.(pdf|png|jpe?g)$', caseSensitive: false), '');
+      final id = const Uuid().v4();
+      context.read<LibraryBloc>().add(
+            CreateItem(id: id, name: fileName, type: LibraryItemType.notebook),
+          );
+      // Create the notebook document and import the file contents.
+      final docBloc = context.read<DocumentBloc>();
+      docBloc.add(CreateNotebook(id: id, title: fileName));
+      final filePath = file.path!;
+      final isPdf = file.name.toLowerCase().endsWith('.pdf');
+      if (isPdf) {
+        docBloc.add(ImportPdfFromPath(
+          filePath: filePath,
+          options: const ImportOptions(mode: ImportMode.appendToCurrentNotebook),
+        ));
+      } else {
+        docBloc.add(ImportImageFromPath(
+          filePath: filePath,
+          options: const ImportOptions(mode: ImportMode.appendToCurrentNotebook),
+        ));
+      }
+      AppleToast.show(
+        context,
+        message: '"$fileName" imported',
+        style: AppleToastStyle.success,
+      );
+      context.push(AppRoutes.notebook(id));
+    } catch (e) {
+      if (context.mounted) {
+        AppleToast.show(
+          context,
+          message: 'Failed to import document',
+          style: AppleToastStyle.error,
+        );
+      }
+    }
   }
 }
 

@@ -18,6 +18,10 @@ class RecognitionSettingsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new),
+          onPressed: () => Navigator.of(context).maybePop(),
+        ),
         title: const Text('Recognition Settings'),
         elevation: 0,
       ),

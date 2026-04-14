@@ -98,7 +98,7 @@ class ImageImportEngine {
   /// Crops the decoded image to [cropRect] before returning.
   Future<ui.Image> loadAndCrop(
     String filePath,
-    Rect cropRect,
+    ui.Rect cropRect,
   ) async {
     final bytes = await File(filePath).readAsBytes();
     img.Image? decoded = img.decodeImage(bytes);

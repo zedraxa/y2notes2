@@ -12,7 +12,13 @@ class GeneralSettingsPage extends StatelessWidget {
     final settings = ServiceProvider.of<SettingsService>(context);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('General')),
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new),
+          onPressed: () => Navigator.of(context).maybePop(),
+        ),
+        title: const Text('General'),
+      ),
       body: ListView(
         padding: const EdgeInsets.symmetric(vertical: 8),
         children: [

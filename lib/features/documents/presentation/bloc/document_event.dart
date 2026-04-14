@@ -22,10 +22,13 @@ abstract class DocumentEvent extends Equatable {
 
 /// Create a new blank notebook with the given title.
 class CreateNotebook extends DocumentEvent {
-  const CreateNotebook({required this.title});
+  const CreateNotebook({this.id, required this.title});
+  /// Optional ID for the notebook. When provided the notebook will use this
+  /// exact ID so it matches the corresponding library item.
+  final String? id;
   final String title;
   @override
-  List<Object?> get props => [title];
+  List<Object?> get props => [id, title];
 }
 
 /// Open an existing notebook by ID.
@@ -106,6 +109,26 @@ class UpdatePageConfig extends DocumentEvent {
   final CanvasConfig config;
   @override
   List<Object?> get props => [pageIndex, config];
+}
+
+/// Batch-update strokes, shapes and config for a single page in one shot.
+///
+/// Preferred over dispatching [UpdatePageStrokes], [UpdatePageShapes], and
+/// [UpdatePageConfig] separately because it produces a single state emission
+/// and a single persistence write.
+class UpdatePageCanvasContent extends DocumentEvent {
+  const UpdatePageCanvasContent({
+    required this.pageIndex,
+    required this.strokes,
+    required this.shapes,
+    required this.config,
+  });
+  final int pageIndex;
+  final List<Stroke> strokes;
+  final List<ShapeElement> shapes;
+  final CanvasConfig config;
+  @override
+  List<Object?> get props => [pageIndex, strokes, shapes, config];
 }
 
 // ── PDF export ─────────────────────────────────────────────────────────────

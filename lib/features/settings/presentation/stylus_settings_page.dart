@@ -22,7 +22,13 @@ class StylusSettingsPage extends StatelessWidget {
     final settings = ServiceProvider.of<SettingsService>(context);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Stylus Settings')),
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new),
+          onPressed: () => Navigator.of(context).maybePop(),
+        ),
+        title: const Text('Stylus Settings'),
+      ),
       body: ListView(
         padding: const EdgeInsets.symmetric(vertical: 8),
         children: [

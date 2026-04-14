@@ -17,7 +17,13 @@ class CanvasSettingsPage extends StatelessWidget {
     final bloc = context.read<CanvasBloc>();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Canvas')),
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new),
+          onPressed: () => Navigator.of(context).maybePop(),
+        ),
+        title: const Text('Canvas'),
+      ),
       body: BlocBuilder<CanvasBloc, CanvasState>(
         bloc: bloc,
         builder: (context, state) => ListView(

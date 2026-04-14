@@ -57,6 +57,24 @@ class MatrixData extends Equatable {
         label: clearLabel ? null : (label ?? this.label),
       );
 
+  Map<String, dynamic> toJson() => {
+        'rows': rows,
+        'cols': cols,
+        'values': values,
+        if (label != null) 'label': label,
+      };
+
+  factory MatrixData.fromJson(Map<String, dynamic> json) => MatrixData(
+        rows: json['rows'] as int,
+        cols: json['cols'] as int,
+        values: (json['values'] as List<dynamic>)
+            .map((row) => (row as List<dynamic>)
+                .map((v) => (v as num).toDouble())
+                .toList())
+            .toList(),
+        label: json['label'] as String?,
+      );
+
   @override
   List<Object?> get props => [rows, cols, values, label];
 }
